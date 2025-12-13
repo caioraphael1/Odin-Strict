@@ -741,6 +741,7 @@ default_context :: proc "contextless" () -> Context {
 	return c
 }
 
+
 @private
 __init_context_from_ptr :: proc "contextless" (c: ^Context, other: ^Context) {
 	if c == nil {
@@ -757,14 +758,12 @@ __init_context :: proc "contextless" (c: ^Context) {
 	}
 
 	// NOTE(bill): Do not initialize these procedures with a call as they are not defined with the "contextless" calling convention
-	c.allocator.procedure = default_allocator_proc
-	c.allocator.data = nil
+	c.allocator.procedure = panic_allocator_proc
+	c.allocator.data      = nil
 
 	c.temp_allocator.procedure = default_temp_allocator_proc
-	when !NO_DEFAULT_TEMP_ALLOCATOR {
-		c.temp_allocator.data = &global_default_temp_allocator_data
-	}
-	
+    c.temp_allocator.data      = &global_default_temp_allocator_data
+
 	when !ODIN_DISABLE_ASSERT {
 		c.assertion_failure_proc = default_assertion_failure_proc
 	}

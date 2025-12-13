@@ -124,7 +124,7 @@ arena_alloc :: proc(arena: ^Arena, size, alignment: uint, loc := #caller_locatio
 		block_size := max(needed, arena.minimum_block_size)
 
 		if arena.backing_allocator.procedure == nil {
-			arena.backing_allocator = default_allocator()
+            panic("No backing allocator set for context.temp_allocator. The context.temp_allocator should be initialized manually with init_global_temporary_allocator")
 		}
 
 		new_block := memory_block_alloc(arena.backing_allocator, block_size, alignment, loc) or_return
@@ -235,7 +235,6 @@ arena_allocator_proc :: proc(allocator_data: rawptr, mode: Allocator_Mode,
 				if start < old_end && old_end == block.used && new_end <= block.capacity {
 					// grow data in-place, adjusting next allocation
 					block.used = uint(new_end)
-					arena.total_used = uint(new_end)
 					data = block.base[start:new_end]
 					// sanitizer.address_unpoison(data)
 					return
