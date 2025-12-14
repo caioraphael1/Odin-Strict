@@ -21,14 +21,14 @@
 
 ## Odin Language fork, focused on safety
 
-- The goal of this fork is to make Odin a safer language, breaking the implicit patterns from the C language and improving code readability and making it more enjoyable to work with memory.
+- The goal of this fork is to make Odin a safer language, breaking the implicit patterns from the C language and improving code readability, and making it more enjoyable to work with memory.
 - I love Odin, but I don't like how it hides allocations from the user and tries to handle lots of behavior implicitly. If an allocator is invalid, there should be no fallback. A buggy code is a buggy code and should *crash*. I believe that typing one extra word is an absolute worth trade-off than losing tracking of how your memory is managed. We shouldn't hide when memory is mentioned.
 
 
 - Currently, all changes are in `.odin` files. No changes were made to the `.cpp` source code, so the compiler is untouched. I'll maybe change the compiler if this would result in improvements to safety that could not be achieved by the Odin language alone.
 
 
-- This is a **WIP (work-in-progress)**. Having to change every single library in Odin is not easy. There will be a lot of broken code in the beginning, but the goal is a complete overhaul of safety in Odin.
+- This is a **WIP (work-in-progress)**. Changing every single library in Odin is not easy. There will be a lot of broken code in the beginning, but the goal is a complete overhaul of safety in Odin.
 - If you find something that could be improved, or it's broken, feel free to open an issue or contribute with a PR.
 - As of TODAY (2025-12-14), there will be a LOT of broken things. I'm first fixing the libraries for Windows, but I'll get to the other OSs after the main changes are made.
 
@@ -106,14 +106,14 @@ main :: proc() {
     allocator := runtime.heap_allocator()
 
     a := make([dynamic]int, allocator)
-        //  `make` *requires* an explicit allocator. If not complied, there will be a compile time error.
+        //  `make` *requires* an explicit allocator. If not complied, there will be a compile-time error.
     defer delete(a)
         // No need to be explicit about the allocator here, as a `[dynamic]` array stores the allocator.
 
     b := new(int, allocator)
-        //  `new` *requires* an explicit allocator. If not complied, there will be a compile time error.
+        //  `new` *requires* an explicit allocator. If not complied, there will be a compile-time error.
     defer free(b, allocator)
-        //  `free` *requires* an explicit allocator. If not complied, there will be a compile time error.
+        //  `free` *requires* an explicit allocator. If not complied, there will be a compile-time error.
 }
 ```
 - In this example, the `runtime.heap_allocator()` was used, which is the **same** allocator from the previous `context.allocator`. You'll have the same allocation behavior, but now the allocation has to be **explicit** and is no longer tied to the `context` system. More on that later. 
@@ -125,7 +125,7 @@ main :: proc() {
 ```odin
 aprint :: proc(args: ..any, sep := " ", allocator: mem.Allocator) -> string { }
 ```
-- `aprint` has a variadic argument (`args`), followed up with an argument without a default value.
+- `aprint` has a variadic argument (`args`), followed by an argument without a default value.
 - To make this work, this change was made:
 ```odin
 aprint :: proc(args: []any, sep := " ", allocator: mem.Allocator) -> string { }
@@ -155,7 +155,7 @@ msg := aprint(1, 2, 3, 4)
 aprint :: proc(args: []any, sep := " ", allocator: mem.Allocator) -> string { }
 
 msg := aprint({1, 2, 3, 4}, allocator = my_allocator)
-    // The procedure now *requires* an explicit allocator. If not complied, there will be a compile time error.
+    // The procedure now *requires* an explicit allocator. If not complied, there will be a compile-time error.
 ```
 
 
@@ -170,7 +170,7 @@ main :: proc() {
         // context.allocator was used implicitly to allocate `a`.
 }
 ```
-- This behavior is no longer allowed, as only lead to confusing and buggy code. This was specially a problem when using custom allocators, but forgetting to initialize an array/map, making the data be allocated without the usage of your custom allocator.
+- This behavior is no longer allowed, as it only leads to confusing and buggy code. This was especially a problem when using custom allocators, but forgetting to initialize an array/map, making the data be allocated without the usage of your custom allocator.
 - This now results in a runtime assertion.
 
 - After
@@ -222,7 +222,7 @@ assert :: proc "contextless" (condition: bool, message := #caller_expression(con
 }
 ```
 - The `runtime.assertion_failure_proc` can be changed by the user.
-- The default for `context.assertion_failure_proc` and `runtime.assertion_failure_proc` are the same. If you haven't changed the old `context.assertion_failure_proc` to anything different, the behavior will be the same. 
+- The default for `context.assertion_failure_proc` and `runtime.assertion_failure_proc` is the same. If you haven't changed the old `context.assertion_failure_proc` to anything different, the behavior will be the same. 
 
 
 ### Logger
@@ -249,6 +249,6 @@ assert :: proc "contextless" (condition: bool, message := #caller_expression(con
 ### The `core:os` was replaced by `core:os/os2`
 
 - The `core:os` library was **removed**. 
-- There are plans for Odin to replace the libraries in 2026, but as I was changing the codebase so much for safety reasons, I decided to rush the replacement, as the old `core:os` had a lot of implicit behavior everywhere and `os2` is a far better library.
+- There are plans for Odin to replace the libraries in 2026, but as I was changing the codebase so much for safety reasons, I decided to rush the replacement, as the old `core:os` had a lot of implicit behavior everywhere, and `os2` is a far better library.
 - If you see `import "core:os"`, this refers to the new `os2`, simply renamed to `os`.
 
