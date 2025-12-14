@@ -65,7 +65,7 @@ to_reader :: to_stream
 
 
 @(private="package")
-file_io_stream_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From) -> (n: i64, err: io.Error) {
+file_io_stream_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From, loc := #caller_location) -> (n: i64, err: io.Error) {
 	f := (^File)(stream_data)
 
 	file_stream_mode := transmute(File_Stream_Mode)mode

@@ -6,7 +6,7 @@ Multi_Reader :: struct {
 	readers: [dynamic]Reader,
 }
 
-_multi_reader_proc :: proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, offset: i64, whence: Seek_From) -> (n: i64, err: Error) {
+_multi_reader_proc :: proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, offset: i64, whence: Seek_From, loc := #caller_location) -> (n: i64, err: Error) {
 	if mode == .Query {
 		return query_utility({.Read, .Query})
 	} else if mode != .Read {
@@ -59,7 +59,7 @@ Multi_Writer :: struct {
 	writers: [dynamic]Writer,
 }
 
-_multi_writer_proc :: proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, offset: i64, whence: Seek_From) -> (n: i64, err: Error) {
+_multi_writer_proc :: proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, offset: i64, whence: Seek_From, loc := #caller_location) -> (n: i64, err: Error) {
 	if mode == .Query {
 		return query_utility({.Write, .Query})
 	} else if mode != .Write {

@@ -161,6 +161,7 @@ optimize_subtree :: proc(tree: Node, flags: common.Flags, allocator: mem.Allocat
 		// DO: `[aab]` => `[ab]`
 		// DO: `[aa]`  => `[a]`
 		runes_seen: map[rune]bool
+        runes_seen.allocator = allocator
 
 		for r in specific.runes {
 			runes_seen[r] = true

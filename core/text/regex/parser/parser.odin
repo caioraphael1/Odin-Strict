@@ -225,6 +225,8 @@ null_denotation :: proc(p: ^Parser, token: Token, allocator: mem.Allocator) -> (
 		}
 
 		node := new(Node_Rune_Class, allocator)
+        node.runes.allocator  = allocator
+        node.ranges.allocator = allocator
 
 		#no_bounds_check for i := 0; i < len(token.text); /**/ {
 			r, size := utf8.decode_rune(token.text[i:])
@@ -449,6 +451,7 @@ left_denotation :: proc(p: ^Parser, token: Token, left: Node, allocator: mem.All
 			result = specific
 		case:
 			node := new(Node_Concatenation, allocator)
+            node.nodes.allocator = allocator
 			append(&node.nodes, left)
 			append(&node.nodes, right)
 			result = node

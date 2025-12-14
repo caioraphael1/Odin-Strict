@@ -9,6 +9,7 @@ package regex_compiler
 */
 
 import "base:intrinsics"
+import "core:mem"
 import "core:text/regex/common"
 import "core:text/regex/parser"
 import "core:text/regex/tokenizer"
@@ -153,10 +154,12 @@ inject_raw :: #force_inline proc(code: ^Program, start: int, data: $T) {
 }
 
 @require_results
-generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
+generate_code :: proc(c: ^Compiler, node: Node, allocator: mem.Allocator) -> (code: Program) {
 	if node == nil {
 		return
 	}
+
+    code.allocator = allocator
 
 	// NOTE: For Jump/Split arguments, we write as i16 and will reinterpret
 	// this later when relative jumps are turned into absolute jumps.
@@ -217,7 +220,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 
 	// Compound Nodes:
 	case ^Node_Group:
-		code = generate_code(c, specific.inner)
+		code = generate_code(c, specific.inner, allocator)
 
 		if specific.capture && .No_Capture not_in c.flags {
 			inject_at(&code, 0, Opcode.Save)
@@ -228,8 +231,8 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 		}
 
 	case ^Node_Alternation:
-		left := generate_code(c, specific.left)
-		right := generate_code(c, specific.right)
+		left := generate_code(c, specific.left, allocator)
+		right := generate_code(c, specific.right, allocator)
 
 		left_len := len(left)
 
@@ -249,14 +252,14 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 
 	case ^Node_Concatenation:
 		for subnode in specific.nodes {
-			subnode_code := generate_code(c, subnode)
+			subnode_code := generate_code(c, subnode, allocator)
 			for opcode in subnode_code {
 				append(&code, opcode)
 			}
 		}
 
 	case ^Node_Repeat_Zero:
-		code = generate_code(c, specific.inner)
+		code = generate_code(c, specific.inner, allocator)
 		original_len := len(code)
 
 		inject_at(&code, 0, Opcode.Split)
@@ -267,7 +270,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 		append_raw(&code, i16(-original_len - SPLIT_SIZE))
 
 	case ^Node_Repeat_Zero_Non_Greedy:
-		code = generate_code(c, specific.inner)
+		code = generate_code(c, specific.inner, allocator)
 		original_len := len(code)
 
 		inject_at(&code, 0, Opcode.Split)
@@ -278,7 +281,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 		append_raw(&code, i16(-original_len - SPLIT_SIZE))
 
 	case ^Node_Repeat_One:
-		code = generate_code(c, specific.inner)
+		code = generate_code(c, specific.inner, allocator)
 		original_len := len(code)
 
 		append(&code, Opcode.Split)
@@ -286,7 +289,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 		append_raw(&code, i16(SPLIT_SIZE))
 
 	case ^Node_Repeat_One_Non_Greedy:
-		code = generate_code(c, specific.inner)
+		code = generate_code(c, specific.inner, allocator)
 		original_len := len(code)
 
 		append(&code, Opcode.Split)
@@ -294,7 +297,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 		append_raw(&code, i16(-original_len))
 
 	case ^Node_Repeat_N:
-		inside := generate_code(c, specific.inner)
+		inside := generate_code(c, specific.inner, allocator)
 		original_len := len(inside)
 
 		if specific.lower == specific.upper { // {N}
@@ -356,7 +359,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 		}
 
 	case ^Node_Optional:
-		code = generate_code(c, specific.inner)
+		code = generate_code(c, specific.inner, allocator)
 		original_len := len(code)
 
 		inject_at(&code, 0, Opcode.Split)
@@ -364,7 +367,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 		inject_raw(&code, size_of(byte) + size_of(i16), i16(SPLIT_SIZE + original_len))
 
 	case ^Node_Optional_Non_Greedy:
-		code = generate_code(c, specific.inner)
+		code = generate_code(c, specific.inner, allocator)
 		original_len := len(code)
 
 		inject_at(&code, 0, Opcode.Split)
@@ -379,7 +382,7 @@ generate_code :: proc(c: ^Compiler, node: Node) -> (code: Program) {
 }
 
 @require_results
-compile :: proc(tree: Node, flags: common.Flags) -> (code: Program, class_data: [dynamic]Rune_Class_Data, err: Error) {
+compile :: proc(tree: Node, flags: common.Flags, allocator: mem.Allocator) -> (code: Program, class_data: [dynamic]Rune_Class_Data, err: Error) {
 	if tree == nil {
 		if .No_Capture not_in flags {
 			append(&code, Opcode.Save); append(&code, Opcode(0x00))
@@ -394,6 +397,7 @@ compile :: proc(tree: Node, flags: common.Flags) -> (code: Program, class_data: 
 	c: Compiler
 	c.flags = flags
 
+    class_data.allocator = allocator
 	map_all_classes(tree, &class_data)
 	if len(class_data) >= common.MAX_CLASSES {
 		err = .Too_Many_Classes
@@ -401,7 +405,7 @@ compile :: proc(tree: Node, flags: common.Flags) -> (code: Program, class_data: 
 	}
 	c.class_data = class_data
 
-	code = generate_code(&c, tree)
+	code = generate_code(&c, tree, allocator)
 
 	pc_open := 0
 

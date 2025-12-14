@@ -601,9 +601,7 @@ map_reserve_dynamic :: #force_no_inline proc "odin" (#no_alias m: ^Raw_Map, #no_
 		return size_of(uintptr)*8 - 1 - z
 	}
 
-	if m.allocator.procedure == nil {
-        return .Invalid_Allocator
-	}
+    assert(m.allocator.procedure != nil, loc=loc)
 
 	new_capacity := new_capacity
 	old_capacity := uintptr(map_cap(m^))
@@ -656,9 +654,7 @@ map_reserve_dynamic :: #force_no_inline proc "odin" (#no_alias m: ^Raw_Map, #no_
 
 @(require_results)
 map_shrink_dynamic :: #force_no_inline proc "odin" (#no_alias m: ^Raw_Map, #no_alias info: ^Map_Info, loc := #caller_location) -> (did_shrink: bool, err: Allocator_Error) {
-	if m.allocator.procedure == nil {
-        return false, .Invalid_Allocator
-	}
+    assert(m.allocator.procedure != nil)
 
 	// Cannot shrink the capacity if the number of items in the map would exceed
 	// one minus the current log2 capacity's resize threshold. That is the shrunk

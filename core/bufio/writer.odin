@@ -232,7 +232,7 @@ writer_to_writer :: proc(b: ^Writer) -> (s: io.Writer) {
 
 
 
-_writer_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From) -> (n: i64, err: io.Error) {
+_writer_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From, loc := #caller_location) -> (n: i64, err: io.Error) {
 	b := (^Writer)(stream_data)
 	#partial switch mode {
 	case .Flush:

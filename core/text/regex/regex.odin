@@ -88,7 +88,7 @@ Inputs:
 - pattern: The pattern to compile.
 - flags: A `bit_set` of RegEx flags.
 - allocator: The allocator to use for the final regular expression.
-- temporary_allocator: The allocator to use for the intermediate compilation stages. (default: context.temp_allocator)
+- temp_allocator: The allocator to use for the intermediate compilation stages. (default: context.temp_allocator)
 
 Returns:
 - result: The regular expression.
@@ -96,10 +96,10 @@ Returns:
 */
 @require_results
 create :: proc(
-	pattern: string,
-	flags: Flags = {},
-	allocator: mem.Allocator,
-	temporary_allocator := context.temp_allocator,
+	pattern:       string,
+	flags:         Flags = {},
+	allocator:     mem.Allocator,
+	temp_allocator := context.temp_allocator,
 ) -> (result: Regular_Expression, err: Error) {
 	// For the sake of speed and simplicity, we first run all the intermediate
 	// processes such as parsing and compilation through the temporary
@@ -107,13 +107,13 @@ create :: proc(
 	program: [dynamic]virtual_machine.Opcode = ---
 	class_data: [dynamic]parser.Rune_Class_Data = ---
 
-    ast := parser.parse(pattern, flags, temporary_allocator) or_return
+    ast := parser.parse(pattern, flags, temp_allocator) or_return
 
     if .No_Optimization not_in flags {
-        ast, _ = optimizer.optimize(ast, flags, temporary_allocator)
+        ast, _ = optimizer.optimize(ast, flags, temp_allocator)
     }
 
-    program, class_data = compiler.compile(ast, flags) or_return
+    program, class_data = compiler.compile(ast, flags, temp_allocator) or_return
 
 	// When that's successful, re-allocate all at once with the permanent
 	// allocator so everything can be tightly packed.
@@ -174,7 +174,7 @@ Inputs:
 - pattern: The delimited pattern with optional flags to compile.
 - str: The string to match against.
 - allocator: The allocator to use for the final regular expression.
-- temporary_allocator: The allocator to use for the intermediate compilation stages. (default: context.temp_allocator)
+- temp_allocator: The allocator to use for the intermediate compilation stages. (default: context.temp_allocator)
 
 Returns:
 - result: The regular expression.
@@ -184,7 +184,7 @@ Returns:
 create_by_user :: proc(
 	pattern: string,
 	allocator: runtime.Allocator,
-	temporary_allocator := context.temp_allocator,
+	temp_allocator := context.temp_allocator,
 ) -> (result: Regular_Expression, err: Error) {
 
 	if len(pattern) == 0 {
@@ -248,7 +248,7 @@ create_by_user :: proc(
 		}
 	}
 
-	return create(pattern[start:end], flags, allocator, temporary_allocator)
+	return create(pattern[start:end], flags, allocator, temp_allocator)
 }
 
 /*
@@ -261,22 +261,22 @@ Inputs:
 - pattern: The pattern to match.
 - flags: A `bit_set` of RegEx flags.
 - allocator: The allocator to use for the compiled regular expression.
-- temporary_allocator: The allocator to use for the intermediate compilation and iteration stages. (default: context.temp_allocator)
+- temp_allocator: The allocator to use for the intermediate compilation and iteration stages. (default: context.temp_allocator)
 
 Returns:
 - result: The `Match_Iterator`.
 - err: An error, if one occurred.
 */
 create_iterator :: proc(
-	str: string,
-	pattern: string,
-	flags: Flags = {},
-	allocator: runtime.Allocator,
-	temporary_allocator := context.temp_allocator,
+	str:           string,
+	pattern:       string,
+	flags:         Flags = {},
+	allocator:     runtime.Allocator,
+	temp_allocator := context.temp_allocator,
 ) -> (result: Match_Iterator, err: Error) {
-	result.regex         = create(pattern, flags, allocator, temporary_allocator) or_return
+	result.regex         = create(pattern, flags, allocator, temp_allocator) or_return
 	result.capture       = preallocate_capture(allocator)
-	result.temp          = temporary_allocator
+	result.temp          = temp_allocator
 	result.vm            = virtual_machine.create(result.regex.program, str, allocator)
 	result.vm.class_data = result.regex.class_data
 	result.threads       = max(1, virtual_machine.opcode_count(result.vm.code) - 1)
@@ -296,7 +296,7 @@ Inputs:
 - regex: The regular expression.
 - str: The string to match against.
 - allocator: The allocator to use for the capture results.
-- temporary_allocator: The allocator to use for the virtual machine. (default: context.temp_allocator)
+- temp_allocator: The allocator to use for the virtual machine. (default: context.temp_allocator)
 
 Returns:
 - capture: The capture groups found in the string.
@@ -304,21 +304,21 @@ Returns:
 */
 @require_results
 match_and_allocate_capture :: proc(
-	regex: Regular_Expression,
-	str: string,
-	allocator: runtime.Allocator,
-	temporary_allocator := context.temp_allocator,
+	regex:         Regular_Expression,
+	str:           string,
+	allocator:     runtime.Allocator,
+	temp_allocator := context.temp_allocator,
 ) -> (capture: Capture, success: bool) {
 
 	saved: ^[2 * common.MAX_CAPTURE_GROUPS]int
 
-    vm := virtual_machine.create(regex.program, str, temporary_allocator)
+    vm := virtual_machine.create(regex.program, str, temp_allocator)
     vm.class_data = regex.class_data
 
     if .Unicode in regex.flags {
-        saved, success = virtual_machine.run(&vm, true, temporary_allocator)
+        saved, success = virtual_machine.run(&vm, true, temp_allocator)
     } else {
-        saved, success = virtual_machine.run(&vm, false, temporary_allocator)
+        saved, success = virtual_machine.run(&vm, false, temp_allocator)
     }
 
 	if saved != nil {
@@ -365,7 +365,7 @@ Inputs:
 - regex: The regular expression.
 - str: The string to match against.
 - capture: A pointer to a Capture structure with `groups` and `pos` already allocated.
-- temporary_allocator: The allocator to use for the virtual machine. (default: context.temp_allocator)
+- temp_allocator: The allocator to use for the virtual machine. (default: context.temp_allocator)
 
 Returns:
 - num_groups: The number of capture groups set into `capture`.
@@ -373,10 +373,10 @@ Returns:
 */
 @require_results
 match_with_preallocated_capture :: proc(
-	regex: Regular_Expression,
-	str: string,
-	capture: ^Capture,
-	temporary_allocator := context.temp_allocator,
+	regex:         Regular_Expression,
+	str:           string,
+	capture:       ^Capture,
+	temp_allocator := context.temp_allocator,
 ) -> (num_groups: int, success: bool) {
 
 	assert(capture != nil, "Pre-allocated RegEx capture must not be nil.")
@@ -387,13 +387,13 @@ match_with_preallocated_capture :: proc(
 
 	saved: ^[2 * common.MAX_CAPTURE_GROUPS]int
 
-    vm := virtual_machine.create(regex.program, str, temporary_allocator)
+    vm := virtual_machine.create(regex.program, str, temp_allocator)
     vm.class_data = regex.class_data
 
     if .Unicode in regex.flags {
-        saved, success = virtual_machine.run(&vm, true, temporary_allocator)
+        saved, success = virtual_machine.run(&vm, true, temp_allocator)
     } else {
-        saved, success = virtual_machine.run(&vm, false, temporary_allocator)
+        saved, success = virtual_machine.run(&vm, false, temp_allocator)
     }
 
 	if saved != nil {

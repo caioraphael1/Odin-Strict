@@ -83,7 +83,7 @@ Stream_Mode :: enum {
 
 Stream_Mode_Set :: distinct bit_set[Stream_Mode; i64]
 
-Stream_Proc :: #type proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, offset: i64, whence: Seek_From) -> (n: i64, err: Error)
+Stream_Proc :: #type proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, offset: i64, whence: Seek_From, loc := #caller_location) -> (n: i64, err: Error)
 
 Stream :: struct {
 	procedure: Stream_Proc,
@@ -158,10 +158,10 @@ read :: proc(s: Reader, p: []byte, n_read: ^int = nil) -> (n: int, err: Error) {
 }
 
 // write writes up to len(p) bytes into p. It returns the number of bytes written and any error if occurred.
-write :: proc(s: Writer, p: []byte, n_written: ^int = nil) -> (n: int, err: Error) {
+write :: proc(s: Writer, p: []byte, n_written: ^int = nil, loc := #caller_location) -> (n: int, err: Error) {
 	if s.procedure != nil {
 		n64: i64
-		n64, err = s.procedure(s.data, .Write, p, 0, nil)
+		n64, err = s.procedure(s.data, .Write, p, 0, nil, loc)
 		n = int(n64)
 		if n_written != nil { n_written^ += n }
 	} else {
@@ -282,10 +282,10 @@ read_byte :: proc(r: Reader, n_read: ^int = nil) -> (b: byte, err: Error) {
 	return
 }
 
-write_byte :: proc(w: Writer, c: byte, n_written: ^int = nil) -> Error {
+write_byte :: proc(w: Writer, c: byte, n_written: ^int = nil, loc := #caller_location) -> Error {
 	buf: [1]byte
 	buf[0] = c
-	write(w, buf[:], n_written) or_return
+	write(w, buf[:], n_written, loc) or_return
 	return nil
 }
 
@@ -353,12 +353,12 @@ write_string16 :: proc(s: Writer, str: string16, n_written: ^int = nil) -> (n: i
 }
 
 // write_rune writes a UTF-8 encoded rune to w.
-write_rune :: proc(s: Writer, r: rune, n_written: ^int = nil) -> (size: int, err: Error) {
+write_rune :: proc(s: Writer, r: rune, n_written: ^int = nil, loc := #caller_location) -> (size: int, err: Error) {
 	defer if err == nil && n_written != nil {
 		n_written^ += size
 	}
 	if r < utf8.RUNE_SELF {
-		err = write_byte(s, byte(r))
+		err = write_byte(s, byte(r), loc=loc)
 		if err == nil {
 			size = 1
 		}

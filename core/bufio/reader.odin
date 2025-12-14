@@ -336,7 +336,7 @@ reader_to_stream :: proc(b: ^Reader) -> (s: io.Stream) {
 
 
 @(private)
-_reader_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From) -> (n: i64, err: io.Error) {
+_reader_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From, loc := #caller_location) -> (n: i64, err: io.Error) {
 	b := (^Reader)(stream_data)
 	#partial switch mode {
 	case .Read:

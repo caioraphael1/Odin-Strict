@@ -160,11 +160,11 @@ builder_init :: proc{
 	builder_init_len_cap,
 }
 @(private)
-_builder_stream_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From) -> (n: i64, err: io.Error) {
+_builder_stream_proc :: proc(stream_data: rawptr, mode: io.Stream_Mode, p: []byte, offset: i64, whence: io.Seek_From, loc := #caller_location) -> (n: i64, err: io.Error) {
 	b := (^Builder)(stream_data)
 	#partial switch mode {
 	case .Write:
-		n = i64(write_bytes(b, p))
+		n = i64(write_bytes(b, p, loc))
 		if n < i64(len(p)) {
 			err = .EOF
 		}
@@ -449,8 +449,8 @@ Output:
 	äb
 
 */
-write_rune :: proc(b: ^Builder, r: rune) -> (res: int, err: io.Error) {
-	return io.write_rune(to_writer(b), r)
+write_rune :: proc(b: ^Builder, r: rune, loc := #caller_location) -> (res: int, err: io.Error) {
+	return io.write_rune(to_writer(b), r, loc=loc)
 }
 /*
 Appends a quoted rune to the Builder and returns the number of bytes written

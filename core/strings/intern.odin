@@ -105,9 +105,7 @@ Returns:
 - err: An allocator error if one occured, `nil` otherwise
 */
 _intern_get_entry :: proc(m: ^Intern, text: string) -> (new_entry: ^Intern_Entry, err: runtime.Allocator_Error) #no_bounds_check {
-	if m.allocator.procedure == nil {
-		return nil, .Invalid_Allocator
-	}
+    assert(m.allocator.procedure != nil)
 
 	key_ptr, val_ptr, inserted := map_entry(&m.entries, text) or_return
 	if !inserted {
