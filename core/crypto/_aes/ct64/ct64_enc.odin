@@ -23,7 +23,7 @@
 package aes_ct64
 
 add_round_key :: proc "contextless" (q: ^[8]u64, sk: []u64) #no_bounds_check {
-	ensure_contextless(len(sk) >= 8, "aes/ct64: invalid round key size")
+	ensure(len(sk) >= 8, "aes/ct64: invalid round key size")
 
 	q[0] ~= sk[0]
 	q[1] ~= sk[1]

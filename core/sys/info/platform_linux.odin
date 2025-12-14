@@ -98,7 +98,7 @@ init_ram :: proc "contextless" () {
 	// Retrieve RAM info using `sysinfo`
 	sys_info: linux.Sys_Info
 	errno := linux.sysinfo(&sys_info)
-	assert_contextless(errno == .NONE, "Good luck to whoever's debugging this, something's seriously cucked up!")
+	assert(errno == .NONE, "Good luck to whoever's debugging this, something's seriously cucked up!")
 	ram = RAM{
 		total_ram  = int(sys_info.totalram)  * int(sys_info.mem_unit),
 		free_ram   = int(sys_info.freeram)   * int(sys_info.mem_unit),

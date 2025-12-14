@@ -354,9 +354,8 @@ map_total_allocation_size_from_value :: #force_inline proc "contextless" (m: $M/
 }
 
 
-// The only procedure which needs access to the context is the one which allocates the map.
 @(require_results)
-map_alloc_dynamic :: proc "odin" (info: ^Map_Info, log2_capacity: uintptr, allocator := context.allocator, loc := #caller_location) -> (result: Raw_Map, err: Allocator_Error) {
+map_alloc_dynamic :: proc "odin" (info: ^Map_Info, log2_capacity: uintptr, allocator: Allocator, loc := #caller_location) -> (result: Raw_Map, err: Allocator_Error) {
 	result.allocator = allocator // set the allocator always
 	if log2_capacity == 0 {
 		return
@@ -603,7 +602,7 @@ map_reserve_dynamic :: #force_no_inline proc "odin" (#no_alias m: ^Raw_Map, #no_
 	}
 
 	if m.allocator.procedure == nil {
-		m.allocator = context.allocator
+        return .Invalid_Allocator
 	}
 
 	new_capacity := new_capacity
@@ -658,7 +657,7 @@ map_reserve_dynamic :: #force_no_inline proc "odin" (#no_alias m: ^Raw_Map, #no_
 @(require_results)
 map_shrink_dynamic :: #force_no_inline proc "odin" (#no_alias m: ^Raw_Map, #no_alias info: ^Map_Info, loc := #caller_location) -> (did_shrink: bool, err: Allocator_Error) {
 	if m.allocator.procedure == nil {
-		m.allocator = context.allocator
+        return false, .Invalid_Allocator
 	}
 
 	// Cannot shrink the capacity if the number of items in the map would exceed

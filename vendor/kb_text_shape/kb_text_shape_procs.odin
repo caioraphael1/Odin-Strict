@@ -382,17 +382,17 @@ AllocatorFromOdinAllocator :: proc "contextless" (allocator: ^runtime.Allocator)
 			return
 		}
 		context = runtime.default_context()
-		context.allocator = (^runtime.Allocator)(Data)^
+		allocator := (^runtime.Allocator)(Data)^
 
 		switch Op.Kind {
 		case .NONE:
 			return
 		case .ALLOCATE:
-			res, _ := runtime.mem_alloc(int(Op.Allocate.Size), runtime.DEFAULT_ALIGNMENT)
+			res, _ := runtime.mem_alloc(int(Op.Allocate.Size), runtime.DEFAULT_ALIGNMENT, allocator)
 			Op.Allocate.Pointer = raw_data(res)
 			Op.Allocate.Size    = u32(len(res))
 		case .FREE:
-			_ = runtime.mem_free(Op.Free.Pointer)
+			_ = runtime.mem_free(Op.Free.Pointer, allocator)
 		}
 	}
 

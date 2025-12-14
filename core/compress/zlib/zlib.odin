@@ -225,7 +225,7 @@ repl_bytes :: proc(z: ^$C, count: u16, distance: u16) -> (err: io.Error) {
 }
 
 
-allocate_huffman_table :: proc(allocator := context.allocator) -> (z: ^Huffman_Table, err: Error) {
+allocate_huffman_table :: proc(allocator: mem.Allocator) -> (z: ^Huffman_Table, err: Error) {
 	return new(Huffman_Table, allocator), nil
 }
 
@@ -409,7 +409,7 @@ parse_huffman_block :: proc(z: ^$C, z_repeat, z_offset: ^Huffman_Table) -> (err:
 }
 
 @(optimization_mode="favor_size")
-inflate_from_context :: proc(using ctx: ^compress.Context_Memory_Input, raw := false, expected_output_size := -1, allocator := context.allocator) -> (err: Error) #no_bounds_check {
+inflate_from_context :: proc(using ctx: ^compress.Context_Memory_Input, raw := false, expected_output_size := -1, allocator: mem.Allocator) -> (err: Error) #no_bounds_check {
 	/*
 		ctx.output must be a bytes.Buffer for now. We'll add a separate implementation that writes to a stream.
 
@@ -482,7 +482,7 @@ inflate_from_context :: proc(using ctx: ^compress.Context_Memory_Input, raw := f
 // TODO: Check alignment of reserve/resize.
 
 @(optimization_mode="favor_size")
-inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator := context.allocator) -> (err: Error) #no_bounds_check {
+inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator: mem.Allocator) -> (err: Error) #no_bounds_check {
 	context.allocator = allocator
 	expected_output_size := expected_output_size
 

@@ -123,7 +123,7 @@ mem_copy_non_overlapping :: proc "contextless" (dst, src: rawptr, len: int) -> r
 
 DEFAULT_ALIGNMENT :: 2*align_of(rawptr)
 
-mem_alloc_bytes :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALIGNMENT, allocator := context.allocator, loc := #caller_location) -> ([]byte, Allocator_Error) {
+mem_alloc_bytes :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALIGNMENT, allocator: Allocator, loc := #caller_location) -> ([]byte, Allocator_Error) {
 	assert(is_power_of_two_int(alignment), "Alignment must be a power of two", loc)
 	if size == 0 || allocator.procedure == nil{
 		return nil, nil
@@ -131,7 +131,7 @@ mem_alloc_bytes :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALI
 	return allocator.procedure(allocator.data, .Alloc, size, alignment, nil, 0, loc)
 }
 
-mem_alloc :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALIGNMENT, allocator := context.allocator, loc := #caller_location) -> ([]byte, Allocator_Error) {
+mem_alloc :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALIGNMENT, allocator: Allocator, loc := #caller_location) -> ([]byte, Allocator_Error) {
 	assert(is_power_of_two_int(alignment), "Alignment must be a power of two", loc)
 	if size == 0 || allocator.procedure == nil {
 		return nil, nil
@@ -139,7 +139,7 @@ mem_alloc :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALIGNMENT
 	return allocator.procedure(allocator.data, .Alloc, size, alignment, nil, 0, loc)
 }
 
-mem_alloc_non_zeroed :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALIGNMENT, allocator := context.allocator, loc := #caller_location) -> ([]byte, Allocator_Error) {
+mem_alloc_non_zeroed :: #force_no_inline proc(size: int, alignment: int = DEFAULT_ALIGNMENT, allocator: Allocator, loc := #caller_location) -> ([]byte, Allocator_Error) {
 	assert(is_power_of_two_int(alignment), "Alignment must be a power of two", loc)
 	if size == 0 || allocator.procedure == nil {
 		return nil, nil
@@ -147,7 +147,7 @@ mem_alloc_non_zeroed :: #force_no_inline proc(size: int, alignment: int = DEFAUL
 	return allocator.procedure(allocator.data, .Alloc_Non_Zeroed, size, alignment, nil, 0, loc)
 }
 
-mem_free :: #force_no_inline proc(ptr: rawptr, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+mem_free :: #force_no_inline proc(ptr: rawptr, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	if ptr == nil || allocator.procedure == nil {
 		return nil
 	}
@@ -155,7 +155,7 @@ mem_free :: #force_no_inline proc(ptr: rawptr, allocator := context.allocator, l
 	return err
 }
 
-mem_free_with_size :: #force_no_inline proc(ptr: rawptr, byte_count: int, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+mem_free_with_size :: #force_no_inline proc(ptr: rawptr, byte_count: int, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	if ptr == nil || allocator.procedure == nil {
 		return nil
 	}
@@ -163,7 +163,7 @@ mem_free_with_size :: #force_no_inline proc(ptr: rawptr, byte_count: int, alloca
 	return err
 }
 
-mem_free_bytes :: #force_no_inline proc(bytes: []byte, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+mem_free_bytes :: #force_no_inline proc(bytes: []byte, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	if bytes == nil || allocator.procedure == nil {
 		return nil
 	}
@@ -172,14 +172,14 @@ mem_free_bytes :: #force_no_inline proc(bytes: []byte, allocator := context.allo
 }
 
 
-mem_free_all :: #force_no_inline proc(allocator := context.allocator, loc := #caller_location) -> (err: Allocator_Error) {
+mem_free_all :: #force_no_inline proc(allocator: Allocator, loc := #caller_location) -> (err: Allocator_Error) {
 	if allocator.procedure != nil {
 		_, err = allocator.procedure(allocator.data, .Free_All, 0, 0, nil, 0, loc)
 	}
 	return
 }
 
-_mem_resize :: #force_no_inline proc(ptr: rawptr, old_size, new_size: int, alignment: int = DEFAULT_ALIGNMENT, allocator := context.allocator, should_zero: bool, loc := #caller_location) -> (data: []byte, err: Allocator_Error) {
+_mem_resize :: #force_no_inline proc(ptr: rawptr, old_size, new_size: int, alignment: int = DEFAULT_ALIGNMENT, allocator: Allocator, should_zero: bool, loc := #caller_location) -> (data: []byte, err: Allocator_Error) {
 	assert(is_power_of_two_int(alignment), "Alignment must be a power of two", loc)
 	if allocator.procedure == nil {
 		return nil, nil
@@ -221,11 +221,11 @@ _mem_resize :: #force_no_inline proc(ptr: rawptr, old_size, new_size: int, align
 	return
 }
 
-mem_resize :: proc(ptr: rawptr, old_size, new_size: int, alignment: int = DEFAULT_ALIGNMENT, allocator := context.allocator, loc := #caller_location) -> (data: []byte, err: Allocator_Error) {
+mem_resize :: proc(ptr: rawptr, old_size, new_size: int, alignment: int = DEFAULT_ALIGNMENT, allocator: Allocator, loc := #caller_location) -> (data: []byte, err: Allocator_Error) {
 	assert(is_power_of_two_int(alignment), "Alignment must be a power of two", loc)
 	return _mem_resize(ptr, old_size, new_size, alignment, allocator, true, loc)
 }
-non_zero_mem_resize :: proc(ptr: rawptr, old_size, new_size: int, alignment: int = DEFAULT_ALIGNMENT, allocator := context.allocator, loc := #caller_location) -> (data: []byte, err: Allocator_Error) {
+non_zero_mem_resize :: proc(ptr: rawptr, old_size, new_size: int, alignment: int = DEFAULT_ALIGNMENT, allocator: Allocator, loc := #caller_location) -> (data: []byte, err: Allocator_Error) {
 	assert(is_power_of_two_int(alignment), "Alignment must be a power of two", loc)
 	return _mem_resize(ptr, old_size, new_size, alignment, allocator, false, loc)
 }

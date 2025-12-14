@@ -379,7 +379,7 @@ Initialize the rollback stack alocator using a backing block allocator.
 rollback_stack_init_dynamic :: proc(
 	stack: ^Rollback_Stack,
 	block_size : int = ROLLBACK_STACK_DEFAULT_BLOCK_SIZE,
-	block_allocator := context.allocator,
+	block_allocator: Allocator,
 	location := #caller_location,
 ) -> Allocator_Error {
 	assert(block_size >= size_of(Rollback_Stack_Header) + size_of(rawptr), "Rollback Stack Allocator block size is too small.", location)

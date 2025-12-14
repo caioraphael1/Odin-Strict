@@ -242,7 +242,7 @@ _processor_core_count :: proc() -> int {
 }
 
 exit :: proc "contextless" (code: int) -> ! {
-	unimplemented_contextless("core:os procedure not supported on JS target")
+	unimplemented("core:os procedure not supported on JS target")
 }
 
 @(require_results)

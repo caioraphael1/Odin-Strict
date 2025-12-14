@@ -61,13 +61,13 @@ _rand_bytes :: proc "contextless" (dst: []byte) {
 		case -ERR_ENOSYS:
 			// The kernel is apparently prehistoric (< 3.17 circa 2014)
 			// and does not support getrandom.
-			panic_contextless("base/runtime: getrandom not available in kernel")
+			panic("base/runtime: getrandom not available in kernel")
 		case:
 			if ret < 0 {
 				// All other failures are things that should NEVER happen
 				// unless the kernel interface changes (ie: the Linux
 				// developers break userland).
-				panic_contextless("base/runtime: getrandom failed")
+				panic("base/runtime: getrandom failed")
 			}
 		}
 		l -= ret

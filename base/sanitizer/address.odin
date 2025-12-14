@@ -128,7 +128,7 @@ When asan is not enabled this procedure does nothing.
 @(no_sanitize_address)
 address_poison_rawptr :: proc "contextless" (ptr: rawptr, len: int) {
 	when ASAN_ENABLED {
-		assert_contextless(len >= 0)
+		assert(len >= 0)
 		__asan_poison_memory_region(ptr, uint(len))
 	}
 }
@@ -161,7 +161,7 @@ When asan is not enabled this procedure does nothing.
 @(no_sanitize_address)
 address_unpoison_rawptr :: proc "contextless" (ptr: rawptr, len: int) {
 	when ASAN_ENABLED {
-		assert_contextless(len >= 0)
+		assert(len >= 0)
 		__asan_unpoison_memory_region(ptr, uint(len))
 	}
 }
@@ -256,7 +256,7 @@ When asan is not enabled this procedure returns `nil`.
 @(no_sanitize_address)
 address_region_is_poisoned_rawptr :: proc "contextless" (region: rawptr, len: int) -> rawptr {
 	when ASAN_ENABLED {
-		assert_contextless(len >= 0)
+		assert(len >= 0)
 		return __asan_region_is_poisoned(region, uint(len))
 	} else {
 		return nil

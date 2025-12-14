@@ -421,7 +421,7 @@ scratch_allocator :: proc(allocator: ^Scratch) -> Allocator {
 /*
 Initialize a scratch allocator.
 */
-scratch_init :: proc(s: ^Scratch, size: int, backup_allocator := context.allocator) -> Allocator_Error {
+scratch_init :: proc(s: ^Scratch, size: int, backup_allocator: Allocator) -> Allocator_Error {
 	s.data = make_aligned([]byte, size, 2*align_of(rawptr), backup_allocator) or_return
 	s.curr_offset = 0
 	s.prev_allocation = nil
@@ -523,11 +523,7 @@ scratch_alloc_bytes_non_zeroed :: proc(
 	loc       := #caller_location,
 ) -> ([]byte, Allocator_Error) {
 	if s.data == nil {
-		DEFAULT_BACKING_SIZE :: 4 * Megabyte
-		if !(context.allocator.procedure != scratch_allocator_proc && context.allocator.data != s) {
-			panic("Cyclic initialization of the scratch allocator with itself.", loc)
-		}
-		scratch_init(s, DEFAULT_BACKING_SIZE)
+        panic("Scratch allocator not initialized.", loc)
 	}
 	aligned_size := size
 	if alignment > 1 {
@@ -747,11 +743,7 @@ scratch_resize_bytes_non_zeroed :: proc(
 	old_memory := raw_data(old_data)
 	old_size := len(old_data)
 	if s.data == nil {
-		DEFAULT_BACKING_SIZE :: 4 * Megabyte
-		if !(context.allocator.procedure != scratch_allocator_proc && context.allocator.data != s) {
-			panic("Cyclic initialization of the scratch allocator with itself.", loc)
-		}
-		scratch_init(s, DEFAULT_BACKING_SIZE)
+        panic("Scratch allocator not initialized.", loc)
 	}
 	begin   := uintptr(raw_data(s.data))
 	end     := begin + uintptr(len(s.data))
@@ -1679,8 +1671,8 @@ will be aligned to a boundary specified by `alignment`.
 */
 dynamic_arena_init :: proc(
 	pool: ^Dynamic_Arena,
-	block_allocator := context.allocator,
-	array_allocator := context.allocator,
+	block_allocator: Allocator,
+	array_allocator: Allocator,
 	block_size      := DYNAMIC_ARENA_BLOCK_SIZE_DEFAULT,
 	out_band_size   := DYNAMIC_ARENA_OUT_OF_BAND_SIZE_DEFAULT,
 	alignment       := DEFAULT_ALIGNMENT,
@@ -2432,7 +2424,7 @@ Compat_Allocator :: struct {
 	parent: Allocator,
 }
 
-compat_allocator_init :: proc(rra: ^Compat_Allocator, allocator := context.allocator) {
+compat_allocator_init :: proc(rra: ^Compat_Allocator, allocator: Allocator) {
 	rra.parent = allocator
 }
 

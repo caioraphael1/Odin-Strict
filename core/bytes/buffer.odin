@@ -2,6 +2,7 @@ package bytes
 
 import "core:io"
 import "core:unicode/utf8"
+import "core:mem"
 
 MIN_READ :: 512
 
@@ -37,7 +38,7 @@ buffer_init_string :: proc(b: ^Buffer, s: string, loc := #caller_location) {
 	copy(b.buf[:], s)
 }
 
-buffer_init_allocator :: proc(b: ^Buffer, len, cap: int, allocator := context.allocator, loc := #caller_location) {
+buffer_init_allocator :: proc(b: ^Buffer, len, cap: int, allocator: mem.Allocator, loc := #caller_location) {
 	if b.buf == nil {
 		b.buf = make([dynamic]byte, len, cap, allocator, loc)
 		return

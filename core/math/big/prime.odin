@@ -1,5 +1,6 @@
 package math_big
 
+import "core:mem"
 /*
 	Copyright 2021 Jeroen van Rijn <nom@duclavier.com>.
 	Made available under Odin's license.
@@ -15,14 +16,13 @@ package math_big
 	Determines if an Integer is divisible by one of the _PRIME_TABLE primes.
 	Returns true if it is, false if not. 
 */
-internal_int_prime_is_divisible :: proc(a: ^Int, allocator := context.allocator) -> (res: bool, err: Error) {
+internal_int_prime_is_divisible :: proc(a: ^Int, allocator: mem.Allocator) -> (res: bool, err: Error) {
 	assert_if_nil(a)
-	context.allocator = allocator
 
 	internal_clear_if_uninitialized(a) or_return
 
 	for prime in _private_prime_table {
-		rem := #force_inline int_mod_digit(a, prime) or_return
+		rem := #force_inline int_mod_digit(a, prime, allocator) or_return
 		if rem == 0 {
 			return true, nil
 		}
@@ -41,8 +41,7 @@ internal_int_prime_is_divisible :: proc(a: ^Int, allocator := context.allocator)
 	Computes res == G**X mod P.
 	Assumes `res`, `G`, `X` and `P` to not be `nil` and for `G`, `X` and `P` to have been initialized.
 */
-internal_int_power_modulo :: proc(res, G, X, P: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+internal_int_power_modulo :: proc(res, G, X, P: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	dr: int
 
@@ -63,17 +62,17 @@ internal_int_power_modulo :: proc(res, G, X, P: ^Int, allocator := context.alloc
 		/*
 			First compute 1/G mod P.
 		*/
-		internal_invmod(tmpG, G, P) or_return
+		internal_invmod(tmpG, G, P, allocator) or_return
 
 		/*
 			now get |X|.
 		*/
-		internal_abs(tmpX, X) or_return
+		internal_abs(tmpX, X, allocator) or_return
 
 		/*
 			And now compute (1/G)**|X| instead of G**X [X < 0].
 		*/
-		return internal_int_exponent_mod(res, tmpG, tmpX, P)
+		return internal_int_exponent_mod(res, tmpG, tmpX, P, allocator)
 	}
 
 	/*
@@ -81,7 +80,7 @@ internal_int_power_modulo :: proc(res, G, X, P: ^Int, allocator := context.alloc
 	*/
 	can_reduce_2k_l := _private_int_reduce_is_2k_l(P) or_return
 	if can_reduce_2k_l {
-		return _private_int_exponent_mod(res, G, X, P, 1)
+		return _private_int_exponent_mod(res, G, X, P, 1, allocator)
 	}
 
 	/*
@@ -101,13 +100,13 @@ internal_int_power_modulo :: proc(res, G, X, P: ^Int, allocator := context.alloc
 		If the modulus is odd or dr != 0 use the montgomery method.
 	*/
 	if internal_int_is_odd(P) || dr != 0 {
-		return _private_int_exponent_mod(res, G, X, P, dr)
+		return _private_int_exponent_mod(res, G, X, P, dr, allocator)
 	}
 
 	/*
 		Otherwise use the generic Barrett reduction technique.
 	*/
-	return _private_int_exponent_mod(res, G, X, P, 0)
+	return _private_int_exponent_mod(res, G, X, P, 0, allocator)
 }
 internal_int_exponent_mod :: internal_int_power_modulo
 internal_int_powmod :: internal_int_power_modulo
@@ -128,8 +127,7 @@ internal_powmod :: proc { internal_int_power_modulo, }
 
 	Assumes `a` and `p` to not be `nil` and to have been initialized.
 */
-internal_int_kronecker :: proc(a, p: ^Int, allocator := context.allocator) -> (kronecker: int, err: Error) {
-	context.allocator = allocator
+internal_int_kronecker :: proc(a, p: ^Int, allocator: mem.Allocator) -> (kronecker: int, err: Error) {
 
 	a1, p1, r := &Int{}, &Int{}, &Int{}
 	defer internal_destroy(a1, p1, r)
@@ -149,11 +147,11 @@ internal_int_kronecker :: proc(a, p: ^Int, allocator := context.allocator) -> (k
 		return 0, nil
 	}
 
-	internal_copy(a1, a) or_return
-	internal_copy(p1, p) or_return
+	internal_copy(a1, a, allocator = allocator) or_return
+	internal_copy(p1, p, allocator = allocator) or_return
 
 	v := internal_count_lsb(p1) or_return
-	internal_shr(p1, p1, v) or_return
+	internal_shr(p1, p1, v, allocator) or_return
 
 	k := 1 if v & 1 == 0 else table[a.digit[0] & 7]
 
@@ -164,7 +162,7 @@ internal_int_kronecker :: proc(a, p: ^Int, allocator := context.allocator) -> (k
 		}
 	}
 
-	internal_zero(r) or_return
+	internal_zero(r, allocator = allocator) or_return
 
 	for {
 		if internal_is_zero(a1) {
@@ -176,7 +174,7 @@ internal_int_kronecker :: proc(a, p: ^Int, allocator := context.allocator) -> (k
 		}
 
 		v = internal_count_lsb(a1) or_return
-		internal_shr(a1, a1, v) or_return
+		internal_shr(a1, a1, v, allocator) or_return
 
 		if v & 1 == 1 {
 			k = k * table[p1.digit[0] & 7]
@@ -200,11 +198,11 @@ internal_int_kronecker :: proc(a, p: ^Int, allocator := context.allocator) -> (k
 			}
 		}
 
-		internal_copy(r, a1) or_return
+		internal_copy(r, a1, allocator = allocator) or_return
 		r.sign = .Zero_or_Positive
 
-		internal_mod(a1, p1, r) or_return
-		internal_copy(p1, r)    or_return
+		internal_mod(a1, p1, r, allocator) or_return
+		internal_copy(p1, r, allocator = allocator)    or_return
 	}
 	return
 }
@@ -218,8 +216,7 @@ internal_int_legendre :: internal_int_kronecker
 
 	Assumes `a` and `b` not to be `nil` and to have been initialized.
 */
-internal_int_prime_miller_rabin :: proc(a, b: ^Int, allocator := context.allocator) -> (probably_prime: bool, err: Error) {
-	context.allocator = allocator
+internal_int_prime_miller_rabin :: proc(a, b: ^Int, allocator: mem.Allocator) -> (probably_prime: bool, err: Error) {
 
 	n1, y, r := &Int{}, &Int{}, &Int{}
 	defer internal_destroy(n1, y, r)
@@ -232,13 +229,13 @@ internal_int_prime_miller_rabin :: proc(a, b: ^Int, allocator := context.allocat
 	/*
 		Get `n1` = `a` - 1.
 	*/
-	internal_copy(n1, a) or_return
-	internal_sub(n1, n1, 1) or_return
+	internal_copy(n1, a, allocator = allocator) or_return
+	internal_sub(n1, n1, 1, allocator) or_return
 
 	/*
 		Set `2`**`s` * `r` = `n1`
 	*/
-	internal_copy(r, n1) or_return
+	internal_copy(r, n1, allocator = allocator) or_return
 
 	/*
 		Count the number of least significant bits which are zero.
@@ -248,12 +245,12 @@ internal_int_prime_miller_rabin :: proc(a, b: ^Int, allocator := context.allocat
 	/*
 		Now divide `n` - 1 by `2`**`s`.
 	*/
-	internal_shr(r, r, s) or_return
+	internal_shr(r, r, s, allocator) or_return
 
 	/*
 		Compute `y` = `b`**`r` mod `a`.
 	*/
-	internal_int_exponent_mod(y, b, r, a) or_return
+	internal_int_exponent_mod(y, b, r, a, allocator) or_return
 
 	/*
 		If `y` != 1 and `y` != `n1` do.
@@ -265,7 +262,7 @@ internal_int_prime_miller_rabin :: proc(a, b: ^Int, allocator := context.allocat
 			While `j` <= `s` - 1 and `y` != `n1`.
 		*/
 		for j <= (s - 1) && !internal_eq(y, n1) {
-			internal_sqrmod(y, y, a) or_return
+			internal_sqrmod(y, y, a, allocator) or_return
 
 			/*
 				If `y` == 1 then composite.
@@ -313,8 +310,7 @@ internal_int_prime_miller_rabin :: proc(a, b: ^Int, allocator := context.allocat
 
 	Assumes `a` not to be `nil` and to have been initialized.
 */
-internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_rabin_only := USE_MILLER_RABIN_ONLY, allocator := context.allocator) -> (is_prime: bool, err: Error) {
-	context.allocator = allocator
+internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_rabin_only := USE_MILLER_RABIN_ONLY, allocator: mem.Allocator) -> (is_prime: bool, err: Error) {
 	miller_rabin_trials := miller_rabin_trials
 
 	// Default to `no`.
@@ -340,7 +336,7 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 	}
 
 	// `N` is not a perfect square: floor(sqrt(`N`))^2 != `N` 
-	if internal_int_is_square(a) or_return { return }
+	if internal_int_is_square(a, allocator) or_return { return }
 
 	// Is the input equal to one of the primes in the table?
 	for p in _private_prime_table {
@@ -350,18 +346,18 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 	}
 
 	// First perform trial division
-	if internal_int_prime_is_divisible(a) or_return { return }
+	if internal_int_prime_is_divisible(a, allocator) or_return { return }
 
 	// Run the Miller-Rabin test with base 2 for the BPSW test.
-	internal_set(b, 2) or_return
-	if !(internal_int_prime_miller_rabin(a, b) or_return) { return }
+	internal_set(b, 2, allocator = allocator) or_return
+	if !(internal_int_prime_miller_rabin(a, b, allocator) or_return) { return }
 
 	// Rumours have it that Mathematica does a second M-R test with base 3.
 	// Other rumours have it that their strong L-S test is slightly different.
 	// It does not hurt, though, beside a bit of extra runtime.
 
 	b.digit[0] += 1
-	if !(internal_int_prime_miller_rabin(a, b) or_return) { return }
+	if !(internal_int_prime_miller_rabin(a, b, allocator) or_return) { return }
 
 	// Both, the Frobenius-Underwood test and the the Lucas-Selfridge test are quite
 	// slow so if speed is an issue, set `USE_MILLER_RABIN_ONLY` to use M-R tests with
@@ -370,7 +366,7 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 	if !miller_rabin_only {
 		if miller_rabin_trials >= 0 {
 			when MATH_BIG_USE_FROBENIUS_TEST {
-				if !(internal_int_prime_frobenius_underwood(a) or_return) { return }
+				if !(internal_int_prime_frobenius_underwood(a, allocator) or_return) { return }
 			} else {
 				if !(internal_int_prime_strong_lucas_selfridge(a) or_return) { return }
 			}
@@ -395,12 +391,12 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 		// Sorenson, Jonathan; Webster, Jonathan (2015), "Strong Pseudoprimes to Twelve Prime Bases".
 
 		// 0x437ae92817f9fc85b7e5 = 318_665_857_834_031_151_167_461
-		atoi(b, "437ae92817f9fc85b7e5", 16) or_return
+		atoi(b, "437ae92817f9fc85b7e5", 16, allocator) or_return
 		if internal_lt(a, b) {
 			p_max = 12
 		} else {
 			/* 0x2be6951adc5b22410a5fd = 3_317_044_064_679_887_385_961_981 */
-			atoi(b, "2be6951adc5b22410a5fd", 16) or_return
+			atoi(b, "2be6951adc5b22410a5fd", 16, allocator) or_return
 			if internal_lt(a, b) {
 				p_max = 13
 			} else {
@@ -410,8 +406,8 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 
 		// We did bases 2 and 3  already, skip them
 		for ix := 2; ix < p_max; ix += 1 {
-			internal_set(b, _private_prime_table[ix])
-			if !(internal_int_prime_miller_rabin(a, b) or_return) { return }
+			internal_set(b, _private_prime_table[ix], allocator = allocator)
+			if !(internal_int_prime_miller_rabin(a, b, allocator) or_return) { return }
 		}
 	} else if miller_rabin_trials > 0 {
 		// Perform `miller_rabin_trials` M-R tests with random bases between 3 and "a".
@@ -459,7 +455,7 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 		for ix := 0; ix < miller_rabin_trials; ix += 1 {
 
 			// rand() guarantees the first digit to be non-zero
-			internal_random(b, _DIGIT_TYPE_BITS) or_return
+			internal_random(b, _DIGIT_TYPE_BITS, allocator) or_return
 
 			// Reduce digit before casting because DIGIT might be bigger than
 			// an unsigned int and "mask" on the other side is most probably not.
@@ -477,13 +473,13 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 				ix -= 1
 				continue
 			}
-			internal_random(b, l) or_return
+			internal_random(b, l, allocator) or_return
 
 			// That number might got too big and the witness has to be smaller than "a"
 			l = internal_count_bits(b)
 			if l >= size_a {
 				l = (l - size_a) + 1
-				internal_shr(b, b, l) or_return
+				internal_shr(b, b, l, allocator) or_return
 			}
 
 			// Although the chance for b <= 3 is miniscule, try again.
@@ -491,7 +487,7 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
 				ix -= 1
 				continue
 			}
-			if !(internal_int_prime_miller_rabin(a, b) or_return) { return }
+			if !(internal_int_prime_miller_rabin(a, b, allocator) or_return) { return }
 		}
 	}
 
@@ -509,8 +505,7 @@ internal_int_is_prime :: proc(a: ^Int, miller_rabin_trials := int(-1), miller_ra
  */
 _FROBENIUS_UNDERWOOD_A :: 32764
 
-internal_int_prime_frobenius_underwood :: proc(N: ^Int, allocator := context.allocator) -> (result: bool, err: Error) {
-	context.allocator = allocator
+internal_int_prime_frobenius_underwood :: proc(N: ^Int, allocator: mem.Allocator) -> (result: bool, err: Error) {
 
 	T1z, T2z, Np1z, sz, tz := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(T1z, T2z, Np1z, sz, tz)
@@ -525,8 +520,8 @@ internal_int_prime_frobenius_underwood :: proc(N: ^Int, allocator := context.all
 			continue frob
 		}
 
-		internal_set(T1z, i32((a * a) - 4))
-		j := internal_int_kronecker(T1z, N) or_return
+		internal_set(T1z, i32((a * a) - 4), allocator = allocator)
+		j := internal_int_kronecker(T1z, N, allocator) or_return
 
 		switch j {
 		case -1: break frob
@@ -538,8 +533,8 @@ internal_int_prime_frobenius_underwood :: proc(N: ^Int, allocator := context.all
 	if a >= _FROBENIUS_UNDERWOOD_A { return false, .Max_Iterations_Reached }
 
 	// Composite if N and (a+4)*(2*a+5) are not coprime.
-	internal_set(T1z, u32((a + 4) * ((2 * a) + 5)))
-	internal_int_gcd(T1z, T1z, N) or_return
+	internal_set(T1z, u32((a + 4) * ((2 * a) + 5)), allocator = allocator)
+	internal_int_gcd(T1z, T1z, N, allocator) or_return
 
 	if !(T1z.used == 1 && T1z.digit[0] == 1) {
 		// Composite.
@@ -547,49 +542,49 @@ internal_int_prime_frobenius_underwood :: proc(N: ^Int, allocator := context.all
 	}
 
 	ap2 = a + 2
-	internal_add(Np1z, N, 1) or_return
+	internal_add(Np1z, N, 1, allocator) or_return
 
-	internal_set(sz, 1) or_return
-	internal_set(tz, 2) or_return
+	internal_set(sz, 1, allocator = allocator) or_return
+	internal_set(tz, 2, allocator = allocator) or_return
 
 	for i := internal_count_bits(Np1z) - 2; i >= 0; i -= 1 {
 		// temp = (sz * (a * sz + 2 * tz)) % N;
 		// tz   = ((tz - sz) * (tz + sz)) % N;
 		// sz   = temp;
 
-		internal_int_shl1(T2z, tz) or_return
+		internal_int_shl1(T2z, tz, allocator) or_return
 
 		// a = 0 at about 50% of the cases (non-square and odd input)
 		if a != 0 {
-			internal_mul(T1z, sz, DIGIT(a)) or_return
-			internal_add(T2z, T2z, T1z) or_return
+			internal_mul(T1z, sz, DIGIT(a), allocator) or_return
+			internal_add(T2z, T2z, T1z, allocator) or_return
 		}
 
-		internal_mul(T1z, T2z, sz) or_return
-		internal_sub(T2z, tz, sz) or_return
-		internal_add(sz, sz, tz) or_return
-		internal_mul(tz, sz, T2z) or_return
-		internal_mod(tz, tz, N) or_return
-		internal_mod(sz, T1z, N) or_return
+		internal_mul(T1z, T2z, sz, allocator) or_return
+		internal_sub(T2z, tz, sz, allocator) or_return
+		internal_add(sz, sz, tz, allocator) or_return
+		internal_mul(tz, sz, T2z, allocator) or_return
+		internal_mod(tz, tz, N, allocator) or_return
+		internal_mod(sz, T1z, N, allocator) or_return
 
 		if bit, _ := internal_int_bitfield_extract_bool(Np1z, i); bit {
 			// temp = (a+2) * sz + tz
 			// tz   = 2 * tz - sz
 			// sz   = temp
 			if a == 0 {
-				internal_int_shl1(T1z, sz) or_return
+				internal_int_shl1(T1z, sz, allocator) or_return
 			} else {
-				internal_mul(T1z, sz, DIGIT(ap2)) or_return
+				internal_mul(T1z, sz, DIGIT(ap2), allocator) or_return
 			}
-			internal_add(T1z, T1z, tz) or_return
-			internal_int_shl1(T2z, tz) or_return
-			internal_sub(tz, T2z, sz)
+			internal_add(T1z, T1z, tz, allocator) or_return
+			internal_int_shl1(T2z, tz, allocator) or_return
+			internal_sub(tz, T2z, sz, allocator)
 			internal_swap(sz, T1z)
 		}
 	}
 
-	internal_set(T1z, u32((2 * a) + 5)) or_return
-	internal_mod(T1z, T1z, N) or_return
+	internal_set(T1z, u32((2 * a) + 5), allocator = allocator) or_return
+	internal_mod(T1z, T1z, N, allocator) or_return
 
 	result = internal_is_zero(sz) && internal_eq(tz, T1z)
 
@@ -609,7 +604,7 @@ internal_int_prime_frobenius_underwood :: proc(N: ^Int, allocator := context.all
 	The multi-line comments are made by Thomas R. Nicely and are copied verbatim.
 	(If that name sounds familiar, he is the guy who found the fdiv bug in the Pentium CPU.)
 */
-internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.allocator) -> (lucas_selfridge: bool, err: Error) {
+internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator: mem.Allocator) -> (lucas_selfridge: bool, err: Error) {
 	// TODO: choose better variable names!
 
 	Dz, gcd, Np1, Uz, Vz, U2mz, V2mz, Qmz, Q2mz, Qkdz, T1z, T2z, T3z, T4z, Q2kdz := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
@@ -631,8 +626,8 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 		Ds   = sign * D
 		sign = -sign
 
-		internal_set(Dz, D) or_return
-		internal_int_gcd(gcd, a, Dz) or_return
+		internal_set(Dz, D, allocator = allocator) or_return
+		internal_int_gcd(gcd, a, Dz, allocator) or_return
 
 		/*
 			If 1 < GCD < `N` then `N` is composite with factor "D", and
@@ -641,7 +636,7 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 		if internal_gt(gcd, 1) && internal_lt(gcd, a)    { return }
 		if Ds < 0 { Dz.sign = .Negative }
 
-		j := internal_int_kronecker(Dz, a) or_return
+		j := internal_int_kronecker(Dz, a, allocator) or_return
 		if j == -1 { break }
 
 		D += 2
@@ -683,7 +678,7 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 		Baillie-PSW test based on the strong Lucas-Selfridge test
 		should be more reliable.
 	*/
-	internal_add(Np1, a, 1) or_return
+	internal_add(Np1, a, 1, allocator) or_return
 	s := internal_count_lsb(Np1) or_return
 
 	/*
@@ -691,7 +686,7 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 		and mp_div_2d() is equivalent. Additionally: dividing an even number by two does not produce
 		any leftovers.
 	*/
-	internal_int_shr(Dz, Np1, s) or_return
+	internal_int_shr(Dz, Np1, s, allocator) or_return
 
 	/*
 		We must now compute U_d and V_d. Since d is odd, the accumulated
@@ -705,18 +700,18 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 		combined with the previous totals for U and V, using the
 		composition formulas for addition of indices.
 	*/
-	internal_set(Uz,   1) or_return
-	internal_set(Vz,   1) or_return //	P := 1; /* Selfridge's choice */
-	internal_set(U2mz, 1) or_return
-	internal_set(V2mz, 1) or_return //	P := 1; /* Selfridge's choice */
-	internal_set(Qmz,  Q) or_return
+	internal_set(Uz,   1, allocator = allocator) or_return
+	internal_set(Vz,   1, allocator = allocator) or_return //	P := 1; /* Selfridge's choice */
+	internal_set(U2mz, 1, allocator = allocator) or_return
+	internal_set(V2mz, 1, allocator = allocator) or_return //	P := 1; /* Selfridge's choice */
+	internal_set(Qmz,  Q, allocator = allocator) or_return
 
-	internal_int_shl1(Q2mz, Qmz) or_return
+	internal_int_shl1(Q2mz, Qmz, allocator) or_return
 
 	/*
 		Initializes calculation of Q^d.
 	*/
-	internal_set(Qkdz, Q) or_return
+	internal_set(Qkdz, Q, allocator = allocator) or_return
 	Nbits := internal_count_bits(Dz)
 
 	for u := 1; u < Nbits; u += 1 { /* zero bit off, already accounted for */
@@ -727,20 +722,20 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 			U_2m = U_m*V_m
 			V_2m = V_m*V_m - 2*Q^m
 		*/
-		internal_mul(U2mz, U2mz, V2mz) or_return
-		internal_mod(U2mz, U2mz, a) or_return
-		internal_sqr(V2mz, V2mz) or_return
-		internal_sub(V2mz, V2mz, Q2mz) or_return
-		internal_mod(V2mz, V2mz, a) or_return
+		internal_mul(U2mz, U2mz, V2mz, allocator) or_return
+		internal_mod(U2mz, U2mz, a, allocator) or_return
+		internal_sqr(V2mz, V2mz, allocator) or_return
+		internal_sub(V2mz, V2mz, Q2mz, allocator) or_return
+		internal_mod(V2mz, V2mz, a, allocator) or_return
 
 		/*
 			Must calculate powers of Q for use in V_2m, also for Q^d later.
 		*/
-		internal_sqr(Qmz, Qmz) or_return
+		internal_sqr(Qmz, Qmz, allocator) or_return
 
 		/* Prevents overflow. Still necessary without a fixed prealloc'd mem.? */
-		internal_mod(Qmz, Qmz, a) or_return
-		internal_int_shl1(Q2mz, Qmz) or_return
+		internal_mod(Qmz, Qmz, a, allocator) or_return
+		internal_int_shl1(Q2mz, Qmz, allocator) or_return
 
 		if internal_int_bitfield_extract_bool(Dz, u) or_return {
 			/*
@@ -749,16 +744,16 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 				V_(m+n) = (V_m*V_n + D*U_m*U_n)/2
 				Be careful with division by 2 (mod N)!
 			*/
-			internal_mul(T1z, U2mz, Vz) or_return
-			internal_mul(T2z, Uz, V2mz) or_return
-			internal_mul(T3z, V2mz, Vz) or_return
-			internal_mul(T4z, U2mz, Uz) or_return
-			internal_mul(T4z, T4z,  Ds) or_return
+			internal_mul(T1z, U2mz, Vz, allocator) or_return
+			internal_mul(T2z, Uz, V2mz, allocator) or_return
+			internal_mul(T3z, V2mz, Vz, allocator) or_return
+			internal_mul(T4z, U2mz, Uz, allocator) or_return
+			internal_mul(T4z, T4z,  Ds, allocator) or_return
 
-			internal_add(Uz,  T1z, T2z) or_return
+			internal_add(Uz,  T1z, T2z, allocator) or_return
 
 			if internal_is_odd(Uz) {
-				internal_add(Uz, Uz, a) or_return
+				internal_add(Uz, Uz, a, allocator) or_return
 			}
 
 			/*
@@ -768,24 +763,24 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 			oddness := internal_is_odd(Uz)
 			internal_int_shr1(Uz, Uz) or_return
 			if internal_is_negative(Uz) && oddness {
-				internal_sub(Uz, Uz, 1) or_return
+				internal_sub(Uz, Uz, 1, allocator) or_return
 			}
-			internal_add(Vz, T3z, T4z) or_return
+			internal_add(Vz, T3z, T4z, allocator) or_return
 			if internal_is_odd(Vz) {
-				internal_add(Vz, Vz, a) or_return
+				internal_add(Vz, Vz, a, allocator) or_return
 			}
 
 			oddness  = internal_is_odd(Vz)
 			internal_int_shr1(Vz, Vz) or_return
 			if internal_is_negative(Vz) && oddness {
-				internal_sub(Vz, Vz, 1) or_return
+				internal_sub(Vz, Vz, 1, allocator) or_return
 			}
-			internal_mod(Uz, Uz, a) or_return
-			internal_mod(Vz, Vz, a) or_return
+			internal_mod(Uz, Uz, a, allocator) or_return
+			internal_mod(Vz, Vz, a, allocator) or_return
 
 			/* Calculating Q^d for later use */
-			internal_mul(Qkdz, Qkdz, Qmz) or_return
-			internal_mod(Qkdz, Qkdz, a) or_return
+			internal_mul(Qkdz, Qkdz, Qmz, allocator) or_return
+			internal_mod(Qkdz, Qkdz, a, allocator) or_return
 		}
 	}
 
@@ -814,17 +809,17 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 	internal_int_shr1(Q2kdz, Qkdz) or_return
 
 	for r := 1; r < s; r += 1 {
-		internal_sqr(Vz, Vz) or_return
-		internal_sub(Vz, Vz, Q2kdz) or_return
-		internal_mod(Vz, Vz, a) or_return
+		internal_sqr(Vz, Vz, allocator) or_return
+		internal_sub(Vz, Vz, Q2kdz, allocator) or_return
+		internal_mod(Vz, Vz, a, allocator) or_return
 		if internal_is_zero(Vz) {
 			return true, nil
 		}
 		/* Calculate Q^{d*2^r} for next r (final iteration irrelevant). */
 		if r < (s - 1) {
-			internal_sqr(Qkdz, Qkdz) or_return
-			internal_mod(Qkdz, Qkdz, a) or_return
-			internal_int_shl1(Q2kdz, Qkdz) or_return
+			internal_sqr(Qkdz, Qkdz, allocator) or_return
+			internal_mod(Qkdz, Qkdz, a, allocator) or_return
+			internal_int_shl1(Q2kdz, Qkdz, allocator) or_return
 		}
 	}
 	return false, nil
@@ -841,7 +836,7 @@ internal_int_prime_strong_lucas_selfridge :: proc(a: ^Int, allocator := context.
 
 	Assumes `a` and `b` not to be `nil` and to have been initialized.
 */
-internal_prime_fermat :: proc(a, b: ^Int, allocator := context.allocator) -> (fermat: bool, err: Error) {
+internal_prime_fermat :: proc(a, b: ^Int, allocator: mem.Allocator) -> (fermat: bool, err: Error) {
 	t := &Int{}
 	defer internal_destroy(t)
 
@@ -853,7 +848,7 @@ internal_prime_fermat :: proc(a, b: ^Int, allocator := context.allocator) -> (fe
 	/*
 		Compute `t` = `b`**`a` mod `a`
 	*/
-	internal_int_exponent_mod(t, b, a, a) or_return
+	internal_int_exponent_mod(t, b, a, a, allocator) or_return
 
 	/*
 		Is it equal to b?
@@ -867,8 +862,7 @@ internal_prime_fermat :: proc(a, b: ^Int, allocator := context.allocator) -> (fe
 	https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm
 	https://gmplib.org/list-archives/gmp-discuss/2013-April/005300.html
 */
-internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	/*
 		The type is "int" because of the types in the mp_int struct.
@@ -882,13 +876,13 @@ internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.all
 	/*
 		First handle the simple cases.
 	*/
-	if internal_is_zero(n)                                           { return internal_zero(res)	}
+	if internal_is_zero(n)                                           { return internal_zero(res, allocator = allocator)	}
 
 	/*
 		"prime" must be odd and > 2
 	*/
 	if internal_is_even(prime) || internal_lt(prime, 3)              { return .Invalid_Argument }
-	legendre := internal_int_kronecker(n, prime)                     or_return
+	legendre := internal_int_kronecker(n, prime, allocator)                     or_return
 
 	/*
 		n \not\cong 0 (mod p) and n \cong r^2 (mod p) for some r \in N^+
@@ -905,9 +899,9 @@ internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.all
 		x%4 == x&3 for x in N and x>0
 	*/
 	if prime.digit[0] & 3 == 3 {
-		internal_add(t1, prime, 1)                                   or_return
-		internal_shr(t1, t1, 2)                                      or_return
-		internal_int_exponent_mod(res, n, t1, prime)                 or_return
+		internal_add(t1, prime, 1, allocator)                                   or_return
+		internal_shr(t1, t1, 2, allocator)                                      or_return
+		internal_int_exponent_mod(res, n, t1, prime, allocator)                 or_return
 		return
 	}
 
@@ -917,8 +911,8 @@ internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.all
 
 		Q = prime - 1
 	*/
-	internal_copy(Q, prime)                                          or_return
-	internal_sub(Q, Q, 1)                                            or_return
+	internal_copy(Q, prime, allocator = allocator)                                          or_return
+	internal_sub(Q, Q, 1, allocator)                                            or_return
 
 	/*
 		S = 0
@@ -939,10 +933,10 @@ internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.all
 		Find a `Z` such that the Legendre symbol (Z|prime) == -1.
 		Z = 2.
 	*/
-	internal_set(Z, 2)                                               or_return
+	internal_set(Z, 2, allocator = allocator)                                               or_return
 
 	for {
-		legendre = internal_int_kronecker(Z, prime)                  or_return
+		legendre = internal_int_kronecker(Z, prime, allocator)                  or_return
 
 		/*
 			If "prime" (p) is an odd prime Jacobi(k|p) = 0 for k \cong 0 (mod p)
@@ -954,38 +948,38 @@ internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.all
 		/*
 			Z = Z + 1
 		*/
-		internal_add(Z, Z, 1)                                        or_return
+		internal_add(Z, Z, 1, allocator)                                        or_return
 	}
 
 	/*
 		C = Z ^ Q mod prime
 	*/
-	internal_int_exponent_mod(C, Z, Q, prime)                        or_return
+	internal_int_exponent_mod(C, Z, Q, prime, allocator)                        or_return
 
 	/*
 		t1 = (Q + 1) / 2
 	*/
-	internal_add(t1, Q, 1)                                           or_return
+	internal_add(t1, Q, 1, allocator)                                           or_return
 	internal_int_shr1(t1, t1)                                        or_return
 
 	/*
 		R = n ^ ((Q + 1) / 2) mod prime
 	*/
-	internal_int_exponent_mod(R, n, t1, prime)                       or_return
+	internal_int_exponent_mod(R, n, t1, prime, allocator)                       or_return
 
 	/*
 		T = n ^ Q mod prime
 	*/
-	internal_int_exponent_mod(T, n, Q, prime)                        or_return
+	internal_int_exponent_mod(T, n, Q, prime, allocator)                        or_return
 
 	/*
 		M = S
 	*/
 	M = S
-	internal_set(two, 2)
+	internal_set(two, 2, allocator = allocator)
 
 	for {
-		internal_copy(t1, T)                                         or_return
+		internal_copy(t1, T, allocator = allocator)                                         or_return
 
 		i = 0
 		for {
@@ -996,40 +990,40 @@ internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.all
 				(M is at least 1 in the first round because "prime" > 2)
 			*/
 			if M == i                                                { return .Invalid_Argument }
-			internal_int_exponent_mod(t1, t1, two, prime)            or_return
+			internal_int_exponent_mod(t1, t1, two, prime, allocator)            or_return
 
 			i += 1
 		}
 
 		if i == 0 {
-			internal_copy(res, R)                                    or_return
+			internal_copy(res, R, allocator = allocator)                                 or_return
 		}
 
 		/*
 			t1 = 2 ^ (M - i - 1)
 		*/
-		internal_set(t1, M - i - 1)                                  or_return
-		internal_int_exponent_mod(t1, two, t1, prime)                or_return
+		internal_set(t1, M - i - 1, allocator = allocator)                                  or_return
+		internal_int_exponent_mod(t1, two, t1, prime, allocator)                or_return
 
 		/*
 			t1 = C ^ (2 ^ (M - i - 1)) mod prime
 		*/
-		internal_int_exponent_mod(t1, C, t1, prime)                  or_return
+		internal_int_exponent_mod(t1, C, t1, prime, allocator)                  or_return
 
 		/*
 			C = (t1 * t1) mod prime
 		*/
-		internal_sqrmod(C, t1, prime)                                or_return
+		internal_sqrmod(C, t1, prime, allocator)                                or_return
 
 		/*
 			R = (R * t1) mod prime
 		*/
-		internal_mulmod(R, R, t1, prime)                             or_return
+		internal_mulmod(R, R, t1, prime, allocator)                             or_return
 
 		/*
 			T = (T * C) mod prime
 		*/
-		mulmod(T, T, C, prime)                                       or_return
+		mulmod(T, T, C, prime, allocator)                                       or_return
 
 		/*
 			M = i
@@ -1045,8 +1039,7 @@ internal_int_sqrtmod_prime :: proc(res, n, prime: ^Int, allocator := context.all
 	in place: It sets `a` to the prime found.
 	`bbs_style` = true means the prime must be congruent to 3 mod 4
 */
-internal_int_prime_next_prime :: proc(a: ^Int, trials: int, bbs_style: bool, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+internal_int_prime_next_prime :: proc(a: ^Int, trials: int, bbs_style: bool, allocator: mem.Allocator) -> (err: Error) {
 
 	res_tab := [_PRIME_TAB_SIZE]DIGIT{}
 
@@ -1073,7 +1066,7 @@ internal_int_prime_next_prime :: proc(a: ^Int, trials: int, bbs_style: bool, all
 					*/
 					continue
 				} else {
-					return internal_set(a, p)
+					return internal_set(a, p, allocator = allocator)
 				}
 			}
 		}
@@ -1095,14 +1088,14 @@ internal_int_prime_next_prime :: proc(a: ^Int, trials: int, bbs_style: bool, all
 			If `a` mod 4 != 3 subtract the correct value to make it so.
 		*/
 		if a.digit[0] & 3 != 3 {
-			internal_sub(a, a, (a.digit[0] & 3) + 1) or_return
+			internal_sub(a, a, (a.digit[0] & 3) + 1, allocator) or_return
 		}
 	} else {
 		if internal_is_even(a) {
 			/*
 				Force odd.
 			*/
-			internal_sub(a, a, 1) or_return
+			internal_sub(a, a, 1, allocator) or_return
 		}
 	}
 
@@ -1110,7 +1103,7 @@ internal_int_prime_next_prime :: proc(a: ^Int, trials: int, bbs_style: bool, all
 		Generate the restable.
 	*/
 	for x := 1; x < _PRIME_TAB_SIZE; x += 1 {
-		res_tab = cast(type_of(res_tab))(internal_mod(a, _private_prime_table[x]) or_return)
+		res_tab = cast(type_of(res_tab))(internal_mod(a, _private_prime_table[x], allocator) or_return)
 	}
 
 	for {
@@ -1160,13 +1153,13 @@ internal_int_prime_next_prime :: proc(a: ^Int, trials: int, bbs_style: bool, all
 		/*
 			Add the step.
 		*/
-		internal_add(a, a, step) or_return
+		internal_add(a, a, step, allocator) or_return
 
 		/*
 			If we didn't pass the sieve and step == MP_MAX then skip test */
 		if y && (step >= ((1 << _DIGIT_BITS) - kstep)) { continue }
 
-		if internal_int_is_prime(a, trials) or_return { break }
+		if internal_int_is_prime(a, trials, allocator = allocator) or_return { break }
 	}
 	return
 }
@@ -1181,8 +1174,7 @@ internal_int_prime_next_prime :: proc(a: ^Int, trials: int, bbs_style: bool, all
 
 	This is possibly the mother of all prime generation functions, muahahahahaha!
 */
-internal_random_prime :: proc(a: ^Int, size_in_bits: int, trials: int, flags := Primality_Flags{}, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+internal_random_prime :: proc(a: ^Int, size_in_bits: int, trials: int, flags := Primality_Flags{}, allocator: mem.Allocator) -> (err: Error) {
 	flags  := flags
 	trials := trials
 
@@ -1222,7 +1214,7 @@ internal_random_prime :: proc(a: ^Int, size_in_bits: int, trials: int, flags := 
 			}
 		}
 
-		internal_int_random(a, size_in_bits)                         or_return
+		internal_int_random(a, size_in_bits, allocator)                         or_return
 
 		/*
 			Make sure it's odd.
@@ -1252,7 +1244,7 @@ internal_random_prime :: proc(a: ^Int, size_in_bits: int, trials: int, flags := 
 					new_size += 1
 				}
 
-				internal_grow(a, new_size) or_return
+				internal_grow(a, new_size, allocator = allocator) or_return
 				a.used = new_size
 			}
 
@@ -1262,7 +1254,7 @@ internal_random_prime :: proc(a: ^Int, size_in_bits: int, trials: int, flags := 
 		/*
 			Is it prime?
 		*/
-		res := internal_int_is_prime(a, trials) or_return
+		res := internal_int_is_prime(a, trials, allocator = allocator) or_return
 		if !res {
 			continue
 		}
@@ -1271,13 +1263,13 @@ internal_random_prime :: proc(a: ^Int, size_in_bits: int, trials: int, flags := 
 			/*
 				See if (a-1)/2 is prime.
 			*/
-			internal_sub(a, a, 1)                                    or_return
+			internal_sub(a, a, 1, allocator)                                    or_return
 			internal_int_shr1(a, a)                                  or_return
 
 			/*
 				Is it prime?
 			*/
-			res = internal_int_is_prime(a, trials) or_return
+			res = internal_int_is_prime(a, trials, allocator = allocator) or_return
 		}
 		if res {
 			break
@@ -1297,8 +1289,7 @@ internal_random_prime :: proc(a: ^Int, size_in_bits: int, trials: int, flags := 
 /*
 	Extended Euclidean algorithm of (a, b) produces `a * u1` + `b * u2` = `u3`.
 */
-internal_int_extended_euclidean :: proc(a, b, U1, U2, U3: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+internal_int_extended_euclidean :: proc(a, b, U1, U2, U3: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	u1, u2, u3, v1, v2, v3, t1, t2, t3, q, tmp := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(u1, u2, u3, v1, v2, v3, t1, t2, t3, q, tmp)
@@ -1307,14 +1298,14 @@ internal_int_extended_euclidean :: proc(a, b, U1, U2, U3: ^Int, allocator := con
 	/*
 		Initialize, (u1, u2, u3) = (1, 0, a).
 	*/
-	internal_set(u1, 1)                                              or_return
-	internal_set(u3, a)                                              or_return
+	internal_set(u1, 1, allocator = allocator)                                              or_return
+	internal_set(u3, a, allocator = allocator)                                              or_return
 
 	/*
 		Initialize, (v1, v2, v3) = (0, 1, b).
 	*/
-	internal_set(v2, 1)                                              or_return
-	internal_set(v3, b)                                              or_return
+	internal_set(v2, 1, allocator = allocator)                                              or_return
+	internal_set(v3, b, allocator = allocator)                                              or_return
 
 	/*
 		Loop while v3 != 0
@@ -1323,42 +1314,42 @@ internal_int_extended_euclidean :: proc(a, b, U1, U2, U3: ^Int, allocator := con
 		/*
 			q = u3 / v3
 		*/
-		internal_div(q, u3, v3)                                      or_return
+		internal_div(q, u3, v3, allocator)                                      or_return
 
 		/*
 			(t1, t2, t3) = (u1, u2, u3) - (v1, v2, v3)q
 		*/
-		internal_mul(tmp, v1, q)                                     or_return
-		internal_sub( t1, u1, tmp)                                   or_return
+		internal_mul(tmp, v1, q, allocator)                                     or_return
+		internal_sub( t1, u1, tmp, allocator)                                   or_return
 
-		internal_mul(tmp, v2, q)                                     or_return
-		internal_sub( t2, u2, tmp)                                   or_return
+		internal_mul(tmp, v2, q, allocator)                                     or_return
+		internal_sub( t2, u2, tmp, allocator)                                   or_return
 
-		internal_mul(tmp, v3, q)                                     or_return
-		internal_sub( t3, u3, tmp)                                   or_return
+		internal_mul(tmp, v3, q, allocator)                                     or_return
+		internal_sub( t3, u3, tmp, allocator)                                   or_return
 
 		/*
 			(u1, u2, u3) = (v1, v2, v3)
 		*/
-		internal_set(u1, v1)                                         or_return
-		internal_set(u2, v2)                                         or_return
-		internal_set(u3, v3)                                         or_return
+		internal_set(u1, v1, allocator = allocator)                                         or_return
+		internal_set(u2, v2, allocator = allocator)                                         or_return
+		internal_set(u3, v3, allocator = allocator)                                         or_return
 
 		/*
 			(v1, v2, v3) = (t1, t2, t3)
 		*/
-		internal_set(v1, t1)                                         or_return
-		internal_set(v2, t2)                                         or_return
-		internal_set(v3, t3)                                         or_return
+		internal_set(v1, t1, allocator = allocator)                                         or_return
+		internal_set(v2, t2, allocator = allocator)                                         or_return
+		internal_set(v3, t3, allocator = allocator)                                         or_return
 	}
 
 	/*
 		Make sure U3 >= 0.
 	*/
 	if internal_is_negative(u3) {
-		internal_neg(u1, u1)                                         or_return
-		internal_neg(u2, u2)                                         or_return
-		internal_neg(u3, u3)                                         or_return
+		internal_neg(u1, u1, allocator)                                         or_return
+		internal_neg(u2, u2, allocator)                                         or_return
+		internal_neg(u3, u3, allocator)                                         or_return
 	}
 
 	/*

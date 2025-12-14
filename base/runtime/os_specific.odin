@@ -12,7 +12,7 @@ rand_bytes :: proc "contextless" (dst: []byte) {
 	when HAS_RAND_BYTES {
 		_rand_bytes(dst)
 	} else {
-		panic_contextless("base/runtime: no runtime entropy source")
+		panic("base/runtime: no runtime entropy source")
 	}
 }
 

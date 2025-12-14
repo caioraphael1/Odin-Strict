@@ -65,7 +65,7 @@ when !NO_DEFAULT_TEMP_ALLOCATOR {
 // Initializes the global temporary allocator used as the default `context.temp_allocator`.
 // This is ignored when `NO_DEFAULT_TEMP_ALLOCATOR` is true.
 @(builtin, disabled=NO_DEFAULT_TEMP_ALLOCATOR)
-init_global_temporary_allocator :: proc(size: int, backup_allocator := context.allocator) {
+init_global_temporary_allocator :: proc(size: int, backup_allocator: Allocator) {
 	when !NO_DEFAULT_TEMP_ALLOCATOR {
 		default_temp_allocator_init(&global_default_temp_allocator_data, size, backup_allocator)
 	}
@@ -283,14 +283,14 @@ free_all :: proc{mem_free_all}
 //
 // Note: Prefer the procedure group `delete`.
 @builtin
-delete_string :: proc(str: string, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+delete_string :: proc(str: string, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	return mem_free_with_size(raw_data(str), len(str), allocator, loc)
 }
 // `delete_cstring` will try to free the underlying data of the passed string, with the given `allocator` if the allocator supports this operation.
 //
 // Note: Prefer the procedure group `delete`.
 @builtin
-delete_cstring :: proc(str: cstring, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+delete_cstring :: proc(str: cstring, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	return mem_free((^byte)(str), allocator, loc)
 }
 // `delete_dynamic_array` will try to free the underlying data of the passed dynamic array, with the given `allocator` if the allocator supports this operation.
@@ -304,7 +304,7 @@ delete_dynamic_array :: proc(array: $T/[dynamic]$E, loc := #caller_location) -> 
 //
 // Note: Prefer the procedure group `delete`.
 @builtin
-delete_slice :: proc(array: $T/[]$E, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+delete_slice :: proc(array: $T/[]$E, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	return mem_free_with_size(raw_data(array), len(array)*size_of(E), allocator, loc)
 }
 // `delete_map` will try to free the underlying data of the passed map, with the given `allocator` if the allocator supports this operation.
@@ -317,11 +317,11 @@ delete_map :: proc(m: $T/map[$K]$V, loc := #caller_location) -> Allocator_Error 
 
 
 @builtin
-delete_string16 :: proc(str: string16, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+delete_string16 :: proc(str: string16, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	return mem_free_with_size(raw_data(str), len(str)*size_of(u16), allocator, loc)
 }
 @builtin
-delete_cstring16 :: proc(str: cstring16, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+delete_cstring16 :: proc(str: cstring16, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	return mem_free((^u16)(str), allocator, loc)
 }
 
@@ -343,20 +343,20 @@ delete :: proc{
 
 
 // The new built-in procedure allocates memory. The first argument is a type, not a value, and the value
-// return is a pointer to a newly allocated value of that type using the specified allocator, default is context.allocator
+// return is a pointer to a newly allocated value of that type using the specified allocator.
 @(builtin, require_results)
-new :: proc($T: typeid, allocator := context.allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) #optional_allocator_error {
+new :: proc($T: typeid, allocator: Allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) #optional_allocator_error {
 	t = (^T)(raw_data(mem_alloc_bytes(size_of(T), align_of(T), allocator, loc) or_return))
 	return
 }
 @(require_results)
-new_aligned :: proc($T: typeid, alignment: int, allocator := context.allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) {
+new_aligned :: proc($T: typeid, alignment: int, allocator: Allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) {
 	t = (^T)(raw_data(mem_alloc_bytes(size_of(T), alignment, allocator, loc) or_return))
 	return
 }
 
 @(builtin, require_results)
-new_clone :: proc(data: $T, allocator := context.allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) #optional_allocator_error {
+new_clone :: proc(data: $T, allocator: Allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) #optional_allocator_error {
 	t = (^T)(raw_data(mem_alloc_bytes(size_of(T), align_of(T), allocator, loc) or_return))
 	if t != nil {
 		t^ = data
@@ -367,7 +367,7 @@ new_clone :: proc(data: $T, allocator := context.allocator, loc := #caller_locat
 DEFAULT_DYNAMIC_ARRAY_CAPACITY :: 8
 
 @(require_results)
-make_aligned :: proc($T: typeid/[]$E, #any_int len: int, alignment: int, allocator := context.allocator, loc := #caller_location) -> (res: T, err: Allocator_Error) #optional_allocator_error {
+make_aligned :: proc($T: typeid/[]$E, #any_int len: int, alignment: int, allocator: Allocator, loc := #caller_location) -> (res: T, err: Allocator_Error) #optional_allocator_error {
 	err = _make_aligned_type_erased(&res, size_of(E), len, alignment, allocator, loc)
 	return
 }
@@ -389,7 +389,7 @@ _make_aligned_type_erased :: proc(slice: rawptr, elem_size: int, len: int, align
 //
 // Note: Prefer using the procedure group `make`.
 @(builtin, require_results)
-make_slice :: proc($T: typeid/[]$E, #any_int len: int, allocator := context.allocator, loc := #caller_location) -> (res: T, err: Allocator_Error) #optional_allocator_error {
+make_slice :: proc($T: typeid/[]$E, #any_int len: int, allocator: Allocator, loc := #caller_location) -> (res: T, err: Allocator_Error) #optional_allocator_error {
 	err = _make_aligned_type_erased(&res, size_of(E), len, align_of(E), allocator, loc)
 	return
 }
@@ -398,7 +398,7 @@ make_slice :: proc($T: typeid/[]$E, #any_int len: int, allocator := context.allo
 //
 // Note: Prefer using the procedure group `make`.
 @(builtin, require_results)
-make_dynamic_array :: proc($T: typeid/[dynamic]$E, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
+make_dynamic_array :: proc($T: typeid/[dynamic]$E, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	err = _make_dynamic_array_len_cap((^Raw_Dynamic_Array)(&array), size_of(E), align_of(E), 0, 0, allocator, loc)
 	return
 }
@@ -407,7 +407,7 @@ make_dynamic_array :: proc($T: typeid/[dynamic]$E, allocator := context.allocato
 //
 // Note: Prefer using the procedure group `make`.
 @(builtin, require_results)
-make_dynamic_array_len :: proc($T: typeid/[dynamic]$E, #any_int len: int, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
+make_dynamic_array_len :: proc($T: typeid/[dynamic]$E, #any_int len: int, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	err = _make_dynamic_array_len_cap((^Raw_Dynamic_Array)(&array), size_of(E), align_of(E), len, len, allocator, loc)
 	return
 }
@@ -416,13 +416,13 @@ make_dynamic_array_len :: proc($T: typeid/[dynamic]$E, #any_int len: int, alloca
 //
 // Note: Prefer using the procedure group `make`.
 @(builtin, require_results)
-make_dynamic_array_len_cap :: proc($T: typeid/[dynamic]$E, #any_int len: int, #any_int cap: int, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
+make_dynamic_array_len_cap :: proc($T: typeid/[dynamic]$E, #any_int len: int, #any_int cap: int, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	err = _make_dynamic_array_len_cap((^Raw_Dynamic_Array)(&array), size_of(E), align_of(E), len, cap, allocator, loc)
 	return
 }
 
 @(require_results)
-_make_dynamic_array_len_cap :: proc(array: ^Raw_Dynamic_Array, size_of_elem, align_of_elem: int, #any_int len: int, #any_int cap: int, allocator := context.allocator, loc := #caller_location) -> (err: Allocator_Error) {
+_make_dynamic_array_len_cap :: proc(array: ^Raw_Dynamic_Array, size_of_elem, align_of_elem: int, #any_int len: int, #any_int cap: int, allocator: Allocator, loc := #caller_location) -> (err: Allocator_Error) {
 	make_dynamic_array_error_loc(loc, len, cap)
 	array.allocator = allocator // initialize allocator before just in case it fails to allocate any memory
 	data := mem_alloc_bytes(size_of_elem*cap, align_of_elem, allocator, loc) or_return
@@ -439,7 +439,7 @@ _make_dynamic_array_len_cap :: proc(array: ^Raw_Dynamic_Array, size_of_elem, ali
 //
 // Note: Prefer using the procedure group `make`.
 @(builtin, require_results)
-make_map :: proc($T: typeid/map[$K]$E, allocator := context.allocator, loc := #caller_location) -> (m: T) {
+make_map :: proc($T: typeid/map[$K]$E, allocator: Allocator, loc := #caller_location) -> (m: T) {
 	m.allocator = allocator
 	return m
 }
@@ -450,10 +450,8 @@ make_map :: proc($T: typeid/map[$K]$E, allocator := context.allocator, loc := #c
 //
 // Note: Prefer using the procedure group `make`.
 @(builtin, require_results)
-make_map_cap :: proc($T: typeid/map[$K]$E, #any_int capacity: int, allocator := context.allocator, loc := #caller_location) -> (m: T, err: Allocator_Error) #optional_allocator_error {
+make_map_cap :: proc($T: typeid/map[$K]$E, #any_int capacity: int, allocator: Allocator, loc := #caller_location) -> (m: T, err: Allocator_Error) #optional_allocator_error {
 	make_map_expr_error_loc(loc, capacity)
-	context.allocator = allocator
-
 	err = reserve_map(&m, capacity, loc)
 	return
 }
@@ -464,7 +462,7 @@ make_map_cap :: proc($T: typeid/map[$K]$E, #any_int capacity: int, allocator := 
 //
 // Note: Prefer using the procedure group `make`.
 @(builtin, require_results)
-make_multi_pointer :: proc($T: typeid/[^]$E, #any_int len: int, allocator := context.allocator, loc := #caller_location) -> (mp: T, err: Allocator_Error) #optional_allocator_error {
+make_multi_pointer :: proc($T: typeid/[^]$E, #any_int len: int, allocator: Allocator, loc := #caller_location) -> (mp: T, err: Allocator_Error) #optional_allocator_error {
 	make_slice_error_loc(loc, len)
 	data := mem_alloc_bytes(size_of(E)*len, align_of(E), allocator, loc) or_return
 	if data == nil && size_of(E) != 0 {
@@ -479,7 +477,7 @@ make_multi_pointer :: proc($T: typeid/[^]$E, #any_int len: int, allocator := con
 //
 // Similar to `new`, the first argument is a type, not a value. Unlike new, make's return type is the same as the
 // type of its argument, not a pointer to it.
-// Make uses the specified allocator, default is context.allocator.
+// Make uses the specified allocator.
 @builtin
 make :: proc{
 	make_slice,
@@ -887,7 +885,7 @@ _reserve_dynamic_array :: #force_no_inline proc(a: ^Raw_Dynamic_Array, size_of_e
 	}
 
 	if a.allocator.procedure == nil {
-		a.allocator = context.allocator
+        return .Invalid_Allocator
 	}
 	assert(a.allocator.procedure != nil)
 
@@ -947,7 +945,7 @@ _resize_dynamic_array :: #force_no_inline proc(a: ^Raw_Dynamic_Array, size_of_el
 	}
 
 	if a.allocator.procedure == nil {
-		a.allocator = context.allocator
+        return .Invalid_Allocator
 	}
 	assert(a.allocator.procedure != nil)
 
@@ -1016,7 +1014,7 @@ _shrink_dynamic_array :: proc(a: ^Raw_Dynamic_Array, size_of_elem, align_of_elem
 	}
 
 	if a.allocator.procedure == nil {
-		a.allocator = context.allocator
+        return false, .Invalid_Allocator
 	}
 	assert(a.allocator.procedure != nil)
 
@@ -1089,112 +1087,49 @@ card :: proc "contextless" (s: $S/bit_set[$E; $U]) -> int {
 
 
 // Evaluates the condition and panics the program iff the condition is false.
-// This uses the `context.assertion_failure_procedure` to assert.
+// This uses the `assertion_failure_proc` to assert.
 //
 // This routine will be ignored when `ODIN_DISABLE_ASSERT` is true.
 @builtin
 @(disabled=ODIN_DISABLE_ASSERT)
-assert :: proc(condition: bool, message := #caller_expression(condition), loc := #caller_location) {
+assert :: proc "contextless" (condition: bool, message := #caller_expression(condition), loc := #caller_location) {
 	if !condition {
 		// NOTE(bill): This is wrapped in a procedure call
 		// to improve performance to make the CPU not
 		// execute speculatively, making it about an order of
 		// magnitude faster
 		@(cold)
-		internal :: proc(message: string, loc: Source_Code_Location) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = default_assertion_failure_proc
-			}
-			p("runtime assertion", message, loc)
+		internal :: proc "contextless" (message: string, loc: Source_Code_Location) {
+			assertion_failure_proc("runtime assertion", message, loc)
 		}
 		internal(message, loc)
 	}
 }
 
 // Evaluates the condition and panics the program iff the condition is false.
-// This uses the `context.assertion_failure_procedure` to assert.
+// This uses the `assertion_failure_proc` to assert.
 // This routine ignores `ODIN_DISABLE_ASSERT`, and will always execute.
 @builtin
-ensure :: proc(condition: bool, message := #caller_expression(condition), loc := #caller_location) {
+ensure :: proc "contextless" (condition: bool, message := #caller_expression(condition), loc := #caller_location) {
 	if !condition {
 		@(cold)
-		internal :: proc(message: string, loc: Source_Code_Location) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = default_assertion_failure_proc
-			}
-			p("unsatisfied ensure", message, loc)
+		internal :: proc "contextless" (message: string, loc: Source_Code_Location) {
+			assertion_failure_proc("unsatisfied ensure", message, loc)
 		}
 		internal(message, loc)
 	}
 }
 
 // Panics the program with a message.
-// This uses the `context.assertion_failure_procedure` to panic.
+// This uses the `assertion_failure_proc` to panic.
 @builtin
-panic :: proc(message: string, loc := #caller_location) -> ! {
-	p := context.assertion_failure_proc
-	if p == nil {
-		p = default_assertion_failure_proc
-	}
-	p("panic", message, loc)
+panic :: proc "contextless" (message: string, loc := #caller_location) -> ! {
+	assertion_failure_proc("panic", message, loc)
 }
 
 // Panics the program with a message to indicate something has yet to be implemented.
-// This uses the `context.assertion_failure_procedure` to assert.
+// This uses the `assertion_failure_proc` to assert.
 @builtin
-unimplemented :: proc(message := "", loc := #caller_location) -> ! {
-	p := context.assertion_failure_proc
-	if p == nil {
-		p = default_assertion_failure_proc
-	}
-	p("not yet implemented", message, loc)
-}
-
-// Evaluates the condition and panics the program iff the condition is false.
-// This uses the `default_assertion_contextless_failure_proc` to assert.
-//
-// This routine will be ignored when `ODIN_DISABLE_ASSERT` is true.
-@builtin
-@(disabled=ODIN_DISABLE_ASSERT)
-assert_contextless :: proc "contextless" (condition: bool, message := #caller_expression(condition), loc := #caller_location) {
-	if !condition {
-		// NOTE(bill): This is wrapped in a procedure call
-		// to improve performance to make the CPU not
-		// execute speculatively, making it about an order of
-		// magnitude faster
-		@(cold)
-		internal :: proc "contextless" (message: string, loc: Source_Code_Location) {
-			default_assertion_contextless_failure_proc("runtime assertion", message, loc)
-		}
-		internal(message, loc)
-	}
-}
-
-// Evaluates the condition and panics the program iff the condition is false.
-// This uses the `default_assertion_contextless_failure_proc` to assert.
-@builtin
-ensure_contextless :: proc "contextless" (condition: bool, message := #caller_expression(condition), loc := #caller_location) {
-	if !condition {
-		@(cold)
-		internal :: proc "contextless" (message: string, loc: Source_Code_Location) {
-			default_assertion_contextless_failure_proc("unsatisfied ensure", message, loc)
-		}
-		internal(message, loc)
-	}
-}
-
-// Panics the program with a message to indicate something has yet to be implemented.
-// This uses the `default_assertion_contextless_failure_proc` to assert.
-@builtin
-panic_contextless :: proc "contextless" (message: string, loc := #caller_location) -> ! {
-	default_assertion_contextless_failure_proc("panic", message, loc)
-}
-
-// Panics the program with a message.
-// This uses the `default_assertion_contextless_failure_proc` to assert.
-@builtin
-unimplemented_contextless :: proc "contextless" (message := "", loc := #caller_location) -> ! {
-	default_assertion_contextless_failure_proc("not yet implemented", message, loc)
+unimplemented :: proc "contextless" (message := "", loc := #caller_location) -> ! {
+	assertion_failure_proc("not yet implemented", message, loc)
 }

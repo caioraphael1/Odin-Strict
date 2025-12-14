@@ -20,6 +20,7 @@ import "core:os"
 import "core:io"
 import "core:bytes"
 import "core:hash"
+import "core:mem"
 
 Magic :: enum u16le {
 	GZIP = 0x8b << 8 | 0x1f,
@@ -104,7 +105,7 @@ GZIP_MAX_PAYLOAD_SIZE :: i64(max(u32le))
 
 load :: proc{load_from_bytes, load_from_file, load_from_context}
 
-load_from_file :: proc(filename: string, buf: ^bytes.Buffer, expected_output_size := -1, allocator := context.allocator) -> (err: Error) {
+load_from_file :: proc(filename: string, buf: ^bytes.Buffer, expected_output_size := -1, allocator: mem.Allocator) -> (err: Error) {
 	context.allocator = allocator
 
 	data, ok := os.read_entire_file(filename)
@@ -117,7 +118,7 @@ load_from_file :: proc(filename: string, buf: ^bytes.Buffer, expected_output_siz
 	return
 }
 
-load_from_bytes :: proc(data: []byte, buf: ^bytes.Buffer, known_gzip_size := -1, expected_output_size := -1, allocator := context.allocator) -> (err: Error) {
+load_from_bytes :: proc(data: []byte, buf: ^bytes.Buffer, known_gzip_size := -1, expected_output_size := -1, allocator: mem.Allocator) -> (err: Error) {
 	buf := buf
 
 	z := &compress.Context_Memory_Input{
@@ -127,7 +128,7 @@ load_from_bytes :: proc(data: []byte, buf: ^bytes.Buffer, known_gzip_size := -1,
 	return load_from_context(z, buf, known_gzip_size, expected_output_size, allocator)
 }
 
-load_from_context :: proc(z: ^$C, buf: ^bytes.Buffer, known_gzip_size := -1, expected_output_size := -1, allocator := context.allocator) -> (err: Error) {
+load_from_context :: proc(z: ^$C, buf: ^bytes.Buffer, known_gzip_size := -1, expected_output_size := -1, allocator: mem.Allocator) -> (err: Error) {
 	context.allocator = allocator
 	buf := buf
 	expected_output_size := expected_output_size

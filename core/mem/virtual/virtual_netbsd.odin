@@ -10,7 +10,7 @@ _reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Err
 
 	result := posix.mmap(nil, size, PROT_MPROTECT({.READ, .WRITE, .EXEC}), {.ANONYMOUS, .PRIVATE})
 	if result == posix.MAP_FAILED {
-		assert_contextless(posix.errno() == .ENOMEM)
+		assert(posix.errno() == .ENOMEM)
 		return nil, .Out_Of_Memory
 	}
 

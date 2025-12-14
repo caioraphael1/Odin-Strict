@@ -23,12 +23,12 @@ package net
 import "core:c"
 import "core:strings"
 import "core:sys/freebsd"
+import "core:mem"
 
 @(private)
-_enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
+_enumerate_interfaces :: proc(allocator: mem.Allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
 	// This is a simplified implementation of `getifaddrs` from the FreeBSD
 	// libc using only Odin and syscalls.
-	context.allocator = allocator
 
 	mib := [6]freebsd.MIB_Identifier {
 		.CTL_NET,

@@ -58,7 +58,6 @@ memory_block_dealloc :: proc "contextless" (block_to_free: ^Memory_Block, loc :=
 		allocator := block_to_free.allocator
 		// sanitizer.address_unpoison(block_to_free.base, block_to_free.capacity)
 		context = default_context()
-		context.allocator = allocator
 		mem_free(block_to_free, allocator, loc)
 	}
 }
@@ -124,7 +123,8 @@ arena_alloc :: proc(arena: ^Arena, size, alignment: uint, loc := #caller_locatio
 		block_size := max(needed, arena.minimum_block_size)
 
 		if arena.backing_allocator.procedure == nil {
-            panic("No backing allocator set for context.temp_allocator. The context.temp_allocator should be initialized manually with init_global_temporary_allocator")
+            arena.backing_allocator = default_allocator()
+            // panic("No backing allocator set for context.temp_allocator. The context.temp_allocator should be initialized manually with init_global_temporary_allocator")
 		}
 
 		new_block := memory_block_alloc(arena.backing_allocator, block_size, alignment, loc) or_return

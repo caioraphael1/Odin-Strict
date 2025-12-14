@@ -21,7 +21,7 @@ add_thread_local_cleaner :: proc "contextless" (p: Thread_Local_Cleaner) {
 			return
 		}
 	}
-	panic_contextless("There are no more thread-local cleaner slots available.")
+	panic("There are no more thread-local cleaner slots available.")
 }
 
 // Run all of the thread-local cleaner procedures.

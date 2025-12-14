@@ -3,8 +3,6 @@
 
 	Example:
 		// Basic
-		OdinAllocator := context.allocator
-
 		FontData, _ := os.read_entire_file("myfonts.ttf", OdinAllocator)
 
 		Context := kbts.CreateShapeContext(kbts.AllocatorFromOdinAllocator(&OdinAllocator))
@@ -30,8 +28,6 @@
 
 	Example:
 		// Font collections
-		OdinAllocator := context.allocator
-
 		FontData, _ := os.read_entire_file("myfonts.ttf", OdinAllocator)
 		Font := kbts.FontFromMemory(FontData, 0, kbts.AllocatorFromOdinAllocator(&OdinAllocator))
 

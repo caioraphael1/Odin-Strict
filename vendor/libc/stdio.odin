@@ -96,7 +96,7 @@ getchar :: proc "c" () -> c.int {
 @(require, linkage="strong", link_name="vsnprintf")
 vsnprintf :: proc "c" (buf: [^]byte, count: uint, fmt: cstring, args: ^c.va_list) -> i32 {
 	i32_count := i32(count)
-	assert_contextless(i32_count >= 0)
+	assert(i32_count >= 0)
 	return stb.vsnprintf(buf, i32_count, fmt, args)
 }
 

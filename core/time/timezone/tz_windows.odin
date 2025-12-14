@@ -5,6 +5,7 @@ package timezone
 import "core:strings"
 import "core:sys/windows"
 import "core:time/datetime"
+import "base:runtime"
 
 TZ_Abbrev :: struct {
 	std: string,
@@ -154,7 +155,7 @@ tz_abbrevs := [?]struct{key: string, value: TZ_Abbrev}{
 	{"Tonga Standard Time",             {"+13", "+13"}},     // Pacific/Tongatapu
 }
 
-iana_to_windows_tz :: proc(iana_name: string, allocator := context.allocator) -> (name: string, success: bool) {
+iana_to_windows_tz :: proc(iana_name: string, allocator: runtime.Allocator) -> (name: string, success: bool) {
 	wintz_name_buffer: [128]u16
 	status: windows.UError 
 
@@ -174,7 +175,7 @@ iana_to_windows_tz :: proc(iana_name: string, allocator := context.allocator) ->
 	return wintz_name, true
 }
 
-local_tz_name :: proc(allocator := context.allocator) -> (name: string, success: bool) {
+local_tz_name :: proc(allocator: runtime.Allocator) -> (name: string, success: bool) {
 	iana_name_buffer: [128]u16
 	status: windows.UError
 
@@ -199,7 +200,7 @@ REG_TZI_FORMAT :: struct #packed {
 	dst_date: windows.SYSTEMTIME,
 }
 
-generate_rrule_from_tzi :: proc(tzi: ^REG_TZI_FORMAT, abbrevs: TZ_Abbrev, allocator := context.allocator) -> (rrule: datetime.TZ_RRule, ok: bool) {
+generate_rrule_from_tzi :: proc(tzi: ^REG_TZI_FORMAT, abbrevs: TZ_Abbrev, allocator: runtime.Allocator) -> (rrule: datetime.TZ_RRule, ok: bool) {
 	std_name, err := strings.clone(abbrevs.std, allocator)
 	if err != nil { return }
 	defer if err != nil { delete(std_name, allocator) }
@@ -250,7 +251,7 @@ generate_rrule_from_tzi :: proc(tzi: ^REG_TZI_FORMAT, abbrevs: TZ_Abbrev, alloca
 	}, true
 }
 
-_region_load :: proc(reg_str: string, allocator := context.allocator) -> (out_reg: ^datetime.TZ_Region, success: bool) {
+_region_load :: proc(reg_str: string, allocator: runtime.Allocator) -> (out_reg: ^datetime.TZ_Region, success: bool) {
 	wintz_name: string
 	iana_name: string
 

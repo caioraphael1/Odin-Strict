@@ -42,7 +42,7 @@ Example:
 		trace.init(&global_trace_ctx)
 		defer trace.destroy(&global_trace_ctx)
 
-		context.assertion_failure_proc = debug_trace_assertion_failure_proc
+        runtime.assertion_failure_proc = debug_trace_assertion_failure_proc
 
 		...
 	}

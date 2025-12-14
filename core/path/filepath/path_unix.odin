@@ -5,6 +5,7 @@ import "base:runtime"
 
 import "core:strings"
 import "core:sys/posix"
+import "core:mem"
 
 SEPARATOR :: '/'
 SEPARATOR_STRING :: `/`
@@ -18,7 +19,7 @@ is_abs :: proc(path: string) -> bool {
 	return strings.has_prefix(path, "/")
 }
 
-abs :: proc(path: string, allocator := context.allocator) -> (string, bool) {
+abs :: proc(path: string, allocator: mem.Allocator) -> (string, bool) {
 	rel := path
 	if rel == "" {
 		rel = "."
@@ -34,7 +35,7 @@ abs :: proc(path: string, allocator := context.allocator) -> (string, bool) {
 	return path_str, true
 }
 
-join :: proc(elems: []string, allocator := context.allocator) -> (joined: string, err: runtime.Allocator_Error) #optional_allocator_error {
+join :: proc(elems: []string, allocator: mem.Allocator) -> (joined: string, err: runtime.Allocator_Error) #optional_allocator_error {
 	for e, i in elems {
 		if e != "" {
 			runtime.DEFAULT_TEMP_ALLOCATOR_TEMP_GUARD(ignore = context.temp_allocator == allocator)

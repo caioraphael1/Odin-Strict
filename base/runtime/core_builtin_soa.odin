@@ -76,7 +76,7 @@ raw_soa_footer :: proc{
 
 
 @(builtin, require_results)
-make_soa_aligned :: proc($T: typeid/#soa[]$E, #any_int length, alignment: int, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
+make_soa_aligned :: proc($T: typeid/#soa[]$E, #any_int length, alignment: int, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	if length <= 0 {
 		return
 	}
@@ -104,7 +104,7 @@ make_soa_aligned :: proc($T: typeid/#soa[]$E, #any_int length, alignment: int, a
 
 	allocator := allocator
 	if allocator.procedure == nil {
-		allocator = context.allocator
+        return nil, .Invalid_Allocator
 	}
 	assert(allocator.procedure != nil)
 
@@ -135,29 +135,26 @@ make_soa_aligned :: proc($T: typeid/#soa[]$E, #any_int length, alignment: int, a
 }
 
 @(builtin, require_results)
-make_soa_slice :: proc($T: typeid/#soa[]$E, #any_int length: int, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
+make_soa_slice :: proc($T: typeid/#soa[]$E, #any_int length: int, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	return make_soa_aligned(T, length, align_of(E), allocator, loc)
 }
 
 @(builtin, require_results)
-make_soa_dynamic_array :: proc($T: typeid/#soa[dynamic]$E, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
-	context.allocator = allocator
+make_soa_dynamic_array :: proc($T: typeid/#soa[dynamic]$E, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	array.allocator = allocator
 	reserve_soa(&array, 0, loc) or_return
 	return array, nil
 }
 
 @(builtin, require_results)
-make_soa_dynamic_array_len :: proc($T: typeid/#soa[dynamic]$E, #any_int length: int, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
-	context.allocator = allocator
+make_soa_dynamic_array_len :: proc($T: typeid/#soa[dynamic]$E, #any_int length: int, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	array.allocator = allocator
 	resize_soa(&array, length, loc) or_return
 	return array, nil
 }
 
 @(builtin, require_results)
-make_soa_dynamic_array_len_cap :: proc($T: typeid/#soa[dynamic]$E, #any_int length, capacity: int, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
-	context.allocator = allocator
+make_soa_dynamic_array_len_cap :: proc($T: typeid/#soa[dynamic]$E, #any_int length, capacity: int, allocator: Allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	reserve_soa(&array, capacity, loc) or_return
 	resize_soa(&array, length, loc) or_return
 	return array, nil
@@ -239,7 +236,7 @@ _reserve_soa :: proc(array: ^$T/#soa[dynamic]$E, capacity: int, zero_memory: boo
 	}
 
 	if array.allocator.procedure == nil {
-		array.allocator = context.allocator
+        return .Invalid_Allocator
 	}
 	assert(array.allocator.procedure != nil)
 
@@ -616,7 +613,7 @@ inject_at_elems_soa :: proc(array: ^$T/#soa[dynamic]$E, #any_int index: int, #no
 @builtin inject_at_soa :: proc{inject_at_elem_soa, inject_at_elems_soa}
 
 
-delete_soa_slice :: proc(array: $T/#soa[]$E, allocator := context.allocator, loc := #caller_location) -> Allocator_Error {
+delete_soa_slice :: proc(array: $T/#soa[]$E, allocator: Allocator, loc := #caller_location) -> Allocator_Error {
 	field_count :: len(E) when intrinsics.type_is_array(E) else intrinsics.type_struct_field_count(E)
 	when field_count != 0 {
 		array := array

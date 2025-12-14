@@ -25,7 +25,7 @@ get_args :: proc "contextless" () -> []string {
 	return result
 }
 
-@(fini, private="file")
+@(private="file")
 delete_args :: proc "contextless" () {
 	context = runtime.default_context()
 	delete(args, heap_allocator())

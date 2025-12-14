@@ -1,6 +1,7 @@
 package CoreFoundation
 
 import "core:c"
+import "core:mem"
 
 foreign import CoreFoundation "system:CoreFoundation.framework"
 
@@ -181,7 +182,7 @@ foreign CoreFoundation {
 
 STR :: StringMakeConstantString
 
-StringCopyToOdinString :: proc(theString: String, allocator := context.allocator) -> (str: string, ok: bool) #optional_ok {
+StringCopyToOdinString :: proc(theString: String, allocator: mem.Allocator) -> (str: string, ok: bool) #optional_ok {
 	length := StringGetLength(theString)
 	max := StringGetMaximumSizeForEncoding(length, StringEncoding(StringBuiltInEncodings.UTF8))
 

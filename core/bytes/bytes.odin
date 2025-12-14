@@ -34,13 +34,13 @@ SCANNER_SENTINEL_MIN_128: simd.u8x16 : u8(0xff)
 @(private)
 SIMD_REG_SIZE_128 :: 16
 
-clone :: proc(s: []byte, allocator := context.allocator, loc := #caller_location) -> []byte {
+clone :: proc(s: []byte, allocator: mem.Allocator, loc := #caller_location) -> []byte {
 	c := make([]byte, len(s), allocator, loc)
 	copy(c, s)
 	return c[:len(s)]
 }
 
-clone_safe :: proc(s: []byte, allocator := context.allocator, loc := #caller_location) -> (data: []byte, err: mem.Allocator_Error) {
+clone_safe :: proc(s: []byte, allocator: mem.Allocator, loc := #caller_location) -> (data: []byte, err: mem.Allocator_Error) {
 	c := make([]byte, len(s), allocator, loc) or_return
 	copy(c, s)
 	return c[:len(s)], nil
@@ -157,7 +157,7 @@ has_suffix :: proc(s, suffix: []byte) -> bool {
 }
 
 
-join :: proc(a: [][]byte, sep: []byte, allocator := context.allocator) -> []byte {
+join :: proc(a: [][]byte, sep: []byte, allocator: mem.Allocator) -> []byte {
 	if len(a) == 0 {
 		return nil
 	}
@@ -176,7 +176,7 @@ join :: proc(a: [][]byte, sep: []byte, allocator := context.allocator) -> []byte
 	return b
 }
 
-join_safe :: proc(a: [][]byte, sep: []byte, allocator := context.allocator) -> (data: []byte, err: mem.Allocator_Error) {
+join_safe :: proc(a: [][]byte, sep: []byte, allocator: mem.Allocator) -> (data: []byte, err: mem.Allocator_Error) {
 	if len(a) == 0 {
 		return nil, nil
 	}
@@ -195,7 +195,7 @@ join_safe :: proc(a: [][]byte, sep: []byte, allocator := context.allocator) -> (
 	return b, nil
 }
 
-concatenate :: proc(a: [][]byte, allocator := context.allocator) -> []byte {
+concatenate :: proc(a: [][]byte, allocator: mem.Allocator) -> []byte {
 	if len(a) == 0 {
 		return nil
 	}
@@ -212,7 +212,7 @@ concatenate :: proc(a: [][]byte, allocator := context.allocator) -> []byte {
 	return b
 }
 
-concatenate_safe :: proc(a: [][]byte, allocator := context.allocator) -> (data: []byte, err: mem.Allocator_Error) {
+concatenate_safe :: proc(a: [][]byte, allocator: mem.Allocator) -> (data: []byte, err: mem.Allocator_Error) {
 	if len(a) == 0 {
 		return nil, nil
 	}
@@ -231,7 +231,7 @@ concatenate_safe :: proc(a: [][]byte, allocator := context.allocator) -> (data: 
 
 
 @private
-_split :: proc(s, sep: []byte, sep_save, n: int, allocator := context.allocator) -> [][]byte {
+_split :: proc(s, sep: []byte, sep_save, n: int, allocator: mem.Allocator) -> [][]byte {
 	s, n := s, n
 
 	if n == 0 {
@@ -278,19 +278,19 @@ _split :: proc(s, sep: []byte, sep_save, n: int, allocator := context.allocator)
 	return res[:i+1]
 }
 
-split :: proc(s, sep: []byte, allocator := context.allocator) -> [][]byte {
+split :: proc(s, sep: []byte, allocator: mem.Allocator) -> [][]byte {
 	return _split(s, sep, 0, -1, allocator)
 }
 
-split_n :: proc(s, sep: []byte, n: int, allocator := context.allocator) -> [][]byte {
+split_n :: proc(s, sep: []byte, n: int, allocator: mem.Allocator) -> [][]byte {
 	return _split(s, sep, 0, n, allocator)
 }
 
-split_after :: proc(s, sep: []byte, allocator := context.allocator) -> [][]byte {
+split_after :: proc(s, sep: []byte, allocator: mem.Allocator) -> [][]byte {
 	return _split(s, sep, len(sep), -1, allocator)
 }
 
-split_after_n :: proc(s, sep: []byte, n: int, allocator := context.allocator) -> [][]byte {
+split_after_n :: proc(s, sep: []byte, n: int, allocator: mem.Allocator) -> [][]byte {
 	return _split(s, sep, len(sep), n, allocator)
 }
 
@@ -768,7 +768,7 @@ count :: proc(s, substr: []byte) -> int {
 }
 
 
-repeat :: proc(s: []byte, count: int, allocator := context.allocator) -> []byte {
+repeat :: proc(s: []byte, count: int, allocator: mem.Allocator) -> []byte {
 	if count < 0 {
 		panic("bytes: negative repeat count")
 	} else if count > 0 && (len(s)*count)/count != len(s) {
@@ -784,12 +784,12 @@ repeat :: proc(s: []byte, count: int, allocator := context.allocator) -> []byte 
 	return b
 }
 
-replace_all :: proc(s, old, new: []byte, allocator := context.allocator) -> (output: []byte, was_allocation: bool) {
+replace_all :: proc(s, old, new: []byte, allocator: mem.Allocator) -> (output: []byte, was_allocation: bool) {
 	return replace(s, old, new, -1, allocator)
 }
 
 // if n < 0, no limit on the number of replacements
-replace :: proc(s, old, new: []byte, n: int, allocator := context.allocator) -> (output: []byte, was_allocation: bool) {
+replace :: proc(s, old, new: []byte, n: int, allocator: mem.Allocator) -> (output: []byte, was_allocation: bool) {
 	if string(old) == string(new) || n == 0 {
 		was_allocation = false
 		output = s
@@ -829,11 +829,11 @@ replace :: proc(s, old, new: []byte, n: int, allocator := context.allocator) -> 
 	return
 }
 
-remove :: proc(s, key: []byte, n: int, allocator := context.allocator) -> (output: []byte, was_allocation: bool) {
+remove :: proc(s, key: []byte, n: int, allocator: mem.Allocator) -> (output: []byte, was_allocation: bool) {
 	return replace(s, key, {}, n, allocator)
 }
 
-remove_all :: proc(s, key: []byte, allocator := context.allocator) -> (output: []byte, was_allocation: bool) {
+remove_all :: proc(s, key: []byte, allocator: mem.Allocator) -> (output: []byte, was_allocation: bool) {
 	return remove(s, key, -1, allocator)
 }
 
@@ -1046,7 +1046,7 @@ trim_suffix :: proc(s, suffix: []byte) -> []byte {
 	return s
 }
 
-split_multi :: proc(s: []byte, substrs: [][]byte, skip_empty := false, allocator := context.allocator) -> [][]byte #no_bounds_check {
+split_multi :: proc(s: []byte, substrs: [][]byte, skip_empty := false, allocator: mem.Allocator) -> [][]byte #no_bounds_check {
 	if s == nil || len(substrs) <= 0 {
 		return nil
 	}
@@ -1181,7 +1181,7 @@ split_multi_iterator :: proc(s: ^[]byte, substrs: [][]byte, skip_empty := false)
 
 // Scrubs invalid utf-8 characters and replaces them with the replacement string
 // Adjacent invalid bytes are only replaced once
-scrub :: proc(s: []byte, replacement: []byte, allocator := context.allocator) -> []byte {
+scrub :: proc(s: []byte, replacement: []byte, allocator: mem.Allocator) -> []byte {
 	str := s
 	b: Buffer
 	buffer_init_allocator(&b, 0, len(s), allocator)
@@ -1214,10 +1214,10 @@ scrub :: proc(s: []byte, replacement: []byte, allocator := context.allocator) ->
 }
 
 
-reverse :: proc(s: []byte, allocator := context.allocator) -> []byte {
+reverse :: proc(s: []byte, allocator: mem.Allocator) -> []byte {
 	str := s
 	n := len(str)
-	buf := make([]byte, n)
+	buf := make([]byte, n, allocator)
 	i := n
 
 	for len(str) > 0 {
@@ -1229,7 +1229,7 @@ reverse :: proc(s: []byte, allocator := context.allocator) -> []byte {
 	return buf
 }
 
-expand_tabs :: proc(s: []byte, tab_size: int, allocator := context.allocator) -> []byte {
+expand_tabs :: proc(s: []byte, tab_size: int, allocator: mem.Allocator) -> []byte {
 	if tab_size <= 0 {
 		panic("tab size must be positive")
 	}
@@ -1288,7 +1288,7 @@ partition :: proc(str, sep: []byte) -> (head, match, tail: []byte) {
 center_justify :: centre_justify // NOTE(bill): Because Americans exist
 
 // centre_justify returns a byte slice with a pad byte slice at boths sides if the str's rune length is smaller than length
-centre_justify :: proc(str: []byte, length: int, pad: []byte, allocator := context.allocator) -> []byte {
+centre_justify :: proc(str: []byte, length: int, pad: []byte, allocator: mem.Allocator) -> []byte {
 	n := rune_count(str)
 	if n >= length || pad == nil {
 		return clone(str, allocator)
@@ -1308,7 +1308,7 @@ centre_justify :: proc(str: []byte, length: int, pad: []byte, allocator := conte
 }
 
 // left_justify returns a byte slice with a pad byte slice at left side if the str's rune length is smaller than length
-left_justify :: proc(str: []byte, length: int, pad: []byte, allocator := context.allocator) -> []byte {
+left_justify :: proc(str: []byte, length: int, pad: []byte, allocator: mem.Allocator) -> []byte {
 	n := rune_count(str)
 	if n >= length || pad == nil {
 		return clone(str, allocator)
@@ -1327,7 +1327,7 @@ left_justify :: proc(str: []byte, length: int, pad: []byte, allocator := context
 }
 
 // right_justify returns a byte slice with a pad byte slice at right side if the str's rune length is smaller than length
-right_justify :: proc(str: []byte, length: int, pad: []byte, allocator := context.allocator) -> []byte {
+right_justify :: proc(str: []byte, length: int, pad: []byte, allocator: mem.Allocator) -> []byte {
 	n := rune_count(str)
 	if n >= length || pad == nil {
 		return clone(str, allocator)
@@ -1369,7 +1369,7 @@ write_pad_string :: proc(b: ^Buffer, pad: []byte, pad_len, remains: int) {
 
 // fields splits the byte slice s around each instance of one or more consecutive white space character, defined by unicode.is_space
 // returning a slice of subslices of s or an empty slice if s only contains white space
-fields :: proc(s: []byte, allocator := context.allocator) -> [][]byte #no_bounds_check {
+fields :: proc(s: []byte, allocator: mem.Allocator) -> [][]byte #no_bounds_check {
 	n := 0
 	was_space := 1
 	set_bits := u8(0)
@@ -1425,7 +1425,7 @@ fields :: proc(s: []byte, allocator := context.allocator) -> [][]byte #no_bounds
 //
 // fields_proc makes no guarantee about the order in which it calls f(ch)
 // it assumes that `f` always returns the same value for a given ch
-fields_proc :: proc(s: []byte, f: proc(rune) -> bool, allocator := context.allocator) -> [][]byte #no_bounds_check {
+fields_proc :: proc(s: []byte, f: proc(rune) -> bool, allocator: mem.Allocator) -> [][]byte #no_bounds_check {
 	subslices := make([dynamic][]byte, 0, 32, allocator)
 
 	start, end := -1, -1

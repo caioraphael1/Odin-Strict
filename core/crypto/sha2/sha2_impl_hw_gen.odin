@@ -11,5 +11,5 @@ is_hardware_accelerated_256 :: proc "contextless" () -> bool {
 }
 
 sha256_transf_hw :: proc "contextless" (ctx: ^Context_256, data: []byte) {
-	panic_contextless(ERR_HW_NOT_SUPPORTED)
+	panic(ERR_HW_NOT_SUPPORTED)
 }

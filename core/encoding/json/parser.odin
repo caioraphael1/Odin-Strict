@@ -14,10 +14,10 @@ Parser :: struct {
 	parse_integers: bool,
 }
 
-make_parser :: proc(data: []byte, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator := context.allocator) -> Parser {
+make_parser :: proc(data: []byte, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator: mem.Allocator) -> Parser {
 	return make_parser_from_string(string(data), spec, parse_integers, allocator)
 }
-make_parser_from_string :: proc(data: string, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator := context.allocator) -> Parser {
+make_parser_from_string :: proc(data: string, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator: mem.Allocator) -> Parser {
 	p: Parser
 	p.tok = make_tokenizer(data, spec, parse_integers)
 	p.spec = spec
@@ -28,12 +28,11 @@ make_parser_from_string :: proc(data: string, spec := DEFAULT_SPECIFICATION, par
 }
 
 
-parse :: proc(data: []byte, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator := context.allocator, loc := #caller_location) -> (Value, Error) {
+parse :: proc(data: []byte, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator: mem.Allocator, loc := #caller_location) -> (Value, Error) {
 	return parse_string(string(data), spec, parse_integers, allocator, loc)
 }
 
-parse_string :: proc(data: string, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator := context.allocator, loc := #caller_location) -> (Value, Error) {
-	context.allocator = allocator
+parse_string :: proc(data: string, spec := DEFAULT_SPECIFICATION, parse_integers := false, allocator: mem.Allocator, loc := #caller_location) -> (Value, Error) {
 	p := make_parser_from_string(data, spec, parse_integers, allocator)
 
 	switch p.spec {
@@ -184,7 +183,7 @@ parse_array :: proc(p: ^Parser, loc := #caller_location) -> (value: Value, err: 
 	array.allocator = p.allocator
 	defer if err != nil {
 		for elem in array {
-			destroy_value(elem, loc=loc)
+			destroy_value(elem, array.allocator, loc=loc)
 		}
 		delete(array, loc)
 	}
@@ -248,7 +247,7 @@ parse_object_body :: proc(p: ^Parser, end_token: Token_Kind, loc := #caller_loca
 	defer if err != nil {
 		for key, elem in obj {
 			delete(key, p.allocator, loc)
-			destroy_value(elem, loc=loc)
+			destroy_value(elem, p.allocator, loc=loc)
 		}
 		delete(obj, loc)
 	}
@@ -291,7 +290,7 @@ parse_object :: proc(p: ^Parser, loc := #caller_location) -> (value: Value, err:
 
 
 // IMPORTANT NOTE(bill): unquote_string assumes a mostly valid string
-unquote_string :: proc(token: Token, spec: Specification, allocator := context.allocator, loc := #caller_location) -> (value: string, err: Error) {
+unquote_string :: proc(token: Token, spec: Specification, allocator: mem.Allocator, loc := #caller_location) -> (value: string, err: Error) {
 	get_u2_rune :: proc(s: string) -> rune {
 		if len(s) < 4 || s[0] != '\\' || s[1] != 'x' {
 			return -1

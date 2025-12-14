@@ -51,7 +51,7 @@ keysched :: proc "contextless" (comp_skey: []u64, key: []byte) -> int {
 	case _aes.KEY_SIZE_256:
 		num_rounds = _aes.ROUNDS_256
 	case:
-		panic_contextless("crypto/aes: invalid AES key size")
+		panic("crypto/aes: invalid AES key size")
 	}
 
 	skey: [60]u32 = ---

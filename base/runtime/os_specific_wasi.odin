@@ -41,7 +41,7 @@ _stderr_write :: proc "contextless" (data: []byte) -> (int, _OS_Errno) {
 
 _rand_bytes :: proc "contextless" (dst: []byte) {
 	if errno := random_get(dst); errno != 0 {
-		panic_contextless("base/runtime: wasi.random_get failed")
+		panic("base/runtime: wasi.random_get failed")
 	}
 }
 

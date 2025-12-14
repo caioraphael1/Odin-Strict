@@ -6,6 +6,7 @@ import "core:os"
 import "core:slice"
 import "core:strings"
 import "core:unicode/utf8"
+import "core:mem"
 
 Match_Error :: enum {
 	None,
@@ -218,12 +219,10 @@ get_escape :: proc(chunk: string) -> (r: rune, next_chunk: string, err: Match_Er
 //
 // glob ignores file system errors
 //
-glob :: proc(pattern: string, allocator := context.allocator) -> (matches: []string, err: Match_Error) {
-	context.allocator = allocator
-
+glob :: proc(pattern: string, allocator: mem.Allocator) -> (matches: []string, err: Match_Error) {
 	if !has_meta(pattern) {
 		// TODO(bill): os.lstat on here to check for error
-		m := make([]string, 1)
+		m := make([]string, 1, allocator)
 		m[0] = pattern
 		return m[:], .None
 	}
@@ -239,25 +238,25 @@ glob :: proc(pattern: string, allocator := context.allocator) -> (matches: []str
 	}
 
 	if !has_meta(dir[volume_len:]) {
-		m, e := _glob(dir, file, nil)
+		m, e := _glob(dir, file, nil, allocator)
 		return m[:], e
 	}
 
 	m: []string
-	m, err = glob(dir)
+	m, err = glob(dir, allocator)
 	if err != .None {
 		return
 	}
 	defer {
 		for s in m {
-			delete(s)
+			delete(s, allocator)
 		}
-		delete(m)
+		delete(m, allocator)
 	}
 
-	dmatches := make([dynamic]string, 0, 0)
+	dmatches := make([dynamic]string, 0, 0, allocator)
 	for d in m {
-		dmatches, err = _glob(d, file, &dmatches)
+		dmatches, err = _glob(d, file, &dmatches, allocator)
 		if err != .None {
 			break
 		}
@@ -269,13 +268,11 @@ glob :: proc(pattern: string, allocator := context.allocator) -> (matches: []str
 }
 
 // Internal implementation of `glob`, not meant to be used by the user. Prefer `glob`.
-_glob :: proc(dir, pattern: string, matches: ^[dynamic]string, allocator := context.allocator) -> (m: [dynamic]string, e: Match_Error) {
-	context.allocator = allocator
-
+_glob :: proc(dir, pattern: string, matches: ^[dynamic]string, allocator: mem.Allocator) -> (m: [dynamic]string, e: Match_Error) {
 	if matches != nil {
 		m = matches^
 	} else {
-		m = make([dynamic]string, 0, 0)
+		m = make([dynamic]string, 0, 0, allocator)
 	}
 
 
@@ -286,7 +283,7 @@ _glob :: proc(dir, pattern: string, matches: ^[dynamic]string, allocator := cont
 	defer os.close(d)
 
 	{
-		file_info, ferr := os.fstat(d)
+		file_info, ferr := os.fstat(d, allocator)
 		defer os.file_info_delete(file_info)
 
 		if ferr != nil {
@@ -298,7 +295,7 @@ _glob :: proc(dir, pattern: string, matches: ^[dynamic]string, allocator := cont
 	}
 
 
-	fis, _ := os.read_dir(d, -1)
+	fis, _ := os.read_dir(d, -1, allocator)
 	slice.sort_by(fis, proc(a, b: os.File_Info) -> bool {
 		return a.name < b.name
 	})
@@ -306,14 +303,14 @@ _glob :: proc(dir, pattern: string, matches: ^[dynamic]string, allocator := cont
 		for fi in fis {
 			os.file_info_delete(fi)
 		}
-		delete(fis)
+		delete(fis, allocator)
 	}
 
 	for fi in fis {
 		n := fi.name
 		matched := match(pattern, n) or_return
 		if matched {
-			append(&m, join({dir, n}))
+			append(&m, join({dir, n}, allocator))
 		}
 	}
 	return

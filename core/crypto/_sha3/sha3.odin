@@ -134,8 +134,8 @@ init :: proc "contextless" (ctx: ^Context) {
 }
 
 update :: proc "contextless" (ctx: ^Context, data: []byte) {
-	ensure_contextless(ctx.is_initialized)
-	ensure_contextless(!ctx.is_finalized)
+	ensure(ctx.is_initialized)
+	ensure(!ctx.is_finalized)
 
 	j := ctx.pt
 	for i := 0; i < len(data); i += 1 {
@@ -150,8 +150,8 @@ update :: proc "contextless" (ctx: ^Context, data: []byte) {
 }
 
 final :: proc "contextless" (ctx: ^Context, hash: []byte, finalize_clone: bool = false) {
-	ensure_contextless(ctx.is_initialized)
-	ensure_contextless(len(hash) >= ctx.mdlen, "crypto/sha3: invalid destination digest size")
+	ensure(ctx.is_initialized)
+	ensure(len(hash) >= ctx.mdlen, "crypto/sha3: invalid destination digest size")
 
 	ctx := ctx
 	if finalize_clone {
@@ -183,8 +183,8 @@ reset :: proc "contextless" (ctx: ^Context) {
 }
 
 shake_xof :: proc "contextless" (ctx: ^Context) {
-	ensure_contextless(ctx.is_initialized)
-	ensure_contextless(!ctx.is_finalized)
+	ensure(ctx.is_initialized)
+	ensure(!ctx.is_finalized)
 
 	ctx.st.b[ctx.pt] ~= ctx.dsbyte
 	ctx.st.b[ctx.rsiz - 1] ~= 0x80
@@ -195,8 +195,8 @@ shake_xof :: proc "contextless" (ctx: ^Context) {
 }
 
 shake_out :: proc "contextless" (ctx: ^Context, hash: []byte) {
-	ensure_contextless(ctx.is_initialized)
-	ensure_contextless(ctx.is_finalized)
+	ensure(ctx.is_initialized)
+	ensure(ctx.is_finalized)
 
 	j := ctx.pt
 	for i := 0; i < len(hash); i += 1 {

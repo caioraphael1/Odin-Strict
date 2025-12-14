@@ -26,7 +26,7 @@ Unmarshal_Error :: union {
 	Unsupported_Type_Error,
 }
 
-unmarshal_any :: proc(data: []byte, v: any, spec := DEFAULT_SPECIFICATION, allocator := context.allocator) -> Unmarshal_Error {
+unmarshal_any :: proc(data: []byte, v: any, spec := DEFAULT_SPECIFICATION, allocator: mem.Allocator) -> Unmarshal_Error {
 	v := v
 	if v == nil || v.id == nil {
 		return .Invalid_Parameter
@@ -48,8 +48,6 @@ unmarshal_any :: proc(data: []byte, v: any, spec := DEFAULT_SPECIFICATION, alloc
 		return .Invalid_Parameter
 	}
 	
-	context.allocator = p.allocator
-	
 	if p.spec == .MJSON {
 		#partial switch p.curr_token.kind {
 		case .Ident, .String:
@@ -61,11 +59,11 @@ unmarshal_any :: proc(data: []byte, v: any, spec := DEFAULT_SPECIFICATION, alloc
 }
 
 
-unmarshal :: proc(data: []byte, ptr: ^$T, spec := DEFAULT_SPECIFICATION, allocator := context.allocator) -> Unmarshal_Error {
+unmarshal :: proc(data: []byte, ptr: ^$T, spec := DEFAULT_SPECIFICATION, allocator: mem.Allocator) -> Unmarshal_Error {
 	return unmarshal_any(data, ptr, spec, allocator)
 }
 
-unmarshal_string :: proc(data: string, ptr: ^$T, spec := DEFAULT_SPECIFICATION, allocator := context.allocator) -> Unmarshal_Error {
+unmarshal_string :: proc(data: string, ptr: ^$T, spec := DEFAULT_SPECIFICATION, allocator: mem.Allocator) -> Unmarshal_Error {
 	return unmarshal_any(transmute([]byte)data, ptr, spec, allocator)
 }
 

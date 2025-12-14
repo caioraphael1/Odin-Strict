@@ -20,7 +20,7 @@ Writer :: struct {
 }
 
 // Initialized a Writer with an `allocator`
-writer_init :: proc(b: ^Writer, wr: io.Writer, size: int = DEFAULT_BUF_SIZE, allocator := context.allocator) {
+writer_init :: proc(b: ^Writer, wr: io.Writer, size: int = DEFAULT_BUF_SIZE, allocator: mem.Allocator) {
 	size := size
 	size = max(size, MIN_READ_BUFFER_SIZE)
 	writer_reset(b, wr)

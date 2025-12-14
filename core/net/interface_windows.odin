@@ -22,12 +22,11 @@ package net
 
 import sys     "core:sys/windows"
 import strings "core:strings"
+import "core:mem"
 
-_enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
-	context.allocator = allocator
-
-	buf:      []u8
-	defer delete(buf)
+_enumerate_interfaces :: proc(allocator: mem.Allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
+	buf: []u8
+	defer delete(buf, allocator)
 
 	buf_size: u32
 	res:      u32
@@ -47,8 +46,8 @@ _enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []
 
 		switch res {
 		case 111: // ERROR_BUFFER_OVERFLOW:
-			delete(buf)
-			buf = make([]u8, buf_size)
+			delete(buf, allocator)
+			buf = make([]u8, buf_size, allocator)
 		case 0:
 			break gaa
 		case:
@@ -73,7 +72,7 @@ _enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []
 		if err3 != nil { return {}, .Allocation_Failure }
 
 		interface := Network_Interface{
-			adapter_name  = strings.clone(string(adapter.AdapterName)),
+			adapter_name  = strings.clone(string(adapter.AdapterName), allocator),
 			friendly_name = friendly_name,
 			description   = description,
 			dns_suffix    = dns_suffix,
@@ -87,7 +86,7 @@ _enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []
 		}
 
 		if adapter.PhysicalAddressLength > 0 && adapter.PhysicalAddressLength <= len(adapter.PhysicalAddress) {
-			interface.physical_address = physical_address_to_string(adapter.PhysicalAddress[:adapter.PhysicalAddressLength])
+			interface.physical_address = physical_address_to_string(adapter.PhysicalAddress[:adapter.PhysicalAddressLength], allocator)
 		}
 
 		for u_addr := (^sys.IP_ADAPTER_UNICAST_ADDRESS_LH)(adapter.FirstUnicastAddress); u_addr != nil; u_addr = u_addr.Next {

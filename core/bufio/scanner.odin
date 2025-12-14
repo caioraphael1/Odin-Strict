@@ -47,7 +47,7 @@ DEFAULT_MAX_SCAN_TOKEN_SIZE :: 1<<16
 _INIT_BUF_SIZE :: 4096
 
 // Initializes a Scanner buffer an allocator `buf_allocator`
-scanner_init :: proc(s: ^Scanner, r: io.Reader, buf_allocator := context.allocator) -> ^Scanner {
+scanner_init :: proc(s: ^Scanner, r: io.Reader, buf_allocator: mem.Allocator) -> ^Scanner {
 	s.r = r
 	s.split = scan_lines
 	s.max_token_size = DEFAULT_MAX_SCAN_TOKEN_SIZE

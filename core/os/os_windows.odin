@@ -196,16 +196,17 @@ current_thread_id :: proc "contextless" () -> int {
 @(private, require_results)
 _alloc_command_line_arguments :: proc "contextless" () -> []string {
 	context = runtime.default_context()
-    context.allocator = runtime.heap_allocator()
+    allocator := runtime.heap_allocator()
+
 	arg_count: i32
 	arg_list_ptr := win32.CommandLineToArgvW(win32.GetCommandLineW(), &arg_count)
-	arg_list := make([]string, int(arg_count))
+	arg_list := make([]string, int(arg_count), allocator)
 	for _, i in arg_list {
 		wc_str := (^win32.wstring)(uintptr(arg_list_ptr) + size_of(win32.wstring)*uintptr(i))^
 		olen := win32.WideCharToMultiByte(win32.CP_UTF8, 0, wc_str, -1,
 		                                  nil, 0, nil, nil)
 
-		buf := make([]byte, int(olen))
+		buf := make([]byte, int(olen), allocator)
 		n := win32.WideCharToMultiByte(win32.CP_UTF8, 0, wc_str, -1,
 		                               raw_data(buf), olen, nil, nil)
 		if n > 0 {
@@ -220,11 +221,11 @@ _alloc_command_line_arguments :: proc "contextless" () -> []string {
 @(private, fini)
 _delete_command_line_arguments :: proc "contextless" () {
 	context = runtime.default_context()
-    context.allocator = runtime.heap_allocator()
+    allocator := runtime.heap_allocator()
 	for s in args {
-		delete(s)
+		delete(s, allocator)
 	}
-	delete(args)
+	delete(args, allocator)
 }
 
 /*
@@ -651,7 +652,7 @@ is_dir :: proc(path: string) -> bool {
 @private cwd_lock := win32.SRWLOCK{} // zero is initialized
 
 @(require_results)
-get_current_directory :: proc(allocator := context.allocator) -> string {
+get_current_directory :: proc(allocator: runtime.Allocator) -> string {
 	win32.AcquireSRWLockExclusive(&cwd_lock)
 
 	runtime.DEFAULT_TEMP_ALLOCATOR_TEMP_GUARD(ignore = context.temp_allocator == allocator)

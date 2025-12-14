@@ -66,14 +66,14 @@ init_standard_stream_status :: proc "contextless" () {
 	}
 }
 
-create_file_logger :: proc(h: os.Handle, lowest := Level.Debug, opt := Default_File_Logger_Opts, ident := "", allocator := context.allocator) -> Logger {
+create_file_logger :: proc(h: os.Handle, lowest := Level.Debug, opt := Default_File_Logger_Opts, ident := "", allocator: runtime.Allocator) -> Logger {
 	data := new(File_Console_Logger_Data, allocator)
 	data.file_handle = h
 	data.ident = ident
 	return Logger{file_logger_proc, data, lowest, opt}
 }
 
-destroy_file_logger :: proc(log: Logger, allocator := context.allocator) {
+destroy_file_logger :: proc(log: Logger, allocator: runtime.Allocator) {
 	data := cast(^File_Console_Logger_Data)log.data
 	if data.file_handle != os.INVALID_HANDLE {
 		os.close(data.file_handle)
@@ -81,14 +81,14 @@ destroy_file_logger :: proc(log: Logger, allocator := context.allocator) {
 	free(data, allocator)
 }
 
-create_console_logger :: proc(lowest := Level.Debug, opt := Default_Console_Logger_Opts, ident := "", allocator := context.allocator) -> Logger {
+create_console_logger :: proc(lowest := Level.Debug, opt := Default_Console_Logger_Opts, ident := "", allocator: runtime.Allocator) -> Logger {
 	data := new(File_Console_Logger_Data, allocator)
 	data.file_handle = os.INVALID_HANDLE
 	data.ident = ident
 	return Logger{console_logger_proc, data, lowest, opt}
 }
 
-destroy_console_logger :: proc(log: Logger, allocator := context.allocator) {
+destroy_console_logger :: proc(log: Logger, allocator: runtime.Allocator) {
 	free(log.data, allocator)
 }
 

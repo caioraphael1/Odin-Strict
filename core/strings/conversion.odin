@@ -13,7 +13,7 @@ Converts invalid UTF-8 sequences in the input string `s` to the `replacement` st
 Inputs:
 - s: Input string that may contain invalid UTF-8 sequences.
 - replacement: String to replace invalid UTF-8 sequences with.
-- allocator: (default: context.allocator).
+- allocator: 
 
 WARNING: Allocation does not occur when len(s) == 0
 
@@ -21,7 +21,7 @@ Returns:
 - res: A valid UTF-8 string with invalid sequences replaced by `replacement`.
 - err: An optional allocator error if one occured, `nil` otherwise
 */
-to_valid_utf8 :: proc(s, replacement: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
+to_valid_utf8 :: proc(s, replacement: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	if len(s) == 0 {
 		return "", nil
 	}
@@ -81,7 +81,7 @@ Converts the input string `s` to all lowercase characters.
 
 Inputs:
 - s: Input string to be converted.
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The new string with all characters converted to lowercase
@@ -101,7 +101,7 @@ Output:
 	test
 
 */
-to_lower :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
+to_lower :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	b: Builder
 	builder_init(&b, 0, len(s), allocator) or_return
 	for r in s {
@@ -116,7 +116,7 @@ Converts the input string `s` to all uppercase characters.
 
 Inputs:
 - s: Input string to be converted.
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The new string with all characters converted to uppercase
@@ -136,7 +136,7 @@ Output:
 	TEST
 
 */
-to_upper :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
+to_upper :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	b: Builder
 	builder_init(&b, 0, len(s), allocator) or_return
 	for r in s {
@@ -254,13 +254,13 @@ Converts the input string `s` to "lowerCamelCase".
 
 Inputs:
 - s: Input string to be converted.
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
 - err: An optional allocator error if one occured, `nil` otherwise
 */
-to_camel_case :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
+to_camel_case :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	s := s
 	s = trim_space(s)
 	b: Builder
@@ -290,13 +290,13 @@ Converts the input string `s` to "UpperCamelCase" (PascalCase).
 
 Inputs:
 - s: Input string to be converted.
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
 - err: An optional allocator error if one occured, `nil` otherwise
 */
-to_pascal_case :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
+to_pascal_case :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	s := s
 	s = trim_space(s)
 	b: Builder
@@ -326,7 +326,7 @@ Inputs:
 - s: The input string to be converted
 - delimiter: The rune to be used as the delimiter between words
 - all_upper_case: A boolean indicating if the output should be all uppercased (true) or lowercased (false)
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
@@ -354,7 +354,7 @@ to_delimiter_case :: proc(
 	s: string,
 	delimiter: rune,
 	all_upper_case: bool,
-	allocator := context.allocator,
+	allocator: mem.Allocator,
 ) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	s := s
 	s = trim_space(s)
@@ -400,7 +400,7 @@ Converts a string to "snake_case" with all runes lowercased
 
 Inputs:
 - s: The input string to be converted
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
@@ -422,7 +422,7 @@ Output:
 	hello_world
 
 */
-to_snake_case :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
+to_snake_case :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	return to_delimiter_case(s, '_', false, allocator)
 }
 // Alias for `to_upper_snake_case`
@@ -434,7 +434,7 @@ Converts a string to "SNAKE_CASE" with all runes uppercased
 
 Inputs:
 - s: The input string to be converted
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
@@ -454,7 +454,7 @@ Output:
 	HELLO_WORLD
 
 */
-to_upper_snake_case :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
+to_upper_snake_case :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	return to_delimiter_case(s, '_', true, allocator)
 }
 /*
@@ -464,7 +464,7 @@ Converts a string to "kebab-case" with all runes lowercased
 
 Inputs:
 - s: The input string to be converted
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
@@ -484,7 +484,7 @@ Output:
 	hello-world
 
 */
-to_kebab_case :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error  {
+to_kebab_case :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error  {
 	return to_delimiter_case(s, '-', false, allocator)
 }
 /*
@@ -494,7 +494,7 @@ Converts a string to "KEBAB-CASE" with all runes uppercased
 
 Inputs:
 - s: The input string to be converted
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
@@ -514,7 +514,7 @@ Output:
 	HELLO-WORLD
 
 */
-to_upper_kebab_case :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error  {
+to_upper_kebab_case :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error  {
 	return to_delimiter_case(s, '-', true, allocator)
 }
 /*
@@ -524,7 +524,7 @@ Converts a string to "Ada_Case"
 
 Inputs:
 - s: The input string to be converted
-- allocator: (default: context.allocator).
+- allocator:
 
 Returns:
 - res: The converted string
@@ -544,7 +544,7 @@ Output:
 	Hello_World
 
 */
-to_ada_case :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error  {
+to_ada_case :: proc(s: string, allocator: mem.Allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error  {
 	s := s
 	s = trim_space(s)
 	b: Builder

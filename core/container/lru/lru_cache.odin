@@ -31,7 +31,7 @@ Cache :: struct($Key, $Value: typeid) where intrinsics.type_is_valid_map_key(Key
 }
 
 // init initializes a Cache
-init :: proc(c: ^$C/Cache($Key, $Value), capacity: int, entries_allocator := context.allocator, node_allocator := context.allocator) {
+init :: proc(c: ^$C/Cache($Key, $Value), capacity: int, entries_allocator: runtime.Allocator, node_allocator: runtime.Allocator) {
 	c.entries.allocator = entries_allocator
 	c.node_allocator = node_allocator
 	c.capacity = capacity

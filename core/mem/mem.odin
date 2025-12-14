@@ -602,17 +602,6 @@ align_backward_uint :: proc(ptr, align: uint) -> uint {
 	return uint(align_backward_uintptr(uintptr(ptr), uintptr(align)))
 }
 
-/*
-Create a context with a given allocator.
-
-This procedure returns a copy of the current context with the allocator replaced
-by the allocator `a`.
-*/
-@(require_results)
-context_from_allocator :: proc(a: Allocator) -> type_of(context) {
-	context.allocator = a
-	return context
-}
 
 /*
 Copy the value from a pointer into a value.

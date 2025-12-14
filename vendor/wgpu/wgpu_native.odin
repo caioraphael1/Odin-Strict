@@ -1,6 +1,8 @@
 #+build !js
 package wgpu
 
+import "core:mem"
+
 @(link_prefix="wgpu")
 foreign libwgpu {
 	@(link_name="wgpuGenerateReport")
@@ -45,7 +47,7 @@ GenerateReport :: proc "c" (instance: Instance) -> (report: GlobalReport) {
 	return
 }
 
-InstanceEnumerateAdapters :: proc(instance: Instance, options: ^InstanceEnumerateAdapterOptions = nil, allocator := context.allocator) -> (adapters: []Adapter) {
+InstanceEnumerateAdapters :: proc(instance: Instance, options: ^InstanceEnumerateAdapterOptions = nil, allocator: mem.Allocator) -> (adapters: []Adapter) {
 	count := RawInstanceEnumerateAdapters(instance, options, nil)
 	adapters = make([]Adapter, count, allocator)
 	RawInstanceEnumerateAdapters(instance, options, raw_data(adapters))

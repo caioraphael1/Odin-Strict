@@ -12,10 +12,10 @@ is_hardware_accelerated :: proc "contextless" () -> bool {
 
 @(private)
 e_hw :: proc "contextless" (ctx: ^Context, dst, tag, iv, aad, plaintext: []byte) #no_bounds_check {
-	panic_contextless(ERR_HW_NOT_SUPPORTED)
+	panic(ERR_HW_NOT_SUPPORTED)
 }
 
 @(private, require_results)
 d_hw :: proc "contextless" (ctx: ^Context, dst, iv, aad, ciphertext, tag: []byte) -> bool {
-	panic_contextless(ERR_HW_NOT_SUPPORTED)
+	panic(ERR_HW_NOT_SUPPORTED)
 }

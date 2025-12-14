@@ -62,7 +62,7 @@ Marshal_Options :: struct {
 	mjson_skipped_first_braces_end: bool,
 }
 
-marshal :: proc(v: any, opt: Marshal_Options = {}, allocator := context.allocator, loc := #caller_location) -> (data: []byte, err: Marshal_Error) {
+marshal :: proc(v: any, opt: Marshal_Options = {}, allocator: mem.Allocator, loc := #caller_location) -> (data: []byte, err: Marshal_Error) {
 	b := strings.builder_make(allocator, loc)
 	defer if err != nil {
 		strings.builder_destroy(&b)

@@ -1,5 +1,7 @@
 package io
 
+import "base:runtime"
+
 Multi_Reader :: struct {
 	readers: [dynamic]Reader,
 }
@@ -29,7 +31,7 @@ _multi_reader_proc :: proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, of
 }
 
 
-multi_reader_init :: proc(mr: ^Multi_Reader, readers: ..Reader, allocator := context.allocator) -> (r: Reader) {
+multi_reader_init :: proc(mr: ^Multi_Reader, readers: ..Reader, allocator: runtime.Allocator = runtime.PANIC_ALLOCATOR) -> (r: Reader) {
 	all_readers := make([dynamic]Reader, 0, len(readers), allocator)
 
 	for w in readers {
@@ -79,7 +81,7 @@ _multi_writer_proc :: proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, of
 }
 
 
-multi_writer_init :: proc(mw: ^Multi_Writer, writers: ..Writer, allocator := context.allocator) -> (out: Writer) {
+multi_writer_init :: proc(mw: ^Multi_Writer, writers: ..Writer, allocator: runtime.Allocator = runtime.PANIC_ALLOCATOR) -> (out: Writer) {
 	mw.writers = make([dynamic]Writer, 0, len(writers), allocator)
 
 	for w in writers {

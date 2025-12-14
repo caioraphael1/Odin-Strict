@@ -1,12 +1,11 @@
 #+build darwin, linux, netbsd, freebsd, openbsd, haiku
 package os
 
+import "base:runtime"
 import "core:strings"
 
 @(require_results)
-read_dir :: proc(fd: Handle, n: int, allocator := context.allocator) -> (fi: []File_Info, err: Error) {
-	context.allocator = allocator
-
+read_dir :: proc(fd: Handle, n: int, allocator: runtime.Allocator) -> (fi: []File_Info, err: Error) {
 	dupfd := _dup(fd) or_return
 	dirp  := _fdopendir(dupfd) or_return
 	defer _closedir(dirp)

@@ -137,7 +137,7 @@ run_test_task :: proc(task: thread.Task) {
 		new_state = .Running,
 	})
 	
-	context.assertion_failure_proc = test_assertion_failure_proc
+	runtime.assertion_failure_proc = test_assertion_failure_proc
 
 	logger_options := Default_Test_Logger_Opts
 	if global_log_colors_disabled {

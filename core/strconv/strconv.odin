@@ -2,6 +2,7 @@
 package strconv
 
 import "core:unicode/utf8"
+import "base:runtime"
 import "decimal"
 /*
 Parses a boolean value from the input string
@@ -1856,7 +1857,7 @@ Unquotes the input string considering any type of quote character and returns th
 
 **Inputs**
 - lit: The input string to unquote
-- allocator: (default: context.allocator)
+- allocator:
 
 WARNING: This procedure gives unexpected results if the quotes are not the first and last characters.
 
@@ -1899,7 +1900,7 @@ Output:
 
 NOTE: If unquoting is unsuccessful, the allocated memory for the result will be freed.
 */
-unquote_string :: proc(lit: string, allocator := context.allocator) -> (res: string, allocated, success: bool) {
+unquote_string :: proc(lit: string, allocator: runtime.Allocator) -> (res: string, allocated, success: bool) {
 	contains_rune :: proc(s: string, r: rune) -> int {
 		for c, offset in s {
 			if c == r {
@@ -1934,15 +1935,13 @@ unquote_string :: proc(lit: string, allocator := context.allocator) -> (res: str
 		}
 	}
 
-	context.allocator = allocator
-
 	buf_len := 3*len(s) / 2
-	buf := make([]byte, buf_len)
+	buf := make([]byte, buf_len, allocator)
 	offset := 0
 	for len(s) > 0 {
 		r, multiple_bytes, tail_string, ok := unquote_char(s, byte(quote))
 		if !ok {
-			delete(buf)
+			delete(buf, allocator)
 			return s, false, false
 		}
 		s = tail_string

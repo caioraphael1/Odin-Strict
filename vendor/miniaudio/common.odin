@@ -43,7 +43,7 @@ version_check :: proc "contextless" () {
 			n += copy(buf[n:], "and executing `make`")
 		}
 
-		panic_contextless(string(buf[:n]))
+		panic(string(buf[:n]))
 	}
 }
 

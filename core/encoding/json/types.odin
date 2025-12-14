@@ -34,6 +34,7 @@ Using one of these `Specification`s.
 package encoding_json
 
 import "core:strings"
+import "base:runtime"
 
 Specification :: enum {
 	JSON,
@@ -92,43 +93,40 @@ Error :: enum {
 
 
 
-destroy_value :: proc(value: Value, allocator := context.allocator, loc := #caller_location) {
-	context.allocator = allocator
+destroy_value :: proc(value: Value, allocator: runtime.Allocator, loc := #caller_location) {
 	#partial switch v in value {
 	case Object:
 		for key, elem in v {
-			delete(key, loc=loc)
-			destroy_value(elem, loc=loc)
+			delete_string(key, allocator, loc)
+			destroy_value(elem, allocator, loc)
 		}
-		delete(v, loc=loc)
+		delete_map(v, loc)
 	case Array:
 		for elem in v {
-			destroy_value(elem, loc=loc)
+			destroy_value(elem, allocator, loc)
 		}
-		delete(v, loc=loc)
+		delete_dynamic_array(v, loc)
 	case String:
-		delete(v, loc=loc)
+		delete_string(v, allocator, loc)
 	}
 }
 
-clone_value :: proc(value: Value, allocator := context.allocator) -> Value {
-	context.allocator = allocator
-
+clone_value :: proc(value: Value, allocator: runtime.Allocator) -> Value {
 	#partial switch &v in value {
 	case Object:
-		new_o := make(Object, len(v))
+		new_o := make(Object, len(v), allocator)
 		for key, elem in v {
-			new_o[strings.clone(key)] = clone_value(elem)
+			new_o[strings.clone(key, allocator)] = clone_value(elem, allocator)
 		}
 		return new_o
 	case Array:
-		new_a := make(Array, len(v))
+		new_a := make(Array, len(v), allocator)
 		for elem, idx in v {
-			new_a[idx] = clone_value(elem)
+			new_a[idx] = clone_value(elem, allocator)
 		}
 		return new_a
 	case String:
-		return strings.clone(v)
+		return strings.clone(v, allocator)
 	}
 
 	return value

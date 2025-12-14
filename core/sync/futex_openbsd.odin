@@ -36,7 +36,7 @@ _futex_wait :: proc "contextless" (f: ^Futex, expected: u32) -> bool {
 		return false
 	}
 
-	panic_contextless("futex_wait failure")
+	panic("futex_wait failure")
 }
 
 _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, duration: time.Duration) -> bool {
@@ -62,14 +62,14 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, durati
 		return false
 	}
 
-	panic_contextless("futex_wait_with_timeout failure")
+	panic("futex_wait_with_timeout failure")
 }
 
 _futex_signal :: proc "contextless" (f: ^Futex) {
 	res := _unix_futex(f, FUTEX_WAKE_PRIVATE, 1, nil)
 
 	if res == -1 {
-		panic_contextless("futex_wake_single failure")
+		panic("futex_wake_single failure")
 	}
 }
 
@@ -77,6 +77,6 @@ _futex_broadcast :: proc "contextless" (f: ^Futex)  {
 	res := _unix_futex(f, FUTEX_WAKE_PRIVATE, u32(max(i32)), nil)
 
 	if res == -1 {
-		panic_contextless("_futex_wake_all failure")
+		panic("_futex_wake_all failure")
 	}
 }

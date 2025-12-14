@@ -15,7 +15,7 @@ _futex_wait :: proc "contextless" (futex: ^Futex, expected: u32) -> bool {
 		return true
 	case:
 		// TODO(flysand): More descriptive panic messages based on the vlaue of `errno`
-		panic_contextless("futex_wait failure")
+		panic("futex_wait failure")
 	}
 }
 
@@ -34,7 +34,7 @@ _futex_wait_with_timeout :: proc "contextless" (futex: ^Futex, expected: u32, du
 	case .NONE, .EINTR, .EAGAIN:
 		return true
 	case:
-		panic_contextless("futex_wait_with_timeout failure")
+		panic("futex_wait_with_timeout failure")
 	}
 }
 
@@ -44,7 +44,7 @@ _futex_signal :: proc "contextless" (futex: ^Futex) {
 	case .NONE:
 		return
 	case:
-		panic_contextless("futex_wake_single failure")
+		panic("futex_wake_single failure")
 	}
 }
 
@@ -54,6 +54,6 @@ _futex_broadcast :: proc "contextless" (futex: ^Futex)  {
 	case .NONE:
 		return
 	case:
-		panic_contextless("_futex_wake_all failure")
+		panic("_futex_wake_all failure")
 	}
 }

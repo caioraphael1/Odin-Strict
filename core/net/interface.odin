@@ -21,29 +21,28 @@ package net
 */
 
 import "core:strings"
+import "core:mem"
 
 MAX_INTERFACE_ENUMERATION_TRIES :: 3
 
 /*
 	`enumerate_interfaces` retrieves a list of network interfaces with their associated properties.
 */
-enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
+enumerate_interfaces :: proc(allocator: mem.Allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
 	return _enumerate_interfaces(allocator)
 }
 
 /*
 	`destroy_interfaces` cleans up a list of network interfaces retrieved by e.g. `enumerate_interfaces`.
 */
-destroy_interfaces :: proc(interfaces: []Network_Interface, allocator := context.allocator) {
-	context.allocator = allocator
-
+destroy_interfaces :: proc(interfaces: []Network_Interface, allocator: mem.Allocator) {
 	for i in interfaces {
-		delete(i.adapter_name)
-		delete(i.friendly_name)
-		delete(i.description)
-		delete(i.dns_suffix)
+		delete(i.adapter_name, allocator)
+		delete(i.friendly_name, allocator)
+		delete(i.description, allocator)
+		delete(i.dns_suffix, allocator)
 
-		delete(i.physical_address)
+		delete(i.physical_address, allocator)
 
 		delete(i.unicast)
 		delete(i.multicast)
@@ -56,9 +55,7 @@ destroy_interfaces :: proc(interfaces: []Network_Interface, allocator := context
 /*
 	Turns a slice of bytes (from e.g. `get_adapters_addresses`) into a "XX:XX:XX:..." string.
 */
-physical_address_to_string :: proc(phy_addr: []u8, allocator := context.allocator) -> (phy_string: string) {
-	context.allocator = allocator
-
+physical_address_to_string :: proc(phy_addr: []u8, allocator: mem.Allocator) -> (phy_string: string) {
 	MAC_HEX := "0123456789ABCDEF"
 
 	if len(phy_addr) == 0 {

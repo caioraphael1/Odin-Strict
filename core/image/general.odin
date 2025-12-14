@@ -11,12 +11,12 @@ _internal_loaders: [Which_File_Type]Loader_Proc
 _internal_destroyers: [Which_File_Type]Destroy_Proc
 
 register :: proc "contextless" (kind: Which_File_Type, loader: Loader_Proc, destroyer: Destroy_Proc) {
-	assert_contextless(loader != nil)
-	assert_contextless(destroyer != nil)
-	assert_contextless(_internal_loaders[kind] == nil)
+	assert(loader != nil)
+	assert(destroyer != nil)
+	assert(_internal_loaders[kind] == nil)
 	_internal_loaders[kind] = loader
 
-	assert_contextless(_internal_destroyers[kind] == nil)
+	assert(_internal_destroyers[kind] == nil)
 	_internal_destroyers[kind] = destroyer
 }
 

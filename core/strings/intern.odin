@@ -28,13 +28,13 @@ Initializes the entries map and sets the allocator for the string entries
 
 Inputs:
 - m: A pointer to the Intern struct to be initialized
-- allocator: The allocator for the Intern_Entry strings (Default: context.allocator)
-- map_allocator: The allocator for the map of entries (Default: context.allocator)
+- allocator: The allocator for the Intern_Entry strings 
+- map_allocator: The allocator for the map of entries 
 
 Returns:
 - err: An allocator error if one occured, `nil` otherwise
 */
-intern_init :: proc(m: ^Intern, allocator := context.allocator, map_allocator := context.allocator, loc := #caller_location) -> (err: mem.Allocator_Error) {
+intern_init :: proc(m: ^Intern, allocator: mem.Allocator, map_allocator: mem.Allocator, loc := #caller_location) -> (err: mem.Allocator_Error) {
 	m.allocator = allocator
 	m.entries = make(map[string]^Intern_Entry, 16, map_allocator, loc) or_return
 	return nil
@@ -106,7 +106,7 @@ Returns:
 */
 _intern_get_entry :: proc(m: ^Intern, text: string) -> (new_entry: ^Intern_Entry, err: runtime.Allocator_Error) #no_bounds_check {
 	if m.allocator.procedure == nil {
-		m.allocator = context.allocator
+		return nil, .Invalid_Allocator
 	}
 
 	key_ptr, val_ptr, inserted := map_entry(&m.entries, text) or_return

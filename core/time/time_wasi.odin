@@ -10,7 +10,7 @@ _IS_SUPPORTED :: true
 
 _now :: proc "contextless" () -> Time {
 	ts, err := wasi.clock_time_get(wasi.CLOCK_REALTIME, 0)
-	assert_contextless(err == nil)
+	assert(err == nil)
 	return Time{_nsec=i64(ts)}
 }
 
@@ -27,12 +27,12 @@ _sleep :: proc "contextless" (d: Duration) {
 		&ev,
 		1,
 	)
-	assert_contextless(err == nil && n == 1 && ev.error == nil && ev.type == .CLOCK)
+	assert(err == nil && n == 1 && ev.error == nil && ev.type == .CLOCK)
 }
 
 _tick_now :: proc "contextless" () -> Tick {
 	ts, err := wasi.clock_time_get(wasi.CLOCK_MONOTONIC, 0)
-	assert_contextless(err == nil)
+	assert(err == nil)
 	return Tick{_nsec=i64(ts)}
 }
 

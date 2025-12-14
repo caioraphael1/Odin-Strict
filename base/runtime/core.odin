@@ -281,7 +281,6 @@ Load_Directory_File :: struct {
 	data: []byte, // immutable data
 }
 
-Assertion_Failure_Proc :: #type proc(prefix, message: string, loc: Source_Code_Location) -> !
 
 // Allocation Stuff
 Allocator_Mode :: enum byte {
@@ -309,6 +308,7 @@ Allocator_Error :: enum byte {
 	Invalid_Pointer      = 2,
 	Invalid_Argument     = 3,
 	Mode_Not_Implemented = 4,
+    Invalid_Allocator    = 5,
 }
 
 Allocator_Proc :: #type proc(allocator_data: rawptr, mode: Allocator_Mode,
@@ -385,7 +385,6 @@ Random_Generator :: struct {
 Context :: struct {
 	allocator:              Allocator,
 	temp_allocator:         Allocator,
-	assertion_failure_proc: Assertion_Failure_Proc,
 	logger:                 Logger,
 	random_generator:       Random_Generator,
 
@@ -395,6 +394,12 @@ Context :: struct {
 	// Internal use only
 	_internal: rawptr,
 }
+
+
+Assertion_Failure_Proc :: #type proc "contextless" (prefix, message: string, loc: Source_Code_Location) -> !
+
+assertion_failure_proc: Assertion_Failure_Proc = default_assertion_failure_proc
+
 
 
 Raw_String :: struct {
@@ -758,15 +763,10 @@ __init_context :: proc "contextless" (c: ^Context) {
 	}
 
 	// NOTE(bill): Do not initialize these procedures with a call as they are not defined with the "contextless" calling convention
-	c.allocator.procedure = panic_allocator_proc
-	c.allocator.data      = nil
+	c.allocator = PANIC_ALLOCATOR
 
 	c.temp_allocator.procedure = default_temp_allocator_proc
     c.temp_allocator.data      = &global_default_temp_allocator_data
-
-	when !ODIN_DISABLE_ASSERT {
-		c.assertion_failure_proc = default_assertion_failure_proc
-	}
 
 	c.logger.procedure = default_logger_proc
 	c.logger.data = nil
@@ -775,11 +775,7 @@ __init_context :: proc "contextless" (c: ^Context) {
 	c.random_generator.data = nil
 }
 
-default_assertion_failure_proc :: proc(prefix, message: string, loc: Source_Code_Location) -> ! {
-	default_assertion_contextless_failure_proc(prefix, message, loc)
-}
-
-default_assertion_contextless_failure_proc :: proc "contextless" (prefix, message: string, loc: Source_Code_Location) -> ! {
+default_assertion_failure_proc :: proc "contextless" (prefix, message: string, loc: Source_Code_Location) -> ! {
 	when ODIN_OS == .Freestanding {
 		// Do nothing
 	} else {

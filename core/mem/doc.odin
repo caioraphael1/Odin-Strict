@@ -42,11 +42,6 @@ The allocators have different kinds of restrictions on object lifetimes, sizes,
 alignment and can be a significant gain, if used properly. Odin supports
 allocators on a language level.
 
-Operations such as `new`, `free` and `delete` by default will use
-`context.allocator`, which can be overridden by the user. When an override
-happens all called procedures will inherit the new context and use the same
-allocator.
-
 We will define one concept to simplify the description of some allocator-related
 procedures, which is ownership. If the memory was allocated via a specific
 allocator, that allocator is said to be the *owner* of that memory region. To

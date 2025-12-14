@@ -50,7 +50,7 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, durati
 		case -ETIMEDOUT:
 			return false
 		case:
-			panic_contextless("darwin.os_sync_wait_on_address_with_timeout failure")
+			panic("darwin.os_sync_wait_on_address_with_timeout failure")
 		}
 	} else {
 
@@ -72,7 +72,7 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, durati
 	case ETIMEDOUT:
 		return false
 	case:
-		panic_contextless("futex_wait failure")
+		panic("futex_wait failure")
 	}
 	return true
 
@@ -92,7 +92,7 @@ _futex_signal :: proc "contextless" (f: ^Futex) {
 			case -ENOENT:
 				return
 			case:
-				panic_contextless("darwin.os_sync_wake_by_address_any failure")
+				panic("darwin.os_sync_wake_by_address_any failure")
 			}
 		}
 	} else {
@@ -108,7 +108,7 @@ _futex_signal :: proc "contextless" (f: ^Futex) {
 		case ENOENT:
 			return
 		case:
-			panic_contextless("futex_wake_single failure")
+			panic("futex_wake_single failure")
 		}
 	}
 
@@ -128,7 +128,7 @@ _futex_broadcast :: proc "contextless" (f: ^Futex) {
 			case -ENOENT:
 				return
 			case:
-				panic_contextless("darwin.os_sync_wake_by_address_all failure")
+				panic("darwin.os_sync_wake_by_address_all failure")
 			}
 		}
 	} else {
@@ -144,7 +144,7 @@ _futex_broadcast :: proc "contextless" (f: ^Futex) {
 		case ENOENT:
 			return
 		case:
-			panic_contextless("futex_wake_all failure")
+			panic("futex_wake_all failure")
 		}
 	}
 

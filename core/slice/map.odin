@@ -6,7 +6,7 @@ import "base:runtime"
 _ :: intrinsics
 _ :: runtime
 
-map_keys :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (keys: []K, err: runtime.Allocator_Error) {
+map_keys :: proc(m: $M/map[$K]$V, allocator: runtime.Allocator) -> (keys: []K, err: runtime.Allocator_Error) {
 	keys = make(type_of(keys), len(m), allocator) or_return
 	i := 0
 	for key in m {
@@ -15,7 +15,7 @@ map_keys :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (keys: []K,
 	}
 	return
 }
-map_values :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (values: []V, err: runtime.Allocator_Error) {
+map_values :: proc(m: $M/map[$K]$V, allocator: runtime.Allocator) -> (values: []V, err: runtime.Allocator_Error) {
 	values = make(type_of(values), len(m), allocator) or_return
 	i := 0
 	for _, value in m {
@@ -37,7 +37,7 @@ Map_Entry_Info :: struct($Key, $Value: typeid) {
 }
 
 
-map_entries :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (entries: []Map_Entry(K, V), err: runtime.Allocator_Error) {
+map_entries :: proc(m: $M/map[$K]$V, allocator: runtime.Allocator) -> (entries: []Map_Entry(K, V), err: runtime.Allocator_Error) {
 	entries = make(type_of(entries), len(m), allocator) or_return
 	i := 0
 	for key, value in m {
@@ -48,7 +48,7 @@ map_entries :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (entries
 	return
 }
 
-map_entry_infos :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (entries: []Map_Entry_Info(K, V), err: runtime.Allocator_Error) #no_bounds_check {
+map_entry_infos :: proc(m: $M/map[$K]$V, allocator: runtime.Allocator) -> (entries: []Map_Entry_Info(K, V), err: runtime.Allocator_Error) #no_bounds_check {
 	m := m
 	rm := (^runtime.Raw_Map)(&m)
 

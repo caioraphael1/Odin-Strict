@@ -20,14 +20,14 @@ package math_big
 */
 add :: proc {
 	/*
-		int_add :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: Error)
+		int_add :: proc(dest, a, b: ^Int, allocator: mem.Allocator) -> (err: Error)
 	*/
 	int_add,
 	/*
 		Adds the unsigned `DIGIT` immediate to an `Int`, such that the
 		`DIGIT` doesn't have to be turned into an `Int` first.
 
-		int_add_digit :: proc(dest, a: ^Int, digit: DIGIT, allocator := context.allocator) -> (err: Error)
+		int_add_digit :: proc(dest, a: ^Int, digit: DIGIT, allocator: mem.Allocator) -> (err: Error)
 	*/
 	int_add_digit,
 	rat_add_rat,

@@ -13,6 +13,7 @@ package compress_shoco
 
 import "base:intrinsics"
 import "core:compress"
+import "core:mem"
 
 Shoco_Pack :: struct {
 	word:           u32,
@@ -167,7 +168,7 @@ decompress_slice_to_output_buffer :: proc(input: []u8, output: []u8, model := DE
 	return out, nil
 }
 
-decompress_slice_to_string :: proc(input: []u8, model := DEFAULT_MODEL, allocator := context.allocator) -> (res: string, err: compress.Error) {
+decompress_slice_to_string :: proc(input: []u8, model := DEFAULT_MODEL, allocator: mem.Allocator) -> (res: string, err: compress.Error) {
 	context.allocator = allocator
 
 	if len(input) == 0 {
@@ -185,7 +186,7 @@ decompress_slice_to_string :: proc(input: []u8, model := DEFAULT_MODEL, allocato
 }
 decompress :: proc{decompress_slice_to_output_buffer, decompress_slice_to_string}
 
-compress_string_to_buffer :: proc(input: string, output: []u8, model := DEFAULT_MODEL, allocator := context.allocator) -> (size: int, err: compress.Error) {
+compress_string_to_buffer :: proc(input: string, output: []u8, model := DEFAULT_MODEL, allocator: mem.Allocator) -> (size: int, err: compress.Error) {
 	inp, inp_end := 0, len(input)
 	out, out_end := 0, len(output)
 	output := output
@@ -292,7 +293,7 @@ compress_string_to_buffer :: proc(input: string, output: []u8, model := DEFAULT_
 	return out, nil
 }
 
-compress_string :: proc(input: string, model := DEFAULT_MODEL, allocator := context.allocator) -> (output: []u8, err: compress.Error) {
+compress_string :: proc(input: string, model := DEFAULT_MODEL, allocator: mem.Allocator) -> (output: []u8, err: compress.Error) {
 	context.allocator = allocator
 
 	if len(input) == 0 {

@@ -5,9 +5,9 @@ import "core:strings"
 import "base:runtime"
 
 @(require_results)
-read_dir :: proc(fd: Handle, n: int, allocator := context.allocator) -> (fi: []File_Info, err: Error) {
+read_dir :: proc(fd: Handle, n: int, allocator: runtime.Allocator) -> (fi: []File_Info, err: Error) {
 	@(require_results)
-	find_data_to_file_info :: proc(base_path: string, d: ^win32.WIN32_FIND_DATAW) -> (fi: File_Info) {
+	find_data_to_file_info :: proc(base_path: string, d: ^win32.WIN32_FIND_DATAW, allocator: runtime.Allocator) -> (fi: File_Info) {
 		// Ignore "." and ".."
 		if d.cFileName[0] == '.' && d.cFileName[1] == 0 {
 			return
@@ -15,7 +15,7 @@ read_dir :: proc(fd: Handle, n: int, allocator := context.allocator) -> (fi: []F
 		if d.cFileName[0] == '.' && d.cFileName[1] == '.' && d.cFileName[2] == 0 {
 			return
 		}
-		path := strings.concatenate({base_path, `\`, win32.utf16_to_utf8(d.cFileName[:]) or_else ""})
+		path := strings.concatenate({base_path, `\`, win32.utf16_to_utf8(d.cFileName[:]) or_else ""}, allocator)
 		fi.fullpath = path
 		fi.name = basename(path)
 		fi.size = i64(d.nFileSizeHigh)<<32 + i64(d.nFileSizeLow)
@@ -53,8 +53,6 @@ read_dir :: proc(fd: Handle, n: int, allocator := context.allocator) -> (fi: []F
 		return nil, ERROR_INVALID_HANDLE
 	}
 
-	context.allocator = allocator
-
 	h := win32.HANDLE(fd)
 
 	dir_fi, _ := file_info_from_get_file_information_by_handle("", h)
@@ -75,7 +73,7 @@ read_dir :: proc(fd: Handle, n: int, allocator := context.allocator) -> (fi: []F
 		return
 	}
 
-	dfi := make([dynamic]File_Info, 0, size) or_return
+	dfi := make([dynamic]File_Info, 0, size, allocator) or_return
 
 	wpath_search := make([]u16, len(wpath)+3, context.temp_allocator) or_return
 	copy(wpath_search, wpath)
@@ -83,8 +81,8 @@ read_dir :: proc(fd: Handle, n: int, allocator := context.allocator) -> (fi: []F
 	wpath_search[len(wpath)+1] = '*'
 	wpath_search[len(wpath)+2] = 0
 
-	path := cleanpath_from_buf(wpath)
-	defer delete(path)
+	path := cleanpath_from_buf(wpath, allocator)
+	defer delete(path, allocator)
 
 	find_data := &win32.WIN32_FIND_DATAW{}
 	find_handle := win32.FindFirstFileW(cstring16(raw_data(wpath_search)), find_data)
@@ -95,7 +93,7 @@ read_dir :: proc(fd: Handle, n: int, allocator := context.allocator) -> (fi: []F
 	defer win32.FindClose(find_handle)
 	for n != 0 {
 		fi: File_Info
-		fi = find_data_to_file_info(path, find_data)
+		fi = find_data_to_file_info(path, find_data, allocator)
 		if fi.name != "" {
 			append(&dfi, fi)
 			n -= 1

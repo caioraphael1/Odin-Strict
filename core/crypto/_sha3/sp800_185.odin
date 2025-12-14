@@ -40,7 +40,7 @@ rate_cshake :: #force_inline proc "contextless" (sec_strength: int) -> int {
 		return RATE_256
 	}
 
-	panic_contextless("crypto/sha3: invalid security strength")
+	panic("crypto/sha3: invalid security strength")
 }
 
 // right_encode and left_encode are defined to support 0 <= x < 2^2040
@@ -70,7 +70,7 @@ bytepad :: proc "contextless" (ctx: ^Context, x_strings: [][]byte, w: int) {
 
 		// This isn't actually possible, at least with the currently
 		// defined SP 800-185 routines.
-		ensure_contextless(carry == 0, "crypto/sha3: bytepad input length overflow")
+		ensure(carry == 0, "crypto/sha3: bytepad input length overflow")
 	}
 
 	// We skip this step as we are doing a byte-oriented implementation

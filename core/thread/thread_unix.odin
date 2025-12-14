@@ -18,7 +18,7 @@ Thread_Os_Specific :: struct #align(16) {
 // Creates a thread which will run the given procedure.
 // It then waits for `start` to be called.
 //
-_create :: proc(procedure: Thread_Proc, priority: Thread_Priority) -> ^Thread {
+_create :: proc(procedure: Thread_Proc, priority: Thread_Priority, allocator: runtime.Allocator) -> ^Thread {
 	__unix_thread_entry_proc :: proc "c" (t: rawptr) -> rawptr {
 		t := (^Thread)(t)
 
@@ -30,13 +30,13 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority) -> ^Thread {
 
 		// Enable thread's cancelability.
 		err := posix.pthread_setcancelstate(.ENABLE, nil)
-		assert_contextless(err == nil)
+		assert(err == nil)
 
 		// NOTE(laytan): .ASYNCHRONOUS should make `pthread_cancel` cancel immediately
 		// instead of waiting for a cancellation point.
 		// This does not seem to work on at least Darwin and NetBSD though.
 		err = posix.pthread_setcanceltype(.ASYNCHRONOUS, nil)
-		assert_contextless(err == nil)
+		assert(err == nil)
 
 		{
 			init_context := t.init_context
@@ -57,7 +57,7 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority) -> ^Thread {
 
 		if .Self_Cleanup in sync.atomic_load(&t.flags) {
 			res := posix.pthread_detach(t.unix_thread)
-			assert_contextless(res == nil)
+			assert(res == nil)
 
 			t.unix_thread = {}
 			// NOTE(ftphikari): It doesn't matter which context 'free' received, right?
@@ -92,7 +92,7 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority) -> ^Thread {
 	if thread == nil {
 		return nil
 	}
-	thread.creation_allocator = context.allocator
+	thread.creation_allocator = allocator
 
 	// Set thread priority.
 	policy: posix.Sched_Policy

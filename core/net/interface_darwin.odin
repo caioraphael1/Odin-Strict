@@ -22,13 +22,12 @@ package net
 
 import "core:strings"
 import "core:sys/posix"
+import "core:mem"
 
 foreign import lib "system:System"
 
 @(private)
-_enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
-	context.allocator = allocator
-
+_enumerate_interfaces :: proc(allocator: mem.Allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
 	head: ^ifaddrs
 	if getifaddrs(&head) != .OK {
 		return {}, .Unable_To_Enumerate_Network_Interfaces

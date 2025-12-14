@@ -22,7 +22,7 @@ _thread_priority_map := [Thread_Priority]i32{
 	.High = +2,
 }
 
-_create :: proc(procedure: Thread_Proc, priority: Thread_Priority) -> ^Thread {
+_create :: proc(procedure: Thread_Proc, priority: Thread_Priority, allocator: runtime.Allocator) -> ^Thread {
 	win32_thread_id: win32.DWORD
 
 	__windows_thread_entry_proc :: proc "system" (t_: rawptr) -> win32.DWORD {
@@ -61,11 +61,11 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority) -> ^Thread {
 	}
 
 
-	thread := new(Thread)
+	thread := new(Thread, allocator)
 	if thread == nil {
 		return nil
 	}
-	thread.creation_allocator = context.allocator
+	thread.creation_allocator = allocator
 
 	win32_thread := win32.CreateThread(nil, 0, __windows_thread_entry_proc, thread, win32.CREATE_SUSPENDED, &win32_thread_id)
 	if win32_thread == nil {

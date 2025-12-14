@@ -197,7 +197,7 @@ Inputs:
 Returns:
 - ok: Whether the set was successful, `false` on allocation failure or bad index
 */
-set :: proc(ba: ^Bit_Array, #any_int index: uint, set_to: bool = true, allocator := context.allocator) -> (ok: bool) {
+set :: proc(ba: ^Bit_Array, #any_int index: uint, set_to: bool = true, allocator: mem.Allocator) -> (ok: bool) {
 
 	idx := int(index) - ba.bias
 
@@ -244,7 +244,7 @@ Inputs:
 Returns:
 - ok: Whether the unset was successful, `false` on allocation failure or bad index
 */
-unset :: #force_inline proc(ba: ^Bit_Array, #any_int index: uint, allocator := context.allocator) -> (ok: bool) {
+unset :: #force_inline proc(ba: ^Bit_Array, #any_int index: uint, allocator: mem.Allocator) -> (ok: bool) {
 	return set(ba, index, false, allocator)
 }
 /*
@@ -276,7 +276,7 @@ Inputs:
 Returns:
 - ba: Allocates a bit_Array, backing data is set to `max-min / 64` indices, rounded up (eg 65 - 0 allocates for [2]u64).
 */
-create :: proc(max_index: int, min_index: int = 0, allocator := context.allocator) -> (res: ^Bit_Array, ok: bool) #optional_ok {
+create :: proc(max_index: int, min_index: int = 0, allocator: mem.Allocator) -> (res: ^Bit_Array, ok: bool) #optional_ok {
 	size_in_bits := max_index - min_index
 
 	if size_in_bits < 0 { return {}, false }
@@ -303,7 +303,7 @@ Inputs:
 - min_index: minimum starting index (used as a bias)
 - allocator: (default is context.allocator)
 */
-init :: proc(res: ^Bit_Array, max_index: int, min_index: int = 0, allocator := context.allocator) -> (ok: bool) {
+init :: proc(res: ^Bit_Array, max_index: int, min_index: int = 0, allocator: mem.Allocator) -> (ok: bool) {
 	size_in_bits := max_index - min_index
 
 	if size_in_bits < 0 { return false }
@@ -391,7 +391,7 @@ destroy :: proc(ba: ^Bit_Array) {
 	If you want to reserve the memory for a given-sized Bit Array up front, you can use `create`.
 */
 @(private="file")
-resize_if_needed :: proc(ba: ^Bit_Array, legs: int, allocator := context.allocator) -> (ok: bool) {
+resize_if_needed :: proc(ba: ^Bit_Array, legs: int, allocator: mem.Allocator) -> (ok: bool) {
 	if ba == nil { return false }
 
 	context.allocator = allocator

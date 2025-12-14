@@ -106,6 +106,7 @@ error_string :: proc(ferr: Error) -> string {
 		case .Invalid_Pointer:      return "invalid allocator pointer"
 		case .Invalid_Argument:     return "invalid allocator argument"
 		case .Mode_Not_Implemented: return "allocator mode not implemented"
+        case .Invalid_Allocator:    return "allocator not initialized"
 		}
 	case Platform_Error:
 		return _error_string(i32(e))

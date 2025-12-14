@@ -14,7 +14,7 @@ import "core:bytes"
 @(require, linkage="strong", link_name="memcmp")
 memcmp :: proc "c" (lhs: [^]byte, rhs: [^]byte, count: uint) -> i32 {
 	icount := int(count)
-	assert_contextless(icount >= 0)
+	assert(icount >= 0)
 	return i32(mem.compare(lhs[:icount], rhs[:icount]))
 }
 
@@ -58,7 +58,7 @@ strrchr :: proc "c" (str: cstring, ch: i32) -> cstring {
 @(require, linkage="strong", link_name="strncpy")
 strncpy :: proc "c" (dst: [^]byte, src: cstring, count: uint) -> cstring {
 	icount := int(count)
-	assert_contextless(icount >= 0)
+	assert(icount >= 0)
 	cnt := min(len(src), icount)
 	intrinsics.mem_copy_non_overlapping(dst, rawptr(src), cnt)
 	intrinsics.mem_zero(dst, icount-cnt)
@@ -85,7 +85,7 @@ strcspn :: proc "c" (dst: cstring, src: cstring) -> uint {
 @(require, linkage="strong", link_name="strncmp")
 strncmp :: proc "c" (lhs: cstring, rhs: cstring, count: uint) -> i32 {
 	icount := int(count)
-	assert_contextless(icount >= 0)
+	assert(icount >= 0)
 	lhss := strings.string_from_null_terminated_ptr(([^]byte)(lhs), icount)
 	rhss := strings.string_from_null_terminated_ptr(([^]byte)(rhs), icount)
 	return i32(strings.compare(lhss, rhss))

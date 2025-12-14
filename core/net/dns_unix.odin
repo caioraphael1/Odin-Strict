@@ -19,11 +19,10 @@ package net
 		Feoramund:       FreeBSD platform code
 */
 import "core:strings"
+import "core:mem"
 
 @(private)
-_get_dns_records_os :: proc(hostname: string, type: DNS_Record_Type, allocator := context.allocator) -> (records: []DNS_Record, err: DNS_Error) {
-	context.allocator = allocator
-
+_get_dns_records_os :: proc(hostname: string, type: DNS_Record_Type, allocator: mem.Allocator) -> (records: []DNS_Record, err: DNS_Error) {
 	if type != .SRV {
 		// NOTE(tetra): 'hostname' can contain underscores when querying SRV records
 		ok := validate_hostname(hostname)
@@ -32,8 +31,8 @@ _get_dns_records_os :: proc(hostname: string, type: DNS_Record_Type, allocator :
 		}
 	}
 
-	name_servers, resolve_ok := load_resolv_conf(dns_configuration.resolv_conf)
-	defer delete(name_servers)
+	name_servers, resolve_ok := load_resolv_conf(dns_configuration.resolv_conf, allocator)
+	defer delete(name_servers, allocator)
 	if !resolve_ok {
 		return nil, .Invalid_Resolv_Config_Error
 	}
@@ -41,13 +40,13 @@ _get_dns_records_os :: proc(hostname: string, type: DNS_Record_Type, allocator :
 		return
 	}
 
-	hosts, hosts_ok := load_hosts(dns_configuration.hosts_file)
-	defer delete(hosts)
+	hosts, hosts_ok := load_hosts(dns_configuration.hosts_file, allocator)
+	defer delete(hosts, allocator)
 	if !hosts_ok {
 		return nil, .Invalid_Hosts_Config_Error
 	}
 
-	host_overrides := make([dynamic]DNS_Record)
+	host_overrides := make([dynamic]DNS_Record, allocator)
 	for host in hosts {
 		if strings.compare(host.name, hostname) != 0 {
 			continue
@@ -56,7 +55,7 @@ _get_dns_records_os :: proc(hostname: string, type: DNS_Record_Type, allocator :
 		if type == .IP4 && family_from_address(host.addr) == .IP4 {
 			record := DNS_Record_IP4{
 				base = {
-					record_name = strings.clone(hostname),
+					record_name = strings.clone(hostname, allocator),
 					ttl_seconds = 0,
 				},
 				address = host.addr.(IP4_Address),
@@ -65,7 +64,7 @@ _get_dns_records_os :: proc(hostname: string, type: DNS_Record_Type, allocator :
 		} else if type == .IP6 && family_from_address(host.addr) == .IP6 {
 			record := DNS_Record_IP6{
 				base = {
-					record_name = strings.clone(hostname),
+					record_name = strings.clone(hostname, allocator),
 					ttl_seconds = 0,
 				},
 				address = host.addr.(IP6_Address),
@@ -78,5 +77,5 @@ _get_dns_records_os :: proc(hostname: string, type: DNS_Record_Type, allocator :
 		return host_overrides[:], nil
 	}
 
-	return get_dns_records_from_nameservers(hostname, type, name_servers, host_overrides[:])
+	return get_dns_records_from_nameservers(hostname, type, name_servers, host_overrides[:], allocator)
 }

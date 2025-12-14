@@ -1702,7 +1702,7 @@ CreateInstance :: proc "c" (/* NULLABLE */ descriptor: /* const */ ^InstanceDesc
 			n += copy(buf[n:], "bindings are for version ")
 			n += copy(buf[n:], BINDINGS_VERSION_STRING)
 			n += copy(buf[n:], ", but a different version is linked")
-			panic_contextless(string(buf[:n]))
+			panic(string(buf[:n]))
 		}
 	}
 

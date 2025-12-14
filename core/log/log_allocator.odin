@@ -23,7 +23,7 @@ Log_Allocator :: struct {
 }
 
 log_allocator_init :: proc(la: ^Log_Allocator, level: Level, size_fmt := Log_Allocator_Format.Bytes,
-                           allocator := context.allocator, prefix := "") {
+                           allocator: runtime.Allocator, prefix := "") {
 	la.allocator = allocator
 	la.level    = level
 	la.prefix   = prefix

@@ -2137,7 +2137,7 @@ pivot_root :: proc "contextless" (new_root: cstring, old_root: cstring) -> (Errn
 	Available since Linux 2.1.57
 */
 prctl :: proc "contextless" (op: i32, args: ..uint) -> (Errno) {
-	assert_contextless(len(args) <= 4)
+	assert(len(args) <= 4)
 	ret := syscall(SYS_prctl, op, args[0], args[1], args[2], args[3])
 	return Errno(-ret)
 }
@@ -3189,7 +3189,7 @@ io_uring_enter :: proc "contextless" (fd: Fd, to_submit: u32, min_complete: u32,
 	Available since Linux 5.11
 */
 io_uring_enter2 :: proc "contextless" (fd: Fd, to_submit: u32, min_complete: u32, flags: IO_Uring_Enter_Flags, arg: ^IO_Uring_Getevents_Arg) -> (int, Errno) {
-	assert_contextless(.EXT_ARG in flags)
+	assert(.EXT_ARG in flags)
 	ret := syscall(SYS_io_uring_enter, fd, to_submit, min_complete, transmute(u32)flags, arg, size_of(IO_Uring_Getevents_Arg))
 	return errno_unwrap(ret, int)
 }

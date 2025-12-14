@@ -559,7 +559,7 @@ futex_wait :: proc "contextless" (f: ^Futex, expected: u32) {
 		return
 	}
 	ok := _futex_wait(f, expected)
-	assert_contextless(ok, "futex_wait failure")
+	assert(ok, "futex_wait failure")
 }
 
 /*

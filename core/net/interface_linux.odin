@@ -24,15 +24,14 @@ package net
 */
 
 //import "core:strings"
+import "core:mem"
 
 
 // TODO(flysand): regression
 // NOTE(flysand): https://man7.org/linux/man-pages/man7/netlink.7.html
 // apparently musl libc uses this to enumerate network interfaces
 @(private)
-_enumerate_interfaces :: proc(allocator := context.allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
-	context.allocator = allocator
-
+_enumerate_interfaces :: proc(allocator: mem.Allocator) -> (interfaces: []Network_Interface, err: Interfaces_Error) {
 	// head: ^os.ifaddrs
 
 	// if res := os._getifaddrs(&head); res < 0 {

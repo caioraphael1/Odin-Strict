@@ -4,6 +4,7 @@ package filepath
 
 import "base:runtime"
 import "core:strings"
+import "core:mem"
 
 SEPARATOR_CHARS :: `/\`
 
@@ -245,9 +246,7 @@ long_ext :: proc(path: string) -> string {
 	If the result of the path is an empty string, the returned path with be `"."`.
 
 */
-clean :: proc(path: string, allocator := context.allocator) -> (cleaned: string, err: runtime.Allocator_Error) #optional_allocator_error {
-	context.allocator = allocator
-
+clean :: proc(path: string, allocator: mem.Allocator) -> (cleaned: string, err: runtime.Allocator_Error) #optional_allocator_error {
 	path := path
 	original_path := path
 	vol_len := volume_name_len(path)
@@ -255,13 +254,13 @@ clean :: proc(path: string, allocator := context.allocator) -> (cleaned: string,
 
 	if path == "" {
 		if vol_len > 1 && original_path[1] != ':' {
-			s, ok := from_slash(original_path)
+			s, ok := from_slash(original_path, allocator)
 			if !ok {
-				s = strings.clone(s) or_return
+				s = strings.clone(s, allocator) or_return
 			}
 			return s, nil
 		}
-		return strings.concatenate({original_path, "."})
+		return strings.concatenate({original_path, "."}, allocator)
 	}
 
 	rooted := is_separator(path[0])
@@ -272,11 +271,11 @@ clean :: proc(path: string, allocator := context.allocator) -> (cleaned: string,
 		vol_and_path = original_path,
 		vol_len = vol_len,
 	}
-	defer lazy_buffer_destroy(out)
+	defer lazy_buffer_destroy(out, allocator)
 
 	r, dot_dot := 0, 0
 	if rooted {
-		lazy_buffer_append(out, SEPARATOR) or_return
+		lazy_buffer_append(out, SEPARATOR, allocator) or_return
 		r, dot_dot = 1, 1
 	}
 
@@ -296,39 +295,39 @@ clean :: proc(path: string, allocator := context.allocator) -> (cleaned: string,
 				}
 			case !rooted:
 				if out.w > 0 {
-					lazy_buffer_append(out, SEPARATOR) or_return
+					lazy_buffer_append(out, SEPARATOR, allocator) or_return
 				}
-				lazy_buffer_append(out, '.') or_return
-				lazy_buffer_append(out, '.') or_return
+				lazy_buffer_append(out, '.', allocator) or_return
+				lazy_buffer_append(out, '.', allocator) or_return
 				dot_dot = out.w
 			}
 		case:
 			if rooted && out.w != 1 || !rooted && out.w != 0 {
-				lazy_buffer_append(out, SEPARATOR) or_return
+				lazy_buffer_append(out, SEPARATOR, allocator) or_return
 			}
 			for ; r < n && !is_separator(path[r]); r += 1 {
-				lazy_buffer_append(out, path[r]) or_return
+				lazy_buffer_append(out, path[r], allocator) or_return
 			}
 
 		}
 	}
 
 	if out.w == 0 {
-		lazy_buffer_append(out, '.') or_return
+		lazy_buffer_append(out, '.', allocator) or_return
 	}
 
-	s := lazy_buffer_string(out) or_return
+	s := lazy_buffer_string(out, allocator) or_return
 
 	new_allocation: bool
-	cleaned, new_allocation = from_slash(s)
+	cleaned, new_allocation = from_slash(s, allocator)
 	if new_allocation {
-		delete(s)
+		delete(s, allocator)
 	}
 	return
 }
 
 // Returns the result of replacing each forward slash `/` character in the path with the separate OS specific character.
-from_slash :: proc(path: string, allocator := context.allocator) -> (new_path: string, new_allocation: bool) {
+from_slash :: proc(path: string, allocator: mem.Allocator) -> (new_path: string, new_allocation: bool) {
 	if SEPARATOR == '/' {
 		return path, false
 	}
@@ -336,7 +335,7 @@ from_slash :: proc(path: string, allocator := context.allocator) -> (new_path: s
 }
 
 // Returns the result of replacing each OS specific separator with a forward slash `/` character.
-to_slash :: proc(path: string, allocator := context.allocator) -> (new_path: string, new_allocation: bool) {
+to_slash :: proc(path: string, allocator: mem.Allocator) -> (new_path: string, new_allocation: bool) {
 	if SEPARATOR == '/' {
 		return path, false
 	}
@@ -357,8 +356,7 @@ Relative_Error :: enum {
 
 	On failure, the `Relative_Error` will be state it cannot compute the necessary relative path.
 */
-rel :: proc(base_path, target_path: string, allocator := context.allocator) -> (string, Relative_Error) {
-	context.allocator = allocator
+rel :: proc(base_path, target_path: string, allocator: mem.Allocator) -> (string, Relative_Error) {
 	base_clean   := clean(base_path,   allocator)
 	target_clean := clean(target_path, allocator)
 	defer delete(base_clean,   allocator)
@@ -434,19 +432,18 @@ rel :: proc(base_path, target_path: string, allocator := context.allocator) -> (
 	`dir` calls `clean` on the path and trailing separators are removed. If the path consists purely of separators,
 	then `"."` is returned.
 */
-dir :: proc(path: string, allocator := context.allocator) -> string {
-	context.allocator = allocator
+dir :: proc(path: string, allocator: mem.Allocator) -> string {
 	vol := volume_name(path)
 	i := len(path) - 1
 	for i >= len(vol) && !is_separator(path[i]) {
 		i -= 1
 	}
-	dir := clean(path[len(vol) : i+1])
-	defer delete(dir)
+	dir := clean(path[len(vol) : i+1], allocator)
+	defer delete(dir, allocator)
 	if dir == "." && len(vol) > 2 {
-		return strings.clone(vol)
+		return strings.clone(vol, allocator)
 	}
-	return strings.concatenate({vol, dir})
+	return strings.concatenate({vol, dir}, allocator)
 }
 
 
@@ -456,7 +453,7 @@ dir :: proc(path: string, allocator := context.allocator) -> string {
 // An empty string returns nil. A non-empty string with no separators returns a 1-element array.
 // Any empty components will be included, e.g. `a::b` will return a 3-element array, as will `::`.
 // Separators within pairs of double-quotes will be ignored and stripped, e.g. `"a:b"c:d` will return []{`a:bc`, `d`}.
-split_list :: proc(path: string, allocator := context.allocator) -> (list: []string, err: runtime.Allocator_Error) #optional_allocator_error {
+split_list :: proc(path: string, allocator: mem.Allocator) -> (list: []string, err: runtime.Allocator_Error) #optional_allocator_error {
 	if path == "" {
 		return nil, nil
 	}
@@ -510,7 +507,6 @@ split_list :: proc(path: string, allocator := context.allocator) -> (list: []str
 
 /*
 	Lazy_Buffer is a lazily made path buffer
-	When it does allocate, it uses the context.allocator
  */
 @(private)
 Lazy_Buffer :: struct {
@@ -529,13 +525,13 @@ lazy_buffer_index :: proc(lb: ^Lazy_Buffer, i: int) -> byte {
 	return lb.s[i]
 }
 @(private)
-lazy_buffer_append :: proc(lb: ^Lazy_Buffer, c: byte) -> (err: runtime.Allocator_Error) {
+lazy_buffer_append :: proc(lb: ^Lazy_Buffer, c: byte, allocator: runtime.Allocator) -> (err: runtime.Allocator_Error) {
 	if lb.b == nil {
 		if lb.w < len(lb.s) && lb.s[lb.w] == c {
 			lb.w += 1
 			return
 		}
-		lb.b = make([]byte, len(lb.s)) or_return
+		lb.b = make([]byte, len(lb.s), allocator) or_return
 		copy(lb.b, lb.s[:lb.w])
 	}
 	lb.b[lb.w] = c
@@ -543,21 +539,21 @@ lazy_buffer_append :: proc(lb: ^Lazy_Buffer, c: byte) -> (err: runtime.Allocator
 	return
 }
 @(private)
-lazy_buffer_string :: proc(lb: ^Lazy_Buffer) -> (s: string, err: runtime.Allocator_Error) {
+lazy_buffer_string :: proc(lb: ^Lazy_Buffer, allocator: runtime.Allocator) -> (s: string, err: runtime.Allocator_Error) {
 	if lb.b == nil {
-		return strings.clone(lb.vol_and_path[:lb.vol_len+lb.w])
+		return strings.clone(lb.vol_and_path[:lb.vol_len+lb.w], allocator)
 	}
 
 	x := lb.vol_and_path[:lb.vol_len]
 	y := string(lb.b[:lb.w])
-	z := make([]byte, len(x)+len(y)) or_return
+	z := make([]byte, len(x)+len(y), allocator) or_return
 	copy(z, x)
 	copy(z[len(x):], y)
 	return string(z), nil
 }
 @(private)
-lazy_buffer_destroy :: proc(lb: ^Lazy_Buffer) -> runtime.Allocator_Error {
-	err := delete(lb.b)
+lazy_buffer_destroy :: proc(lb: ^Lazy_Buffer, allocator: runtime.Allocator) -> runtime.Allocator_Error {
+	err := delete(lb.b, allocator)
 	lb^ = {}
 	return err
 }

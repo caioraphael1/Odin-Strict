@@ -35,7 +35,7 @@ _futex_wait :: proc "contextless" (futex: ^Futex, expected: u32) -> bool {
 		case EINTR, EAGAIN:
 			return true
 		case:
-			panic_contextless("futex_wait failure")
+			panic("futex_wait failure")
 		}	
 	}
 	return true
@@ -55,7 +55,7 @@ _futex_wait_with_timeout :: proc "contextless" (futex: ^Futex, expected: u32, du
 		case ETIMEDOUT:
 			return false
 		case:
-			panic_contextless("futex_wait_with_timeout failure")
+			panic("futex_wait_with_timeout failure")
 		}
 	}
 	return true
@@ -63,12 +63,12 @@ _futex_wait_with_timeout :: proc "contextless" (futex: ^Futex, expected: u32, du
 
 _futex_signal :: proc "contextless" (futex: ^Futex) {
 	if _, ok := intrinsics.syscall_bsd(unix.SYS___futex, uintptr(futex), FUTEX_WAKE_PRIVATE, 1, 0, 0, 0); !ok {
-		panic_contextless("futex_wake_single failure")
+		panic("futex_wake_single failure")
 	}
 }
 
 _futex_broadcast :: proc "contextless" (futex: ^Futex)  {
 	if _, ok := intrinsics.syscall_bsd(unix.SYS___futex, uintptr(futex), FUTEX_WAKE_PRIVATE, uintptr(max(i32)), 0, 0, 0); !ok {
-		panic_contextless("_futex_wake_all failure")
+		panic("_futex_wake_all failure")
 	}
 }

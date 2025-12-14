@@ -23,9 +23,8 @@ import "core:os"
 	This version of `itoa` allocates on behalf of the caller. The caller must free the string.
 	The radix defaults to 10.
 */
-int_itoa_string :: proc(a: ^Int, radix := i8(10), zero_terminate := false, allocator := context.allocator) -> (res: string, err: Error) {
+int_itoa_string :: proc(a: ^Int, radix := i8(10), zero_terminate := false, allocator: mem.Allocator) -> (res: string, err: Error) {
 	assert_if_nil(a)
-	context.allocator = allocator
 
 	a := a; radix := radix
 	clear_if_uninitialized(a) or_return
@@ -44,7 +43,7 @@ int_itoa_string :: proc(a: ^Int, radix := i8(10), zero_terminate := false, alloc
 	/*
 		Allocate the buffer we need.
 	*/
-	buffer, mem_err := make([]u8, size)
+	buffer, mem_err := make([]u8, size, allocator)
 	if mem_err != nil {
 		err = cast(Error)mem_err
 		return
@@ -63,12 +62,11 @@ int_itoa_string :: proc(a: ^Int, radix := i8(10), zero_terminate := false, alloc
 	This version of `itoa` allocates on behalf of the caller. The caller must free the string.
 	The radix defaults to 10.
 */
-int_itoa_cstring :: proc(a: ^Int, radix := i8(10), allocator := context.allocator) -> (res: cstring, err: Error) {
+int_itoa_cstring :: proc(a: ^Int, radix := i8(10), allocator: mem.Allocator) -> (res: cstring, err: Error) {
 	assert_if_nil(a)
-	context.allocator = allocator
 
 	a := a; radix := radix
-	clear_if_uninitialized(a) or_return
+	clear_if_uninitialized(a, allocator) or_return
 
 	s: string
 	s, err = int_itoa_string(a, radix, true)
@@ -243,10 +241,9 @@ int_to_cstring :: int_itoa_cstring
 /*
 	Read a string [ASCII] in a given radix.
 */
-int_atoi :: proc(res: ^Int, input: string, radix := i8(10), allocator := context.allocator) -> (err: Error) {
+int_atoi :: proc(res: ^Int, input: string, radix := i8(10), allocator: mem.Allocator) -> (err: Error) {
 	assert_if_nil(res)
 	input := input
-	context.allocator = allocator
 
 	/*
 		Make sure the radix is ok.
@@ -257,7 +254,7 @@ int_atoi :: proc(res: ^Int, input: string, radix := i8(10), allocator := context
 	/*
 		Set the integer to the default of zero.
 	*/
-	internal_zero(res) or_return
+	internal_zero(res, allocator = allocator) or_return
 
 	/*
 		We'll interpret an empty string as zero.
@@ -304,8 +301,8 @@ int_atoi :: proc(res: ^Int, input: string, radix := i8(10), allocator := context
 			break
 		}
 
-		internal_mul(res, res, DIGIT(radix)) or_return
-		internal_add(res, res, DIGIT(y))     or_return
+		internal_mul(res, res, DIGIT(radix), allocator) or_return
+		internal_add(res, res, DIGIT(y), allocator)     or_return
 
 		input = input[1:]
 	}
@@ -332,7 +329,7 @@ string_to_int :: int_atoi
 /*
 	We size for `string` by default.
 */
-radix_size :: proc(a: ^Int, radix: i8, zero_terminate := false, allocator := context.allocator) -> (size: int, err: Error) {
+radix_size :: proc(a: ^Int, radix: i8, zero_terminate := false, allocator: mem.Allocator) -> (size: int, err: Error) {
 	a := a
 	assert_if_nil(a)
 
@@ -399,8 +396,7 @@ radix_size :: proc(a: ^Int, radix: i8, zero_terminate := false, allocator := con
 /*
 	Read an Int from an ASCII file.
 */
-internal_int_read_from_ascii_file :: proc(a: ^Int, filename: string, radix := i8(10), allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+internal_int_read_from_ascii_file :: proc(a: ^Int, filename: string, radix := i8(10), allocator: mem.Allocator) -> (err: Error) {
 
 	/*
 		We can either read the entire file at once, or read a bunch at a time and keep multiplying by the radix.
@@ -422,8 +418,7 @@ internal_int_read_from_ascii_file :: proc(a: ^Int, filename: string, radix := i8
 /*
 	Write an Int to an ASCII file.
 */
-internal_int_write_to_ascii_file :: proc(a: ^Int, filename: string, radix := i8(10), allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+internal_int_write_to_ascii_file :: proc(a: ^Int, filename: string, radix := i8(10), allocator: mem.Allocator) -> (err: Error) {
 
 	/*
 		For now we'll convert the Int using itoa and writing the result in one go.
@@ -516,10 +511,9 @@ internal_int_pack :: proc(a: ^Int, buf: []$T, nails := 0, order := Order.LSB_Fir
 
 
 
-internal_int_unpack :: proc(a: ^Int, buf: []$T, nails := 0, order := Order.LSB_First, allocator := context.allocator) -> (err: Error)
+internal_int_unpack :: proc(a: ^Int, buf: []$T, nails := 0, order := Order.LSB_First, allocator: mem.Allocator) -> (err: Error)
                      where intrinsics.type_is_integer(T), intrinsics.type_is_unsigned(T), size_of(T) <= 16 {
 	assert(nails >= 0 && nails < (size_of(T) * 8))
-	context.allocator = allocator
 
 	type_size  := size_of(T)
 	type_bits  := (type_size * 8) - nails
@@ -611,9 +605,8 @@ RADIX_TABLE_REVERSE_SIZE :: 80
 	The buffer must be appropriately sized. This routine doesn't check.
 */
 
-_itoa_raw_full :: proc(a: ^Int, radix: i8, buffer: []u8, zero_terminate := false, allocator := context.allocator) -> (written: int, err: Error) {
+_itoa_raw_full :: proc(a: ^Int, radix: i8, buffer: []u8, zero_terminate := false, allocator: mem.Allocator) -> (written: int, err: Error) {
 	assert_if_nil(a)
-	context.allocator = allocator
 
 	// Calculate largest radix^n that fits within _DIGIT_BITS
 	divisor     := _WORD(ITOA_DIVISOR)
@@ -705,9 +698,8 @@ _itoa_raw_full :: proc(a: ^Int, radix: i8, buffer: []u8, zero_terminate := false
 
 // Old internal digit extraction procedure.
 // We're keeping this around as ground truth for the tests.
-_itoa_raw_old :: proc(a: ^Int, radix: i8, buffer: []u8, zero_terminate := false, allocator := context.allocator) -> (written: int, err: Error) {
+_itoa_raw_old :: proc(a: ^Int, radix: i8, buffer: []u8, zero_terminate := false, allocator: mem.Allocator) -> (written: int, err: Error) {
 	assert_if_nil(a)
-	context.allocator = allocator
 
 	temp := &Int{}
 	internal_copy(temp, a) or_return

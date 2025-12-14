@@ -65,7 +65,7 @@ specified with `backing_allocator`. The `internals_allocator` will used to
 allocate the tracked data.
 */
 @(no_sanitize_address)
-tracking_allocator_init :: proc(t: ^Tracking_Allocator, backing_allocator: Allocator, internals_allocator := context.allocator) {
+tracking_allocator_init :: proc(t: ^Tracking_Allocator, backing_allocator: Allocator, internals_allocator: Allocator) {
 	t.backing = backing_allocator
 	t.allocation_map.allocator = internals_allocator
 	t.bad_free_callback = tracking_allocator_bad_free_callback_panic
@@ -170,9 +170,9 @@ Example:
 
 	main :: proc() {
 		track: mem.Tracking_Allocator
-		mem.tracking_allocator_init(&track, context.allocator)
+		mem.tracking_allocator_init(&track, allocator)
 		defer mem.tracking_allocator_destroy(&track)
-		context.allocator = mem.tracking_allocator(&track)
+		allocator = mem.tracking_allocator(&track)
 
 		do_stuff()
 
@@ -242,7 +242,7 @@ tracking_allocator_proc :: proc(
 	result_ptr := raw_data(result)
 
 	if data.allocation_map.allocator.procedure == nil {
-		data.allocation_map.allocator = context.allocator
+        panic("Backing allocator for Tracking Allocator not initialized")
 	}
 
 	switch mode {

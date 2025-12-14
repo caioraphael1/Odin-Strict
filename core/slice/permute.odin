@@ -20,7 +20,7 @@ the underlying data, use `clone` to create a copy, then permute that instead.
 
 Inputs:
 - slice: The slice to permute.
-- allocator: (default is context.allocator)
+- allocator: 
 
 Returns:
 - iter: The iterator, to be passed to `permute`.
@@ -28,7 +28,7 @@ Returns:
 */
 make_permutation_iterator :: proc(
 	slice: []$T,
-	allocator := context.allocator,
+	allocator: runtime.Allocator,
 ) -> (
 	iter: Permutation_Iterator(T),
 	error: runtime.Allocator_Error,
@@ -43,11 +43,11 @@ Free the state allocated by `make_permutation_iterator`.
 
 Inputs:
 - iter: The iterator created by `make_permutation_iterator`.
-- allocator: The allocator used to create the iterator. (default is context.allocator)
+- allocator: The allocator used to create the iterator.
 */
 destroy_permutation_iterator :: proc(
 	iter: Permutation_Iterator($T),
-	allocator := context.allocator,
+	allocator: runtime.Allocator,
 ) {
 	delete(iter.counters, allocator = allocator)
 }

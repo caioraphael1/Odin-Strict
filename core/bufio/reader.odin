@@ -30,7 +30,7 @@ MIN_READ_BUFFER_SIZE :: 16
 DEFAULT_MAX_CONSECUTIVE_EMPTY_READS :: 128
 
 // reader_init initializes using an `allocator`
-reader_init :: proc(b: ^Reader, rd: io.Reader, size: int = DEFAULT_BUF_SIZE, allocator := context.allocator, loc := #caller_location) {
+reader_init :: proc(b: ^Reader, rd: io.Reader, size: int = DEFAULT_BUF_SIZE, allocator: mem.Allocator, loc := #caller_location) {
 	size := size
 	size = max(size, MIN_READ_BUFFER_SIZE)
 	reader_reset(b, rd)
@@ -404,7 +404,7 @@ reader_read_slice :: proc(b: ^Reader, delim: byte) -> (line: []byte, err: io.Err
 
 // reader_read_bytes reads until the first occurrence of delim from the Reader
 // It returns an allocated slice containing the data up to and including the delimiter
-reader_read_bytes :: proc(b: ^Reader, delim: byte, allocator := context.allocator) -> (buf: []byte, err: io.Error) {
+reader_read_bytes :: proc(b: ^Reader, delim: byte, allocator: mem.Allocator) -> (buf: []byte, err: io.Error) {
 	full: [dynamic]byte
 	full.allocator = allocator
 
@@ -428,7 +428,7 @@ reader_read_bytes :: proc(b: ^Reader, delim: byte, allocator := context.allocato
 
 // reader_read_string reads until the first occurrence of delim from the Reader
 // It returns an allocated string containing the data up to and including the delimiter
-reader_read_string :: proc(b: ^Reader, delim: byte, allocator := context.allocator) -> (string, io.Error) {
+reader_read_string :: proc(b: ^Reader, delim: byte, allocator: mem.Allocator) -> (string, io.Error) {
 	buf, err := reader_read_bytes(b, delim, allocator)
 	return string(buf), err
 }

@@ -4,6 +4,7 @@ package container_avl
 @(require) import "base:intrinsics"
 @(require) import "base:runtime"
 import "core:slice"
+import "core:mem"
 
 // Originally based on the CC0 implementation by Eric Biggers
 // See: https://github.com/ebiggers/avl_tree/
@@ -70,7 +71,7 @@ init :: proc {
 init_cmp :: proc(
 	t: ^$T/Tree($Value),
 	cmp_fn: proc(a, b: Value) -> Ordering,
-	node_allocator := context.allocator,
+	node_allocator: mem.Allocator,
 ) {
 	t._root = nil
 	t._node_allocator = node_allocator
@@ -82,7 +83,7 @@ init_cmp :: proc(
 // a comparison function that results in an ascending order sort.
 init_ordered :: proc(
 	t: ^$T/Tree($Value),
-	node_allocator := context.allocator,
+	node_allocator: mem.Allocator,
 ) where intrinsics.type_is_ordered(Value) {
 	init_cmp(t, slice.cmp_proc(Value), node_allocator)
 }

@@ -120,12 +120,8 @@ assert :: proc(condition: bool, message := #caller_expression(condition), loc :=
 	if !condition {
 		@(cold)
 		internal :: proc(message: string, loc: runtime.Source_Code_Location) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = runtime.default_assertion_failure_proc
-			}
 			log(.Fatal, message, location=loc)
-			p("runtime assertion", message, loc)
+			runtime.assertion_failure_proc("runtime assertion", message, loc)
 		}
 		internal(message, loc)
 	}
@@ -140,13 +136,9 @@ assertf :: proc(condition: bool, fmt_str: string, args: ..any, loc := #caller_lo
 		// magnitude faster
 		@(cold)
 		internal :: proc(loc: runtime.Source_Code_Location, fmt_str: string, args: ..any) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = runtime.default_assertion_failure_proc
-			}
 			message := fmt.tprintf(fmt_str, ..args)
 			log(.Fatal, message, location=loc)
-			p("runtime assertion", message, loc)
+			runtime.assertion_failure_proc("runtime assertion", message, loc)
 		}
 		internal(loc, fmt_str, ..args)
 	}
@@ -156,12 +148,8 @@ ensure :: proc(condition: bool, message := #caller_expression(condition), loc :=
 	if !condition {
 		@(cold)
 		internal :: proc(message: string, loc: runtime.Source_Code_Location) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = runtime.default_assertion_failure_proc
-			}
 			log(.Fatal, message, location=loc)
-			p("unsatisfied ensure", message, loc)
+			runtime.assertion_failure_proc("unsatisfied ensure", message, loc)
 		}
 		internal(message, loc)
 	}
@@ -171,13 +159,9 @@ ensuref :: proc(condition: bool, fmt_str: string, args: ..any, loc := #caller_lo
 	if !condition {
 		@(cold)
 		internal :: proc(loc: runtime.Source_Code_Location, fmt_str: string, args: ..any) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = runtime.default_assertion_failure_proc
-			}
 			message := fmt.tprintf(fmt_str, ..args)
 			log(.Fatal, message, location=loc)
-			p("unsatisfied ensure", message, loc)
+			runtime.assertion_failure_proc("unsatisfied ensure", message, loc)
 		}
 		internal(loc, fmt_str, ..args)
 	}

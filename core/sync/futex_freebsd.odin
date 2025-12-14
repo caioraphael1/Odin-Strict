@@ -21,7 +21,7 @@ _futex_wait :: proc "contextless" (f: ^Futex, expected: u32) -> bool {
 			continue
 		}
 
-		panic_contextless("_futex_wait failure")
+		panic("_futex_wait failure")
 	}
 
 	unreachable()
@@ -44,14 +44,14 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, durati
 		return false
 	}
 
-	panic_contextless("_futex_wait_with_timeout failure")
+	panic("_futex_wait_with_timeout failure")
 }
 
 _futex_signal :: proc "contextless" (f: ^Futex) {
 	errno := freebsd._umtx_op(f, .WAKE, 1, nil, nil)
 
 	if errno != nil {
-		panic_contextless("_futex_signal failure")
+		panic("_futex_signal failure")
 	}
 }
 
@@ -59,6 +59,6 @@ _futex_broadcast :: proc "contextless" (f: ^Futex)  {
 	errno := freebsd._umtx_op(f, .WAKE, cast(c.ulong)max(i32), nil, nil)
 
 	if errno != nil {
-		panic_contextless("_futex_broadcast failure")
+		panic("_futex_broadcast failure")
 	}
 }

@@ -81,11 +81,11 @@ init_cpu_features :: proc "contextless" () {
 		}
 		err := linux.riscv_hwprobe(raw_data(pairs), len(pairs), 0, nil, {})
 		if err != nil {
-			assert_contextless(err == .ENOSYS, "unexpected error from riscv_hwprobe()")
+			assert(err == .ENOSYS, "unexpected error from riscv_hwprobe()")
 			return
 		}
 
-		assert_contextless(pairs[0].key == .IMA_EXT_0)
+		assert(pairs[0].key == .IMA_EXT_0)
 		exts := pairs[0].value.ima_ext_0
 		exts -= { .FD, .C, .V }
 		_features += transmute(CPU_Features)exts
@@ -97,7 +97,7 @@ init_cpu_features :: proc "contextless" () {
 				_features += { .Misaligned_Supported }
 			}
 		} else {
-			assert_contextless(pairs[1].key == .CPUPERF_0)
+			assert(pairs[1].key == .CPUPERF_0)
 			if .FAST in pairs[1].value.cpu_perf_0 {
 				_features += { .Misaligned_Supported, .Misaligned_Fast }
 			} else if .UNSUPPORTED not_in pairs[1].value.cpu_perf_0 {

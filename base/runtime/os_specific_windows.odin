@@ -62,7 +62,7 @@ _stderr_write :: proc "contextless" (data: []byte) -> (n: int, err: _OS_Errno) #
 }
 
 _rand_bytes :: proc "contextless" (dst: []byte) {
-	ensure_contextless(u64(len(dst)) <= u64(max(u32)), "base/runtime: oversized rand_bytes request")
+	ensure(u64(len(dst)) <= u64(max(u32)), "base/runtime: oversized rand_bytes request")
 
 	BCRYPT_USE_SYSTEM_PREFERRED_RNG :: 0x00000002
 
@@ -75,13 +75,13 @@ _rand_bytes :: proc "contextless" (dst: []byte) {
 	case ERROR_INVALID_HANDLE:
 		// The handle to the first parameter is invalid.
 		// This should not happen here, since we explicitly pass nil to it
-		panic_contextless("base/runtime: BCryptGenRandom Invalid handle for hAlgorithm")
+		panic("base/runtime: BCryptGenRandom Invalid handle for hAlgorithm")
 	case ERROR_INVALID_PARAMETER:
 		// One of the parameters was invalid
-		panic_contextless("base/runtime: BCryptGenRandom Invalid parameter")
+		panic("base/runtime: BCryptGenRandom Invalid parameter")
 	case:
 		// Unknown error
-		panic_contextless("base/runtime: BCryptGenRandom failed")
+		panic("base/runtime: BCryptGenRandom failed")
 	}
 }
 

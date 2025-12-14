@@ -44,17 +44,6 @@ ODIN_COMPILE_TIMESTAMP          :: ODIN_COMPILE_TIMESTAMP
 */
 ODIN_DEBUG                      :: ODIN_DEBUG
 
-/*
-	`true` if the `-default-to-nil-allocator` command line switch is passed,
-	which sets the initial `context.allocator` to an allocator that does nothing.
-*/
-ODIN_DEFAULT_TO_NIL_ALLOCATOR   :: ODIN_DEFAULT_TO_NIL_ALLOCATOR
-
-/*
-	`true` if the `-default-to-panic-allocator` command line switch is passed,
-	which sets the initial `context.allocator` to an allocator that panics if allocated from.
-*/
-ODIN_DEFAULT_TO_PANIC_ALLOCATOR :: ODIN_DEFAULT_TO_PANIC_ALLOCATOR
 
 /*
 	`true` if the `-disable-assert` command line switch is passed,

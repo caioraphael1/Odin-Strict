@@ -7,6 +7,7 @@ import "core:strings"
 import "core:os"
 import "core:strconv"
 import "core:time/datetime"
+import "base:runtime"
 
 // Implementing RFC8536 [https://datatracker.ietf.org/doc/html/rfc8536]
 
@@ -69,7 +70,7 @@ tzif_data_block_size :: proc(hdr: ^TZif_Header, version: TZif_Version) -> (block
 }
 
 
-load_tzif_file :: proc(filename: string, region_name: string, allocator := context.allocator) -> (out: ^datetime.TZ_Region, ok: bool) {
+load_tzif_file :: proc(filename: string, region_name: string, allocator: runtime.Allocator) -> (out: ^datetime.TZ_Region, ok: bool) {
 	tzif_data := os.read_entire_file_from_filename(filename, allocator) or_return
 	defer delete(tzif_data, allocator)
 	return parse_tzif(tzif_data, region_name, allocator)
@@ -361,7 +362,7 @@ parse_posix_rrule :: proc(str: string) -> (out: datetime.TZ_Transition_Date, idx
 	return
 }
 
-parse_posix_tz :: proc(posix_tz: string, allocator := context.allocator) -> (out: datetime.TZ_RRule, ok: bool) {
+parse_posix_tz :: proc(posix_tz: string, allocator: runtime.Allocator) -> (out: datetime.TZ_RRule, ok: bool) {
 	// TZ string contain at least 3 characters for the STD name, and 1 for the offset
 	if len(posix_tz) < 4 {
 		return
@@ -431,7 +432,7 @@ parse_posix_tz :: proc(posix_tz: string, allocator := context.allocator) -> (out
 	}, true
 }
 
-parse_tzif :: proc(_buffer: []u8, region_name: string, allocator := context.allocator) -> (out: ^datetime.TZ_Region, ok: bool) {
+parse_tzif :: proc(_buffer: []u8, region_name: string, allocator: runtime.Allocator) -> (out: ^datetime.TZ_Region, ok: bool) {
 	context.allocator = allocator
 
 	buffer := _buffer

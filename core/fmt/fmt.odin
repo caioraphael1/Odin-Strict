@@ -123,12 +123,12 @@ register_user_formatter :: proc(id: typeid, formatter: User_Formatter) -> Regist
 // 	Inputs:
 // 	- args: A variadic list of arguments to be formatted.
 // 	- sep: An optional separator string (default is a single space).
-// 	- allocator: (default: context.allocator)
+// 	- allocator: (default:  runtime.PANIC_ALLOCATOR)
 //
 // 	Returns: A formatted string. 
 //
 @(require_results)
-aprint :: proc(args: ..any, sep := " ", allocator := context.allocator) -> string {
+aprint :: proc(args: ..any, sep := " ", allocator: mem.Allocator = runtime.PANIC_ALLOCATOR) -> string {
 	str: strings.Builder
 	strings.builder_init(&str, allocator)
 	return sbprint(&str, ..args, sep=sep)
@@ -140,12 +140,12 @@ aprint :: proc(args: ..any, sep := " ", allocator := context.allocator) -> strin
 // 	Inputs:
 // 	- args: A variadic list of arguments to be formatted.
 // 	- sep: An optional separator string (default is a single space).
-// 	- allocator: (default: context.allocator)
+// 	- allocator: (default: runtime.PANIC_ALLOCATOR)
 //
 // 	Returns: A formatted string with a newline character at the end.
 //
 @(require_results)
-aprintln :: proc(args: ..any, sep := " ", allocator := context.allocator) -> string {
+aprintln :: proc(args: ..any, sep := " ", allocator: mem.Allocator = runtime.PANIC_ALLOCATOR) -> string {
 	str: strings.Builder
 	strings.builder_init(&str, allocator)
 	return sbprintln(&str, ..args, sep=sep)
@@ -157,13 +157,13 @@ aprintln :: proc(args: ..any, sep := " ", allocator := context.allocator) -> str
 // 	Inputs:
 //	- fmt: A format string with placeholders for the provided arguments.
 //	- args: A variadic list of arguments to be formatted.
-//	- allocator: (default: context.allocator)
+//	- allocator: (default: runtime.PANIC_ALLOCATOR)
 //	- newline: Whether the string should end with a newline. (See `aprintfln`.)
 //
 // 	Returns: A formatted string. The returned string must be freed accordingly.
 //
 @(require_results)
-aprintf :: proc(fmt: string, args: ..any, allocator := context.allocator, newline := false) -> string {
+aprintf :: proc(fmt: string, args: ..any, allocator: mem.Allocator = runtime.PANIC_ALLOCATOR, newline := false) -> string {
 	str: strings.Builder
 	strings.builder_init(&str, allocator)
 	return sbprintf(&str, fmt, ..args, newline=newline)
@@ -175,12 +175,12 @@ aprintf :: proc(fmt: string, args: ..any, allocator := context.allocator, newlin
 // 	Inputs:
 // 	- fmt: A format string with placeholders for the provided arguments.
 // 	- args: A variadic list of arguments to be formatted.
-// 	- allocator: (default: context.allocator)
+// 	- allocator: (default: runtime.PANIC_ALLOCATOR)
 //
 // 	Returns: A formatted string. The returned string must be freed accordingly.
 //
 @(require_results)
-aprintfln :: proc(fmt: string, args: ..any, allocator := context.allocator) -> string {
+aprintfln :: proc(fmt: string, args: ..any, allocator: mem.Allocator = runtime.PANIC_ALLOCATOR) -> string {
 	return aprintf(fmt, ..args, allocator=allocator, newline=true)
 }
 // 	Creates a formatted string
@@ -315,12 +315,8 @@ assertf :: proc(condition: bool, fmt: string, args: ..any, loc := #caller_locati
 		// magnitude faster
 		@(cold)
 		internal :: proc(loc: runtime.Source_Code_Location, fmt: string, args: ..any) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = runtime.default_assertion_failure_proc
-			}
 			message := tprintf(fmt, ..args)
-			p("runtime assertion", message, loc)
+			runtime.assertion_failure_proc("runtime assertion", message, loc)
 		}
 		internal(loc, fmt, ..args)
 	}
@@ -337,12 +333,8 @@ ensuref :: proc(condition: bool, fmt: string, args: ..any, loc := #caller_locati
 	if !condition {
 		@(cold)
 		internal :: proc(loc: runtime.Source_Code_Location, fmt: string, args: ..any) {
-			p := context.assertion_failure_proc
-			if p == nil {
-				p = runtime.default_assertion_failure_proc
-			}
 			message := tprintf(fmt, ..args)
-			p("unsatisfied ensure", message, loc)
+			runtime.assertion_failure_proc("unsatisfied ensure", message, loc)
 		}
 		internal(loc, fmt, ..args)
 	}
@@ -355,12 +347,8 @@ ensuref :: proc(condition: bool, fmt: string, args: ..any, loc := #caller_locati
 // - loc: The location of the caller
 //
 panicf :: proc(fmt: string, args: ..any, loc := #caller_location) -> ! {
-	p := context.assertion_failure_proc
-	if p == nil {
-		p = runtime.default_assertion_failure_proc
-	}
 	message := tprintf(fmt, ..args)
-	p("panic", message, loc)
+	runtime.assertion_failure_proc("panic", message, loc)
 }
 
 // 	Creates a formatted C string
@@ -370,12 +358,12 @@ panicf :: proc(fmt: string, args: ..any, loc := #caller_location) -> ! {
 // 	Inputs:
 // 	- args: A variadic list of arguments to be formatted.
 // 	- sep: An optional separator string (default is a single space).
-// 	- allocator: (default: context.allocator)
+// 	- allocator: (default: runtime.PANIC_ALLOCATOR)
 //
 // 	Returns: A formatted C string.
 //
 @(require_results)
-caprint :: proc(args: ..any, sep := " ", allocator := context.allocator) -> cstring {
+caprint :: proc(args: ..any, sep := " ", allocator: mem.Allocator = runtime.PANIC_ALLOCATOR) -> cstring {
 	str: strings.Builder
 	strings.builder_init(&str, allocator)
 	sbprint(&str, ..args, sep=sep)
@@ -391,13 +379,13 @@ caprint :: proc(args: ..any, sep := " ", allocator := context.allocator) -> cstr
 // Inputs:
 // - format: A format string with placeholders for the provided arguments
 // - args: A variadic list of arguments to be formatted
-// - allocator: (default: context.allocator)
+// - allocator: (default: runtime.PANIC_ALLOCATOR)
 // - newline: Whether the string should end with a newline. (See `caprintfln`.)
 //
 // Returns: A formatted C string
 //
 @(require_results)
-caprintf :: proc(format: string, args: ..any, allocator := context.allocator, newline := false) -> cstring {
+caprintf :: proc(format: string, args: ..any, allocator: mem.Allocator = runtime.PANIC_ALLOCATOR, newline := false) -> cstring {
 	str: strings.Builder
 	strings.builder_init(&str, allocator)
 	sbprintf(&str, format, ..args, newline=newline)
@@ -412,12 +400,12 @@ caprintf :: proc(format: string, args: ..any, allocator := context.allocator, ne
 // Inputs:
 // - format: A format string with placeholders for the provided arguments
 // - args: A variadic list of arguments to be formatted
-// - allocator: (default: context.allocator)
+// - allocator: (default: runtime.PANIC_ALLOCATOR)
 //
 // Returns: A formatted C string
 //
 @(require_results)
-caprintfln :: proc(format: string, args: ..any, allocator := context.allocator) -> cstring {
+caprintfln :: proc(format: string, args: ..any, allocator: mem.Allocator = runtime.PANIC_ALLOCATOR) -> cstring {
 	return caprintf(format, ..args, allocator=allocator, newline=true)
 }
 // 	Creates a formatted C string

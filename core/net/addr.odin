@@ -23,6 +23,7 @@ package net
 import "core:strconv"
 import "core:strings"
 import "core:fmt"
+import "core:mem"
 
 /*
 	Expects an IPv4 address with no leading or trailing whitespace:
@@ -462,7 +463,7 @@ split_port :: proc(endpoint_str: string) -> (addr_or_host: string, port: int, ok
 }
 
 // Joins an address or hostname with a port.
-join_port :: proc(address_or_host: string, port: int, allocator := context.allocator) -> string {
+join_port :: proc(address_or_host: string, port: int, allocator: mem.Allocator) -> string {
 	addr_or_host, _, ok := split_port(address_or_host)
 	if !ok {
 		return addr_or_host

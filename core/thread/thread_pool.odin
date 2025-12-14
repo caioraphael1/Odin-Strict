@@ -74,17 +74,16 @@ pool_thread_runner :: proc(t: ^Thread) {
 //
 // The thread pool requires an allocator which it either owns, or which is thread safe.
 pool_init :: proc(pool: ^Pool, allocator: mem.Allocator, thread_count: int) {
-	context.allocator = allocator
 	pool.allocator = allocator
 	queue.init(&pool.tasks)
-	pool.tasks_done = make([dynamic]Task)
-	pool.threads    = make([]^Thread, max(thread_count, 1))
+	pool.tasks_done = make([dynamic]Task, allocator)
+	pool.threads    = make([]^Thread, max(thread_count, 1), allocator)
 
 	pool.is_running = true
 
 	for _, i in pool.threads {
-		t := create(pool_thread_runner)
-		data := new(Pool_Thread_Data)
+		t := create(pool_thread_runner, allocator = allocator)
+		data := new(Pool_Thread_Data, allocator)
 		data.pool = pool
 		t.user_index = i
 		t.data = data
@@ -179,7 +178,7 @@ pool_add_task :: proc(pool: ^Pool, allocator: mem.Allocator, procedure: Task_Pro
 // The thread will be restarted to accept new tasks.
 //
 // Returns true if the task was found and terminated.
-pool_stop_task :: proc(pool: ^Pool, user_index: int, exit_code: int = 1) -> bool {
+pool_stop_task :: proc(pool: ^Pool, user_index: int, exit_code: int = 1, allocator: mem.Allocator) -> bool {
 	sync.guard(&pool.mutex)
 
 	for t, i in pool.threads {
@@ -196,7 +195,7 @@ pool_stop_task :: proc(pool: ^Pool, user_index: int, exit_code: int = 1) -> bool
 
 			destroy(t)
 
-			replacement := create(pool_thread_runner)
+			replacement := create(pool_thread_runner, allocator = allocator)
 			replacement.user_index = old_thread_user_index
 			replacement.data = data
 			data.task = {}
@@ -213,7 +212,7 @@ pool_stop_task :: proc(pool: ^Pool, user_index: int, exit_code: int = 1) -> bool
 // Forcibly stop all running tasks.
 //
 // The same notes from `pool_stop_task` apply here.
-pool_stop_all_tasks :: proc(pool: ^Pool, exit_code: int = 1) {
+pool_stop_all_tasks :: proc(pool: ^Pool, exit_code: int = 1, allocator: mem.Allocator) {
 	sync.guard(&pool.mutex)
 
 	for t, i in pool.threads {
@@ -230,7 +229,7 @@ pool_stop_all_tasks :: proc(pool: ^Pool, exit_code: int = 1) {
 
 			destroy(t)
 
-			replacement := create(pool_thread_runner)
+			replacement := create(pool_thread_runner, allocator = allocator)
 			replacement.user_index = old_thread_user_index
 			replacement.data = data
 			data.task = {}
@@ -328,10 +327,7 @@ pool_pop_done :: proc(pool: ^Pool) -> (task: Task, got_task: bool) {
 
 // Mostly for internal use.
 pool_do_work :: proc(pool: ^Pool, task: Task) {
-	{
-		context.allocator = task.allocator
-		task.procedure(task)
-	}
+    task.procedure(task)
 
 	sync.guard(&pool.mutex)
 

@@ -1,5 +1,6 @@
 package io
 
+import "base:runtime"
 import "core:strconv"
 import "core:unicode/utf8"
 import "core:unicode/utf16"
@@ -363,7 +364,7 @@ _tee_reader_proc :: proc(stream_data: rawptr, mode: Stream_Mode, p: []byte, offs
 // The write must complete before th read completes
 // Any error encountered whilst writing is reported as a 'read' error
 // tee_reader_init must call io.destroy when done with
-tee_reader_init :: proc(t: ^Tee_Reader, r: Reader, w: Writer, allocator := context.allocator) -> Reader {
+tee_reader_init :: proc(t: ^Tee_Reader, r: Reader, w: Writer, allocator: runtime.Allocator) -> Reader {
 	t.r, t.w = r, w
 	return tee_reader_to_reader(t)
 }

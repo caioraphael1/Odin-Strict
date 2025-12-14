@@ -45,8 +45,8 @@ Context :: struct {
 // derivation is expected to be handled by the caller, so that the
 // HChaCha call can be suitably accelerated.
 init :: proc "contextless" (ctx: ^Context, key, iv: []byte, is_xchacha: bool) {
-	ensure_contextless(len(key) == KEY_SIZE, "chacha20: invalid key size")
-	ensure_contextless(len(iv) == IV_SIZE, "chacha20: invalid key size")
+	ensure(len(key) == KEY_SIZE, "chacha20: invalid key size")
+	ensure(len(iv) == IV_SIZE, "chacha20: invalid key size")
 
 	k, n := key, iv
 

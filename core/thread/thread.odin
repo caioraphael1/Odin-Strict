@@ -103,8 +103,8 @@ thread will be in a suspended state, until `start()` procedure is called.
 To start the thread, call `start()`. Also the `create_and_start()`
 procedure can be called to create and start the thread immediately.
 */
-create :: proc(procedure: Thread_Proc, priority := Thread_Priority.Normal) -> ^Thread {
-	return _create(procedure, priority)
+create :: proc(procedure: Thread_Proc, priority := Thread_Priority.Normal, allocator: mem.Allocator) -> ^Thread {
+	return _create(procedure, priority, allocator)
 }
 
 /*
@@ -167,8 +167,8 @@ to execute. The thread will have priority specified by the `priority` parameter.
 is used, the thread procedure needs to call `runtime.default_temp_allocator_destroy()`
 in order to free the resources associated with the temporary allocations.
 */
-run :: proc(fn: proc(), init_context: Maybe(runtime.Context) = nil, priority := Thread_Priority.Normal) {
-	create_and_start(fn, init_context, priority, true)
+run :: proc(fn: proc(), init_context: Maybe(runtime.Context) = nil, priority := Thread_Priority.Normal, allocator: mem.Allocator) {
+	create_and_start(fn, init_context, priority, true, allocator)
 }
 
 /*
@@ -182,8 +182,8 @@ to execute. The thread will have priority specified by the `priority` parameter.
 is used, the thread procedure needs to call `runtime.default_temp_allocator_destroy()`
 in order to free the resources associated with the temporary allocations.
 */
-run_with_data :: proc(data: rawptr, fn: proc(data: rawptr), init_context: Maybe(runtime.Context) = nil, priority := Thread_Priority.Normal) {
-	create_and_start_with_data(data, fn, init_context, priority, true)
+run_with_data :: proc(data: rawptr, fn: proc(data: rawptr), init_context: Maybe(runtime.Context) = nil, priority := Thread_Priority.Normal, allocator: mem.Allocator) {
+	create_and_start_with_data(data, fn, init_context, priority, true, allocator)
 }
 
 /*
@@ -268,12 +268,12 @@ That includes calling `join`, which needs to dereference ^Thread`.
 is used, the thread procedure needs to call `runtime.default_temp_allocator_destroy()`
 in order to free the resources associated with the temporary allocations.
 */
-create_and_start :: proc(fn: proc(), init_context: Maybe(runtime.Context) = nil, priority := Thread_Priority.Normal, self_cleanup := false) -> (t: ^Thread) {
+create_and_start :: proc(fn: proc(), init_context: Maybe(runtime.Context) = nil, priority := Thread_Priority.Normal, self_cleanup := false, allocator: mem.Allocator) -> (t: ^Thread) {
 	thread_proc :: proc(t: ^Thread) {
 		fn := cast(proc())t.data
 		fn()
 	}
-	if t = create(thread_proc, priority); t == nil {
+	if t = create(thread_proc, priority, allocator); t == nil {
 		return
 	}
 	t.data = rawptr(fn)
@@ -303,14 +303,15 @@ That includes calling `join`, which needs to dereference ^Thread`.
 is used, the thread procedure needs to call `runtime.default_temp_allocator_destroy()`
 in order to free the resources associated with the temporary allocations.
 */
-create_and_start_with_data :: proc(data: rawptr, fn: proc(data: rawptr), init_context: Maybe(runtime.Context) = nil, priority := Thread_Priority.Normal, self_cleanup := false) -> (t: ^Thread) {
+create_and_start_with_data :: proc(data: rawptr, fn: proc(data: rawptr), init_context: Maybe(runtime.Context) = nil, 
+    priority := Thread_Priority.Normal, self_cleanup := false, allocator: mem.Allocator) -> (t: ^Thread) {
 	thread_proc :: proc(t: ^Thread) {
 		fn := cast(proc(rawptr))t.data
 		assert(t.user_index >= 1)
 		data := t.user_args[0]
 		fn(data)
 	}
-	if t = create(thread_proc, priority); t == nil {
+	if t = create(thread_proc, priority, allocator); t == nil {
 		return
 	}
 	t.data = rawptr(fn)

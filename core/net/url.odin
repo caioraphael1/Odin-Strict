@@ -22,8 +22,9 @@ import "core:strings"
 import "core:strconv"
 import "core:unicode/utf8"
 import "core:encoding/hex"
+import "core:mem"
 
-split_url :: proc(url: string, allocator := context.allocator) -> (scheme, host, path: string, queries: map[string]string, fragment: string) {
+split_url :: proc(url: string, allocator: mem.Allocator) -> (scheme, host, path: string, queries: map[string]string, fragment: string) {
 	s := url
 
 	i := strings.index(s, "://")
@@ -43,12 +44,12 @@ split_url :: proc(url: string, allocator := context.allocator) -> (scheme, host,
 		query_str := s[i+1:]
 		s = s[:i]
 		if query_str != "" {
-			queries_parts := strings.split(query_str, "&")
-			defer delete(queries_parts)
+			queries_parts := strings.split(query_str, "&", allocator)
+			defer delete(queries_parts, allocator)
 			queries = make(map[string]string, len(queries_parts), allocator)
 			for q in queries_parts {
-				parts := strings.split(q, "=")
-				defer delete(parts)
+				parts := strings.split(q, "=", allocator)
+				defer delete(parts, allocator)
 				switch len(parts) {
 				case 1:  queries[parts[0]] = ""        // NOTE(tetra): Query not set to anything, was but present.
 				case 2:  queries[parts[0]] = parts[1]  // NOTE(tetra): Query set to something.
@@ -70,7 +71,7 @@ split_url :: proc(url: string, allocator := context.allocator) -> (scheme, host,
 	return
 }
 
-join_url :: proc(scheme, host, path: string, queries: map[string]string, fragment: string, allocator := context.allocator) -> string {
+join_url :: proc(scheme, host, path: string, queries: map[string]string, fragment: string, allocator: mem.Allocator) -> string {
 	b := strings.builder_make(allocator)
 	strings.builder_grow(&b, len(scheme) + 3 + len(host) + 1 + len(path))
 
@@ -113,7 +114,7 @@ join_url :: proc(scheme, host, path: string, queries: map[string]string, fragmen
 	return strings.to_string(b)
 }
 
-percent_encode :: proc(s: string, allocator := context.allocator) -> string {
+percent_encode :: proc(s: string, allocator: mem.Allocator) -> string {
 	b := strings.builder_make(allocator)
 	strings.builder_grow(&b, len(s) + 16) // NOTE(tetra): A reasonable number to allow for the number of things we need to escape.
 
@@ -135,7 +136,7 @@ percent_encode :: proc(s: string, allocator := context.allocator) -> string {
 	return strings.to_string(b)
 }
 
-percent_decode :: proc(encoded_string: string, allocator := context.allocator) -> (decoded_string: string, ok: bool) {
+percent_decode :: proc(encoded_string: string, allocator: mem.Allocator) -> (decoded_string: string, ok: bool) {
 	b := strings.builder_make(allocator)
 	strings.builder_grow(&b, len(encoded_string))
 	defer if !ok {
@@ -186,7 +187,7 @@ percent_decode :: proc(encoded_string: string, allocator := context.allocator) -
 // // TODO(tetra): The whole "table" stuff in encoding/base64 is too impenetrable for me to
 // // make a table for this ... sigh - so this'll do for now.
 /*
-base64url_encode :: proc(data: []byte, allocator := context.allocator) -> string {
+base64url_encode :: proc(data: []byte, allocator: mem.Allocator) -> string {
 	out := transmute([]byte) base64.encode(data, base64.ENC_TABLE, allocator);
 	for b, i in out {
 		switch b {
@@ -203,7 +204,7 @@ base64url_encode :: proc(data: []byte, allocator := context.allocator) -> string
 	return string(out[:i+1]);
 }
 
-base64url_decode :: proc(s: string, allocator := context.allocator) -> []byte {
+base64url_decode :: proc(s: string, allocator: mem.Allocator) -> []byte {
 	size := len(s);
 	padding := 0;
 	for size % 4 != 0 {

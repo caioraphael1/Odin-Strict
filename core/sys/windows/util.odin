@@ -137,8 +137,6 @@ utf8_to_wstring_buf :: proc(buf: []u16, s: string) -> wstring {
 utf8_to_wstring :: proc{utf8_to_wstring_alloc, utf8_to_wstring_buf}
 
 wstring_to_utf8_alloc :: proc(s: wstring, N: int, allocator := context.temp_allocator) -> (res: string, err: runtime.Allocator_Error) {
-	context.allocator = allocator
-
 	if N == 0 {
 		return
 	}
@@ -153,7 +151,7 @@ wstring_to_utf8_alloc :: proc(s: wstring, N: int, allocator := context.temp_allo
 	// also be null terminated.
 	// If N > 0 it assumes the wide string is not null terminated and the resulting string
 	// will not be null terminated.
-	text := make([]byte, n) or_return
+	text := make([]byte, n, allocator) or_return
 
 	n1 := WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, s, i32(N), raw_data(text), n, nil, nil)
 	if n1 == 0 {
@@ -205,7 +203,7 @@ to it will be converted.
 
 Inputs:
 - s: The string to be converted
-- allocator: (default: context.allocator)
+- allocator:
 
 Returns:
 - res: A cloned and converted string
@@ -644,7 +642,7 @@ ensure_winsock_initialized :: proc "contextless" () {
 	unused_info: WSADATA
 	version_requested := WORD(2) << 8 | 2
 	res := WSAStartup(version_requested, &unused_info)
-	assert_contextless(res == 0, "unable to initialized Winsock2")
+	assert(res == 0, "unable to initialized Winsock2")
 
 	initted = true
 }

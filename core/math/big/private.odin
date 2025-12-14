@@ -26,14 +26,12 @@ import "core:mem"
 	HAC pp. 595, Algorithm 14.12  Modified so you can control how
 	many digits of output are created.
 */
-_private_int_mul :: proc(dest, a, b: ^Int, digits: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
-
+_private_int_mul :: proc(dest, a, b: ^Int, digits: int, allocator: mem.Allocator) -> (err: Error) {
 	/*
 		Can we use the fast multiplier?
 	*/
 	if digits < _WARRAY && min(a.used, b.used) < _MAX_COMBA {
-		return #force_inline _private_int_mul_comba(dest, a, b, digits)
+		return #force_inline _private_int_mul_comba(dest, a, b, digits, allocator)
 	}
 
 	/*
@@ -42,7 +40,7 @@ _private_int_mul :: proc(dest, a, b: ^Int, digits: int, allocator := context.all
 
 	t := &Int{}
 
-	internal_grow(t, max(digits, _DEFAULT_DIGIT_COUNT)) or_return
+	internal_grow(t, max(digits, _DEFAULT_DIGIT_COUNT), allocator = allocator) or_return
 	t.used = digits
 
 	/*
@@ -109,8 +107,7 @@ _private_int_mul :: proc(dest, a, b: ^Int, digits: int, allocator := context.all
 		Bodrato, Marco, and Alberto Zanoni. "What about Toom-Cook matrices optimality."
 		Centro Vito Volterra Universita di Roma Tor Vergata (2006)
 */
-_private_int_mul_toom :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_mul_toom :: proc(dest, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	S1, S2, T1, a0, a1, a2, b0, b1, b2 := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(S1, S2, T1, a0, a1, a2, b0, b1, b2)
@@ -118,7 +115,7 @@ _private_int_mul_toom :: proc(dest, a, b: ^Int, allocator := context.allocator) 
 	/*
 		Init temps.
 	*/
-	internal_init_multi(S1, S2, T1)             or_return
+	internal_init_multi(S1, S2, T1, allocator = allocator)             or_return
 
 	/*
 		B
@@ -128,9 +125,9 @@ _private_int_mul_toom :: proc(dest, a, b: ^Int, allocator := context.allocator) 
 	/*
 		a = a2 * x^2 + a1 * x + a0;
 	*/
-	internal_grow(a0, B)                        or_return
-	internal_grow(a1, B)                        or_return
-	internal_grow(a2, a.used - 2 * B)           or_return
+	internal_grow(a0, B, allocator = allocator)                        or_return
+	internal_grow(a1, B, allocator = allocator)                        or_return
+	internal_grow(a2, a.used - 2 * B, allocator = allocator)           or_return
 
 	a0.used, a1.used = B, B
 	a2.used = a.used - 2 * B
@@ -146,9 +143,9 @@ _private_int_mul_toom :: proc(dest, a, b: ^Int, allocator := context.allocator) 
 	/*
 		b = b2 * x^2 + b1 * x + b0;
 	*/
-	internal_grow(b0, B)                        or_return
-	internal_grow(b1, B)                        or_return
-	internal_grow(b2, b.used - 2 * B)           or_return
+	internal_grow(b0, B, allocator = allocator)                        or_return
+	internal_grow(b1, B, allocator = allocator)                        or_return
+	internal_grow(b2, b.used - 2 * B, allocator = allocator)           or_return
 
 	b0.used, b1.used = B, B
 	b2.used = b.used - 2 * B
@@ -165,61 +162,61 @@ _private_int_mul_toom :: proc(dest, a, b: ^Int, allocator := context.allocator) 
 	/*
 		\\ S1 = (a2+a1+a0) * (b2+b1+b0);
 	*/
-	internal_add(T1, a2, a1)                    or_return /*   T1 = a2 + a1; */
-	internal_add(S2, T1, a0)                    or_return /*   S2 = T1 + a0; */
-	internal_add(dest, b2, b1)                  or_return /* dest = b2 + b1; */
-	internal_add(S1, dest, b0)                  or_return /*   S1 =  c + b0; */
-	internal_mul(S1, S1, S2)                    or_return /*   S1 = S1 * S2; */
+	internal_add(T1, a2, a1,   allocator)                  or_return /*   T1 = a2 + a1; */
+	internal_add(S2, T1, a0,   allocator)                  or_return /*   S2 = T1 + a0; */
+	internal_add(dest, b2, b1, allocator)                  or_return /* dest = b2 + b1; */
+	internal_add(S1, dest, b0, allocator)                  or_return /*   S1 =  c + b0; */
+	internal_mul(S1, S1, S2,   allocator)                  or_return /*   S1 = S1 * S2; */
 
 	/*
 		\\S2 = (4*a2+2*a1+a0) * (4*b2+2*b1+b0);
 	*/
-	internal_add(T1, T1, a2)                    or_return /*   T1 = T1 + a2; */
-	internal_int_shl1(T1, T1)                   or_return /*   T1 = T1 << 1; */
-	internal_add(T1, T1, a0)                    or_return /*   T1 = T1 + a0; */
-	internal_add(dest, dest, b2)                or_return /*    c =  c + b2; */
-	internal_int_shl1(dest, dest)               or_return /*    c =  c << 1; */
-	internal_add(dest, dest, b0)                or_return /*    c =  c + b0; */
-	internal_mul(S2, T1, dest)                  or_return /*   S2 = T1 *  c; */
+	internal_add(T1, T1, a2, allocator)                    or_return /*   T1 = T1 + a2; */
+	internal_int_shl1(T1, T1, allocator)                   or_return /*   T1 = T1 << 1; */
+	internal_add(T1, T1, a0, allocator)                    or_return /*   T1 = T1 + a0; */
+	internal_add(dest, dest, b2, allocator)                or_return /*    c =  c + b2; */
+	internal_int_shl1(dest, dest, allocator)               or_return /*    c =  c << 1; */
+	internal_add(dest, dest, b0, allocator)                or_return /*    c =  c + b0; */
+	internal_mul(S2, T1, dest, allocator)                  or_return /*   S2 = T1 *  c; */
 
 	/*
 		\\S3 = (a2-a1+a0) * (b2-b1+b0);
 	*/
-	internal_sub(a1, a2, a1)                    or_return /*   a1 = a2 - a1; */
-	internal_add(a1, a1, a0)                    or_return /*   a1 = a1 + a0; */
-	internal_sub(b1, b2, b1)                    or_return /*   b1 = b2 - b1; */
-	internal_add(b1, b1, b0)                    or_return /*   b1 = b1 + b0; */
-	internal_mul(a1, a1, b1)                    or_return /*   a1 = a1 * b1; */
-	internal_mul(b1, a2, b2)                    or_return /*   b1 = a2 * b2; */
+	internal_sub(a1, a2, a1, allocator)                    or_return /*   a1 = a2 - a1; */
+	internal_add(a1, a1, a0, allocator)                    or_return /*   a1 = a1 + a0; */
+	internal_sub(b1, b2, b1, allocator)                    or_return /*   b1 = b2 - b1; */
+	internal_add(b1, b1, b0, allocator)                    or_return /*   b1 = b1 + b0; */
+	internal_mul(a1, a1, b1, allocator)                    or_return /*   a1 = a1 * b1; */
+	internal_mul(b1, a2, b2, allocator)                    or_return /*   b1 = a2 * b2; */
 
 	/*
 		\\S2 = (S2 - S3) / 3;
 	*/
-	internal_sub(S2, S2, a1)                    or_return /*   S2 = S2 - a1; */
-	_private_int_div_3(S2, S2)                  or_return /*   S2 = S2 / 3; \\ this is an exact division  */
-	internal_sub(a1, S1, a1)                    or_return /*   a1 = S1 - a1; */
-	internal_int_shr1(a1, a1)                   or_return /*   a1 = a1 >> 1; */
-	internal_mul(a0, a0, b0)                    or_return /*   a0 = a0 * b0; */
-	internal_sub(S1, S1, a0)                    or_return /*   S1 = S1 - a0; */
-	internal_sub(S2, S2, S1)                    or_return /*   S2 = S2 - S1; */
-	internal_int_shr1(S2, S2)                   or_return /*   S2 = S2 >> 1; */
-	internal_sub(S1, S1, a1)                    or_return /*   S1 = S1 - a1; */
-	internal_sub(S1, S1, b1)                    or_return /*   S1 = S1 - b1; */
-	internal_int_shl1(T1, b1)                   or_return /*   T1 = b1 << 1; */
-	internal_sub(S2, S2, T1)                    or_return /*   S2 = S2 - T1; */
-	internal_sub(a1, a1, S2)                    or_return /*   a1 = a1 - S2; */
+	internal_sub(S2, S2, a1, allocator)                    or_return /*   S2 = S2 - a1; */
+	_private_int_div_3(S2, S2, allocator)                  or_return /*   S2 = S2 / 3; \\ this is an exact division  */
+	internal_sub(a1, S1, a1, allocator)                    or_return /*   a1 = S1 - a1; */
+	internal_int_shr1(a1, a1)                              or_return /*   a1 = a1 >> 1; */
+	internal_mul(a0, a0, b0, allocator)                    or_return /*   a0 = a0 * b0; */
+	internal_sub(S1, S1, a0, allocator)                    or_return /*   S1 = S1 - a0; */
+	internal_sub(S2, S2, S1, allocator)                    or_return /*   S2 = S2 - S1; */
+	internal_int_shr1(S2, S2)                              or_return /*   S2 = S2 >> 1; */
+	internal_sub(S1, S1, a1, allocator)                    or_return /*   S1 = S1 - a1; */
+	internal_sub(S1, S1, b1, allocator)                    or_return /*   S1 = S1 - b1; */
+	internal_int_shl1(T1, b1, allocator)                   or_return /*   T1 = b1 << 1; */
+	internal_sub(S2, S2, T1, allocator)                    or_return /*   S2 = S2 - T1; */
+	internal_sub(a1, a1, S2, allocator)                    or_return /*   a1 = a1 - S2; */
 
 	/*
 		P = b1*x^4+ S2*x^3+ S1*x^2+ a1*x + a0;
 	*/
-	_private_int_shl_leg(b1, 4 * B)             or_return
-	_private_int_shl_leg(S2, 3 * B)             or_return
-	internal_add(b1, b1, S2)                    or_return
-	_private_int_shl_leg(S1, 2 * B)             or_return
-	internal_add(b1, b1, S1)                    or_return
-	_private_int_shl_leg(a1, 1 * B)             or_return
-	internal_add(b1, b1, a1)                    or_return
-	internal_add(dest, b1, a0)                  or_return
+	_private_int_shl_leg(b1, 4 * B, allocator)             or_return
+	_private_int_shl_leg(S2, 3 * B, allocator)             or_return
+	internal_add(b1, b1, S2, allocator)                    or_return
+	_private_int_shl_leg(S1, 2 * B, allocator)             or_return
+	internal_add(b1, b1, S1, allocator)                    or_return
+	_private_int_shl_leg(a1, 1 * B, allocator)             or_return
+	internal_add(b1, b1, a1, allocator)                    or_return
+	internal_add(dest, b1, a0, allocator)                  or_return
 
 	/*
 		a * b - P
@@ -254,8 +251,7 @@ _private_int_mul_toom :: proc(dest, a, b: ^Int, allocator := context.allocator) 
 	baseline/comba methods use. Generally though, the overhead of this method doesn't pay off
 	until a certain size is reached, of around 80 used DIGITs.
 */
-_private_int_mul_karatsuba :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_mul_karatsuba :: proc(dest, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	x0, x1, y0, y1, t1, x0y0, x1y1 := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(x0, x1, y0, y1, t1, x0y0, x1y1)
@@ -268,13 +264,13 @@ _private_int_mul_karatsuba :: proc(dest, a, b: ^Int, allocator := context.alloca
 	/*
 		Init all the temps.
 	*/
-	internal_grow(x0, B)          or_return
-	internal_grow(x1, a.used - B) or_return
-	internal_grow(y0, B)          or_return
-	internal_grow(y1, b.used - B) or_return
-	internal_grow(t1, B * 2)      or_return
-	internal_grow(x0y0, B * 2)    or_return
-	internal_grow(x1y1, B * 2)    or_return
+	internal_grow(x0,   B,          allocator = allocator) or_return
+	internal_grow(x1,   a.used - B, allocator = allocator) or_return
+	internal_grow(y0,   B,          allocator = allocator) or_return
+	internal_grow(y1,   b.used - B, allocator = allocator) or_return
+	internal_grow(t1,   B * 2,      allocator = allocator) or_return
+	internal_grow(x0y0, B * 2,      allocator = allocator) or_return
+	internal_grow(x1y1, B * 2,      allocator = allocator) or_return
 
 	/*
 		Now shift the digits.
@@ -296,33 +292,33 @@ _private_int_mul_karatsuba :: proc(dest, a, b: ^Int, allocator := context.alloca
 		Only need to clamp the lower words since by definition the
 		upper words x1/y1 must have a known number of digits.
 	*/
-	clamp(x0)
-	clamp(y0)
+	clamp(x0, allocator)
+	clamp(y0, allocator)
 
 	/*
 		Now calc the products x0y0 and x1y1,
 		after this x0 is no longer required, free temp [x0==t2]!
 	*/
-	internal_mul(x0y0, x0, y0)      or_return /* x0y0 = x0*y0 */
-	internal_mul(x1y1, x1, y1)      or_return /* x1y1 = x1*y1 */
-	internal_add(t1,   x1, x0)      or_return /* now calc x1+x0 and */
-	internal_add(x0,   y1, y0)      or_return /* t2 = y1 + y0 */
-	internal_mul(t1,   t1, x0)      or_return /* t1 = (x1 + x0) * (y1 + y0) */
+	internal_mul(x0y0, x0, y0, allocator)      or_return /* x0y0 = x0*y0 */
+	internal_mul(x1y1, x1, y1, allocator)      or_return /* x1y1 = x1*y1 */
+	internal_add(t1,   x1, x0, allocator)      or_return /* now calc x1+x0 and */
+	internal_add(x0,   y1, y0, allocator)      or_return /* t2 = y1 + y0 */
+	internal_mul(t1,   t1, x0, allocator)      or_return /* t1 = (x1 + x0) * (y1 + y0) */
 
 	/*
 		Add x0y0.
 	*/
-	internal_add(x0, x0y0, x1y1)    or_return /* t2 = x0y0 + x1y1 */
-	internal_sub(t1,   t1,   x0)    or_return /* t1 = (x1+x0)*(y1+y0) - (x1y1 + x0y0) */
+	internal_add(x0, x0y0, x1y1, allocator)    or_return /* t2 = x0y0 + x1y1 */
+	internal_sub(t1,   t1,   x0, allocator)    or_return /* t1 = (x1+x0)*(y1+y0) - (x1y1 + x0y0) */
 
 	/*
 		shift by B.
 	*/
-	_private_int_shl_leg(t1, B)       or_return /* t1 = (x0y0 + x1y1 - (x1-x0)*(y1-y0))<<B */
-	_private_int_shl_leg(x1y1, B * 2) or_return /* x1y1 = x1y1 << 2*B */
+	_private_int_shl_leg(t1,       B, allocator) or_return /* t1 = (x0y0 + x1y1 - (x1-x0)*(y1-y0))<<B */
+	_private_int_shl_leg(x1y1, B * 2, allocator) or_return /* x1y1 = x1y1 << 2*B */
 
-	internal_add(t1, x0y0, t1)      or_return /* t1 = x0y0 + t1 */
-	internal_add(dest, t1, x1y1)    or_return /* t1 = x0y0 + t1 + x1y1 */
+	internal_add(t1, x0y0, t1,   allocator)    or_return /* t1 = x0y0 + t1 */
+	internal_add(dest, t1, x1y1, allocator)    or_return /* t1 = x0y0 + t1 + x1y1 */
 
 	return nil
 }
@@ -345,8 +341,7 @@ _private_int_mul_karatsuba :: proc(dest, a, b: ^Int, allocator := context.alloca
 
 	Based on Algorithm 14.12 on pp.595 of HAC.
 */
-_private_int_mul_comba :: proc(dest, a, b: ^Int, digits: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_mul_comba :: proc(dest, a, b: ^Int, digits: int, allocator: mem.Allocator) -> (err: Error) {
 
 	/*
 		Set up array.
@@ -356,7 +351,7 @@ _private_int_mul_comba :: proc(dest, a, b: ^Int, digits: int, allocator := conte
 	/*
 		Grow the destination as required.
 	*/
-	internal_grow(dest, digits) or_return
+	internal_grow(dest, digits, allocator = allocator) or_return
 
 	/*
 		Number of output digits to produce.
@@ -430,17 +425,16 @@ _private_int_mul_comba :: proc(dest, a, b: ^Int, digits: int, allocator := conte
 	Multiplies |a| * |b| and does not compute the lower digs digits
 	[meant to get the higher part of the product]
 */
-_private_int_mul_high :: proc(dest, a, b: ^Int, digits: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_mul_high :: proc(dest, a, b: ^Int, digits: int, allocator: mem.Allocator) -> (err: Error) {
 
 	/*
 		Can we use the fast multiplier?
 	*/
 	if a.used + b.used + 1 < _WARRAY && min(a.used, b.used) < _MAX_COMBA {
-		return _private_int_mul_high_comba(dest, a, b, digits)
+		return _private_int_mul_high_comba(dest, a, b, digits, allocator)
 	}
 
-	internal_grow(dest, a.used + b.used + 1) or_return
+	internal_grow(dest, a.used + b.used + 1, allocator = allocator) or_return
 	dest.used = a.used + b.used + 1
 
 	pa := a.used
@@ -478,8 +472,7 @@ _private_int_mul_high :: proc(dest, a, b: ^Int, digits: int, allocator := contex
 
 	Based on Algorithm 14.12 on pp.595 of HAC.
 */
-_private_int_mul_high_comba :: proc(dest, a, b: ^Int, digits: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_mul_high_comba :: proc(dest, a, b: ^Int, digits: int, allocator: mem.Allocator) -> (err: Error) {
 
 	W: [_WARRAY]DIGIT = ---
 	_W: _WORD = 0
@@ -488,7 +481,7 @@ _private_int_mul_high_comba :: proc(dest, a, b: ^Int, digits: int, allocator := 
 		Number of output digits to produce. Grow the destination as required.
 	*/
 	pa := a.used + b.used
-	internal_grow(dest, pa) or_return
+	internal_grow(dest, pa, allocator = allocator) or_return
 
 	ix: int
 	for ix = digits; ix < pa; ix += 1 {
@@ -549,8 +542,7 @@ _private_int_mul_high_comba :: proc(dest, a, b: ^Int, digits: int, allocator := 
 /*
 	Single-digit multiplication with the smaller number as the single-digit.
 */
-_private_int_mul_balance :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_mul_balance :: proc(dest, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 	a, b := a, b
 
 	a0, tmp, r := &Int{}, &Int{}, &Int{}
@@ -559,7 +551,7 @@ _private_int_mul_balance :: proc(dest, a, b: ^Int, allocator := context.allocato
 	b_size   := min(a.used, b.used)
 	n_blocks := max(a.used, b.used) / b_size
 
-	internal_grow(a0, b_size + 2) or_return
+	internal_grow(a0, b_size + 2, allocator = allocator) or_return
 	internal_init_multi(tmp, r)   or_return
 
 	/*
@@ -584,17 +576,17 @@ _private_int_mul_balance :: proc(dest, a, b: ^Int, allocator := context.allocato
 		/*
 			Multiply with `b`.
 		*/
-		internal_mul(tmp, a0, b)                                     or_return
+		internal_mul(tmp, a0, b, allocator)                                     or_return
 
 		/*
 			Shift `tmp` to the correct position.
 		*/
-		_private_int_shl_leg(tmp, b_size * i)                          or_return
+		_private_int_shl_leg(tmp, b_size * i, allocator)                          or_return
 
 		/*
 			Add to output. No carry needed.
 		*/
-		internal_add(r, r, tmp)                                      or_return
+		internal_add(r, r, tmp, allocator)                                      or_return
 	}
 
 	/*
@@ -606,9 +598,9 @@ _private_int_mul_balance :: proc(dest, a, b: ^Int, allocator := context.allocato
 		j += a0.used
 		internal_clamp(a0)
 
-		internal_mul(tmp, a0, b)                                     or_return
-		_private_int_shl_leg(tmp, b_size * i)                          or_return
-		internal_add(r, r, tmp)                                      or_return
+		internal_mul(tmp, a0, b, allocator)                                     or_return
+		_private_int_shl_leg(tmp, b_size * i, allocator)                          or_return
+		internal_add(r, r, tmp, allocator)                                      or_return
 	}
 
 	internal_swap(dest, r)
@@ -619,15 +611,14 @@ _private_int_mul_balance :: proc(dest, a, b: ^Int, allocator := context.allocato
 	Low level squaring, b = a*a, HAC pp.596-597, Algorithm 14.16
 	Assumes `dest` and `src` to not be `nil`, and `src` to have been initialized.
 */
-_private_int_sqr :: proc(dest, src: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_sqr :: proc(dest, src: ^Int, allocator: mem.Allocator) -> (err: Error) {
 	pa := src.used
 
 	t := &Int{}; ix, iy: int
 	/*
 		Grow `t` to maximum needed size, or `_DEFAULT_DIGIT_COUNT`, whichever is bigger.
 	*/
-	internal_grow(t, max((2 * pa) + 1, _DEFAULT_DIGIT_COUNT)) or_return
+	internal_grow(t, max((2 * pa) + 1, _DEFAULT_DIGIT_COUNT), allocator = allocator) or_return
 	t.used = (2 * pa) + 1
 
 	#no_bounds_check for ix = 0; ix < pa; ix += 1 {
@@ -692,8 +683,7 @@ _private_int_sqr :: proc(dest, src: ^Int, allocator := context.allocator) -> (er
 
 	Assumes `dest` and `src` not to be `nil` and `src` to have been initialized.	
 */
-_private_int_sqr_comba :: proc(dest, src: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_sqr_comba :: proc(dest, src: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	W: [_WARRAY]DIGIT = ---
 
@@ -701,7 +691,7 @@ _private_int_sqr_comba :: proc(dest, src: ^Int, allocator := context.allocator) 
 		Grow the destination as required.
 	*/
 	pa := uint(src.used) + uint(src.used)
-	internal_grow(dest, int(pa)) or_return
+	internal_grow(dest, int(pa), allocator = allocator) or_return
 
 	/*
 		Number of output digits to produce.
@@ -789,8 +779,7 @@ _private_int_sqr_comba :: proc(dest, src: ^Int, allocator := context.allocator) 
 	See comments of `_private_int_mul_karatsuba` for details.
 	It is essentially the same algorithm but merely tuned to perform recursive squarings.
 */
-_private_int_sqr_karatsuba :: proc(dest, src: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_sqr_karatsuba :: proc(dest, src: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	x0, x1, t1, t2, x0x0, x1x1 := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(x0, x1, t1, t2, x0x0, x1x1)
@@ -803,12 +792,12 @@ _private_int_sqr_karatsuba :: proc(dest, src: ^Int, allocator := context.allocat
 	/*
 		Init temps.
 	*/
-	internal_grow(x0,   B) or_return
-	internal_grow(x1,   src.used - B) or_return
-	internal_grow(t1,   src.used * 2) or_return
-	internal_grow(t2,   src.used * 2) or_return
-	internal_grow(x0x0, B * 2       ) or_return
-	internal_grow(x1x1, (src.used - B) * 2) or_return
+	internal_grow(x0,   B,                  allocator = allocator) or_return
+	internal_grow(x1,   src.used - B,       allocator = allocator) or_return
+	internal_grow(t1,   src.used * 2,       allocator = allocator) or_return
+	internal_grow(t2,   src.used * 2,       allocator = allocator) or_return
+	internal_grow(x0x0, B * 2       ,       allocator = allocator) or_return
+	internal_grow(x1x1, (src.used - B) * 2, allocator = allocator) or_return
 
 	/*
 		Now shift the digits.
@@ -823,28 +812,28 @@ _private_int_sqr_karatsuba :: proc(dest, src: ^Int, allocator := context.allocat
 	/*
 		Now calc the products x0*x0 and x1*x1.
 	*/
-	internal_sqr(x0x0, x0) or_return
-	internal_sqr(x1x1, x1) or_return
+	internal_sqr(x0x0, x0, allocator) or_return
+	internal_sqr(x1x1, x1, allocator) or_return
 
 	/*
 		Now calc (x1+x0)^2
 	*/
-	internal_add(t1, x0, x1) or_return
-	internal_sqr(t1, t1) or_return
+	internal_add(t1, x0, x1, allocator) or_return
+	internal_sqr(t1, t1,     allocator) or_return
 
 	/*
 		Add x0y0
 	*/
-	internal_add(t2, x0x0, x1x1) or_return
-	internal_sub(t1, t1, t2) or_return
+	internal_add(t2, x0x0, x1x1, allocator) or_return
+	internal_sub(t1, t1, t2,     allocator) or_return
 
 	/*
 		Shift by B.
 	*/
-	_private_int_shl_leg(t1, B) or_return
-	_private_int_shl_leg(x1x1, B * 2) or_return
-	internal_add(t1, t1, x0x0) or_return
-	internal_add(dest, t1, x1x1) or_return
+	_private_int_shl_leg(t1, B,       allocator) or_return
+	_private_int_shl_leg(x1x1, B * 2, allocator) or_return
+	internal_add(t1, t1, x0x0,        allocator) or_return
+	internal_add(dest, t1, x1x1,      allocator) or_return
 
 	return #force_inline internal_clamp(dest)
 }
@@ -855,8 +844,7 @@ _private_int_sqr_karatsuba :: proc(dest, src: ^Int, allocator := context.allocat
 	Setup and interpolation from algorithm SQR_3 in Chung, Jaewook, and M. Anwar Hasan. "Asymmetric squaring formulae."
 	  18th IEEE Symposium on Computer Arithmetic (ARITH'07). IEEE, 2007.
 */
-_private_int_sqr_toom :: proc(dest, src: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_sqr_toom :: proc(dest, src: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	S0, a0, a1, a2 := &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(S0, a0, a1, a2)
@@ -864,7 +852,7 @@ _private_int_sqr_toom :: proc(dest, src: ^Int, allocator := context.allocator) -
 	/*
 		Init temps.
 	*/
-	internal_zero(S0) or_return
+	internal_zero(S0, allocator = allocator) or_return
 
 	/*
 		B
@@ -874,9 +862,9 @@ _private_int_sqr_toom :: proc(dest, src: ^Int, allocator := context.allocator) -
 	/*
 		a = a2 * x^2 + a1 * x + a0;
 	*/
-	internal_grow(a0, B) or_return
-	internal_grow(a1, B) or_return
-	internal_grow(a2, src.used - (2 * B)) or_return
+	internal_grow(a0, B, allocator = allocator) or_return
+	internal_grow(a1, B, allocator = allocator) or_return
+	internal_grow(a2, src.used - (2 * B), allocator = allocator) or_return
 
 	a0.used = B
 	a1.used = B
@@ -891,67 +879,67 @@ _private_int_sqr_toom :: proc(dest, src: ^Int, allocator := context.allocator) -
 	internal_clamp(a2)
 
 	/** S0 = a0^2;  */
-	internal_sqr(S0, a0) or_return
+	internal_sqr(S0, a0, allocator) or_return
 
 	/** \\S1 = (a2 + a1 + a0)^2 */
 	/** \\S2 = (a2 - a1 + a0)^2  */
 	/** \\S1 = a0 + a2; */
 	/** a0 = a0 + a2; */
-	internal_add(a0, a0, a2) or_return
+	internal_add(a0, a0, a2, allocator) or_return
 	/** \\S2 = S1 - a1; */
 	/** b = a0 - a1; */
-	internal_sub(dest, a0, a1) or_return
+	internal_sub(dest, a0, a1, allocator) or_return
 	/** \\S1 = S1 + a1; */
 	/** a0 = a0 + a1; */
-	internal_add(a0, a0, a1) or_return
+	internal_add(a0, a0, a1, allocator) or_return
 	/** \\S1 = S1^2;  */
 	/** a0 = a0^2; */
-	internal_sqr(a0, a0) or_return
+	internal_sqr(a0, a0, allocator) or_return
 	/** \\S2 = S2^2;  */
 	/** b = b^2; */
-	internal_sqr(dest, dest) or_return
+	internal_sqr(dest, dest, allocator) or_return
 	/** \\ S3 = 2 * a1 * a2  */
 	/** \\S3 = a1 * a2;  */
 	/** a1 = a1 * a2; */
-	internal_mul(a1, a1, a2) or_return
+	internal_mul(a1, a1, a2, allocator) or_return
 	/** \\S3 = S3 << 1;  */
 	/** a1 = a1 << 1; */
-	internal_shl(a1, a1, 1) or_return
+	internal_shl(a1, a1, 1, allocator) or_return
 	/** \\S4 = a2^2;  */
 	/** a2 = a2^2; */
-	internal_sqr(a2, a2) or_return
+	internal_sqr(a2, a2, allocator) or_return
 	/** \\ tmp = (S1 + S2)/2  */
 	/** \\tmp = S1 + S2; */
 	/** b = a0 + b; */
-	internal_add(dest, a0, dest) or_return
+	internal_add(dest, a0, dest, allocator) or_return
 	/** \\tmp = tmp >> 1; */
 	/** b = b >> 1; */
-	internal_shr(dest, dest, 1) or_return
+	internal_shr(dest, dest, 1, allocator) or_return
 	/** \\ S1 = S1 - tmp - S3  */
 	/** \\S1 = S1 - tmp; */
 	/** a0 = a0 - b; */
-	internal_sub(a0, a0, dest) or_return
+	internal_sub(a0, a0, dest, allocator) or_return
 	/** \\S1 = S1 - S3;  */
 	/** a0 = a0 - a1; */
-	internal_sub(a0, a0, a1) or_return
+	internal_sub(a0, a0, a1, allocator) or_return
 	/** \\S2 = tmp - S4 -S0  */
 	/** \\S2 = tmp - S4;  */
 	/** b = b - a2; */
-	internal_sub(dest, dest, a2) or_return
+	internal_sub(dest, dest, a2, allocator) or_return
 	/** \\S2 = S2 - S0;  */
 	/** b = b - S0; */
-	internal_sub(dest, dest, S0) or_return
+	internal_sub(dest, dest, S0, allocator) or_return
 	/** \\P = S4*x^4 + S3*x^3 + S2*x^2 + S1*x + S0; */
 	/** P = a2*x^4 + a1*x^3 + b*x^2 + a0*x + S0; */
-	_private_int_shl_leg(  a2, 4 * B) or_return
-	_private_int_shl_leg(  a1, 3 * B) or_return
-	_private_int_shl_leg(dest, 2 * B) or_return
-	_private_int_shl_leg(  a0, 1 * B) or_return
+	_private_int_shl_leg(  a2, 4 * B, allocator) or_return
+	_private_int_shl_leg(  a1, 3 * B, allocator) or_return
+	_private_int_shl_leg(dest, 2 * B, allocator) or_return
+	_private_int_shl_leg(  a0, 1 * B, allocator) or_return
 
-	internal_add(a2, a2, a1) or_return
-	internal_add(dest, dest, a2) or_return
-	internal_add(dest, dest, a0) or_return
-	internal_add(dest, dest, S0) or_return
+	internal_add(a2, a2, a1,     allocator) or_return
+	internal_add(dest, dest, a2, allocator) or_return
+	internal_add(dest, dest, a0, allocator) or_return
+	internal_add(dest, dest, S0, allocator) or_return
 	/** a^2 - P  */
 
 	return #force_inline internal_clamp(dest)
@@ -960,8 +948,7 @@ _private_int_sqr_toom :: proc(dest, src: ^Int, allocator := context.allocator) -
 /*
 	Divide by three (based on routine from MPI and the GMP manual).
 */
-_private_int_div_3 :: proc(quotient, numerator: ^Int, allocator := context.allocator) -> (remainder: DIGIT, err: Error) {
-	context.allocator = allocator
+_private_int_div_3 :: proc(quotient, numerator: ^Int, allocator: mem.Allocator) -> (remainder: DIGIT, err: Error) {
 
 	/*
 		b = 2^_DIGIT_BITS / 3
@@ -969,7 +956,7 @@ _private_int_div_3 :: proc(quotient, numerator: ^Int, allocator := context.alloc
 	b := _WORD(1) << _WORD(_DIGIT_BITS) / _WORD(3)
 
 	q := &Int{}
-	internal_grow(q, numerator.used) or_return
+	internal_grow(q, numerator.used, allocator = allocator) or_return
 	q.used = numerator.used
 	q.sign = numerator.sign
 
@@ -1005,7 +992,7 @@ _private_int_div_3 :: proc(quotient, numerator: ^Int, allocator := context.alloc
 		[optional] store the quotient.
 	*/
 	if quotient != nil {
-		err = clamp(q)
+		err = clamp(q, allocator)
 		internal_swap(q, quotient)
 	}
 	internal_destroy(q)
@@ -1024,20 +1011,19 @@ _private_int_div_3 :: proc(quotient, numerator: ^Int, allocator := context.alloc
 	It also doesn't consider the case that y has fewer than three digits, etc.
 	The overall algorithm is as described as 14.20 from HAC but fixed to treat these cases.
 */
-_private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	error_if_immutable(quotient, remainder) or_return
 
 	q, x, y, t1, t2 := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(q, x, y, t1, t2)
 
-	internal_grow(q, numerator.used + 2) or_return
+	internal_grow(q, numerator.used + 2, allocator = allocator) or_return
 	q.used = numerator.used + 2
 
 	internal_init_multi(t1, t2) or_return
-	internal_copy(x, numerator) or_return
-	internal_copy(y, denominator) or_return
+	internal_copy(x, numerator,   allocator = allocator) or_return
+	internal_copy(y, denominator, allocator = allocator) or_return
 
 	/*
 		Fix the sign.
@@ -1052,8 +1038,8 @@ _private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^In
 	norm := internal_count_bits(y) % _DIGIT_BITS
 	if norm < _DIGIT_BITS - 1 {
 		norm = (_DIGIT_BITS - 1) - norm
-		internal_shl(x, x, norm) or_return
-		internal_shl(y, y, norm) or_return
+		internal_shl(x, x, norm, allocator = allocator) or_return
+		internal_shl(y, y, norm, allocator = allocator) or_return
 	} else {
 		norm = 0
 	}
@@ -1070,17 +1056,17 @@ _private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^In
 	*/
 
 
-	_private_int_shl_leg(y, n - t) or_return
+	_private_int_shl_leg(y, n - t, allocator) or_return
 
 	for internal_gte(x, y) {
 		q.digit[n - t] += 1
-		internal_sub(x, x, y) or_return
+		internal_sub(x, x, y, allocator) or_return
 	}
 
 	/*
 		Reset y by shifting it back down.
 	*/
-	_private_int_shr_leg(y, n - t)
+	_private_int_shr_leg(y, n - t, allocator)
 	/*
 		Step 3. for i from n down to (t + 1).
 	*/
@@ -1116,11 +1102,11 @@ _private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^In
 			/*
 				Find left hand.
 			*/
-			internal_zero(t1)
+			internal_zero(t1, allocator = allocator)
 			t1.digit[0] = ((t - 1) < 0) ? 0 : y.digit[t - 1]
 			t1.digit[1] = y.digit[t]
 			t1.used = 2
-			internal_mul(t1, t1, q.digit[(i - t) - 1]) or_return
+			internal_mul(t1, t1, q.digit[(i - t) - 1], allocator) or_return
 
 			/*
 				Find right hand.
@@ -1141,17 +1127,17 @@ _private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^In
 		/*
 			Step 3.3 x = x - q{i-t-1} * y * b**{i-t-1}
 		*/
-		int_mul_digit(t1, y, q.digit[(i - t) - 1]) or_return
-		_private_int_shl_leg(t1, (i - t) - 1) or_return
-		internal_sub(x, x, t1) or_return
+		int_mul_digit(t1, y, q.digit[(i - t) - 1], allocator) or_return
+		_private_int_shl_leg(t1, (i - t) - 1, allocator) or_return
+		internal_sub(x, x, t1, allocator) or_return
 
 		/*
 			if x < 0 then { x = x + y*b**{i-t-1}; q{i-t-1} -= 1; }
 		*/
 		if x.sign == .Negative {
-			internal_copy(t1, y) or_return
-			_private_int_shl_leg(t1, (i - t) - 1) or_return
-			internal_add(x, x, t1) or_return
+			internal_copy(t1, y, allocator = allocator) or_return
+			_private_int_shl_leg(t1, (i - t) - 1, allocator) or_return
+			internal_add(x, x, t1, allocator) or_return
 
 			q.digit[(i - t) - 1] = (q.digit[(i - t) - 1] - 1) & _MASK
 		}
@@ -1161,7 +1147,7 @@ _private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^In
 		Now q is the quotient and x is the remainder, [which we have to normalize]
 		Get sign before writing to c.
 	*/
-	z, _ := is_zero(x)
+	z, _ := is_zero(x, allocator)
 	x.sign = .Zero_or_Positive if z else numerator.sign
 
 	if quotient != nil {
@@ -1171,7 +1157,7 @@ _private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^In
 	}
 
 	if remainder != nil {
-		internal_shr(x, x, norm) or_return
+		internal_shr(x, x, norm, allocator) or_return
 		internal_swap(x, remainder)
 	}
 
@@ -1187,8 +1173,7 @@ _private_int_div_school :: proc(quotient, remainder, numerator, denominator: ^In
 
 	pages 19ff. in the above online document.
 */
-_private_div_recursion :: proc(quotient, remainder, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_div_recursion :: proc(quotient, remainder, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	A1, A2, B1, B0, Q1, Q0, R1, R0, t := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(A1, A2, B1, B0, Q1, Q0, R1, R0, t)
@@ -1197,7 +1182,7 @@ _private_div_recursion :: proc(quotient, remainder, a, b: ^Int, allocator := con
 	k := m / 2
 
 	if m < MUL_KARATSUBA_CUTOFF {
-		return _private_int_div_school(quotient, remainder, a, b)
+		return _private_int_div_school(quotient, remainder, a, b, allocator)
 	}
 
 	internal_init_multi(A1, A2, B1, B0, Q1, Q0, R1, R0, t) or_return
@@ -1205,30 +1190,30 @@ _private_div_recursion :: proc(quotient, remainder, a, b: ^Int, allocator := con
 	/*
 		`B1` = `b` / `beta`^`k`, `B0` = `b` % `beta`^`k`
 	*/
-	internal_shrmod(B1, B0, b, k * _DIGIT_BITS) or_return
+	internal_shrmod(B1, B0, b, k * _DIGIT_BITS, allocator) or_return
 
 	/*
 		(Q1, R1) =  RecursiveDivRem(A / beta^(2k), B1)
 	*/
-	internal_shrmod(A1, t, a, 2 * k * _DIGIT_BITS) or_return
-	_private_div_recursion(Q1, R1, A1, B1) or_return
+	internal_shrmod(A1, t, a, 2 * k * _DIGIT_BITS, allocator) or_return
+	_private_div_recursion(Q1, R1, A1, B1, allocator) or_return
 
 	/*
 		A1 = (R1 * beta^(2k)) + (A % beta^(2k)) - (Q1 * B0 * beta^k)
 	*/
-	_private_int_shl_leg(R1, 2 * k) or_return
-	internal_add(A1, R1, t) or_return
-	internal_mul(t, Q1, B0) or_return
+	_private_int_shl_leg(R1, 2 * k, allocator) or_return
+	internal_add(A1, R1, t, allocator) or_return
+	internal_mul(t, Q1, B0, allocator) or_return
 
 	/*
 		While A1 < 0 do Q1 = Q1 - 1, A1 = A1 + (beta^k * B)
 	*/
 	if internal_lt(A1, 0) {
-		internal_shl(t, b, k * _DIGIT_BITS) or_return
+		internal_shl(t, b, k * _DIGIT_BITS, allocator) or_return
 
 		for {
-			internal_decr(Q1) or_return
-			internal_add(A1, A1, t) or_return
+			internal_decr(Q1, allocator) or_return
+			internal_add(A1, A1, t, allocator) or_return
 			if internal_gte(A1, 0) { break }
 		}
 	}
@@ -1236,37 +1221,35 @@ _private_div_recursion :: proc(quotient, remainder, a, b: ^Int, allocator := con
 	/*
 		(Q0, R0) =  RecursiveDivRem(A1 / beta^(k), B1)
 	*/
-	internal_shrmod(A1, t, A1, k * _DIGIT_BITS) or_return
-	_private_div_recursion(Q0, R0, A1, B1) or_return
+	internal_shrmod(A1, t, A1, k * _DIGIT_BITS, allocator) or_return
+	_private_div_recursion(Q0, R0, A1, B1, allocator) or_return
 
 	/*
 		A2 = (R0*beta^k) +  (A1 % beta^k) - (Q0*B0)
 	*/
-	_private_int_shl_leg(R0, k) or_return
-	internal_add(A2, R0, t) or_return
-	internal_mul(t, Q0, B0) or_return
-	internal_sub(A2, A2, t) or_return
+	_private_int_shl_leg(R0, k, allocator) or_return
+	internal_add(A2, R0, t, allocator) or_return
+	internal_mul(t, Q0, B0, allocator) or_return
+	internal_sub(A2, A2, t, allocator) or_return
 
 	/*
 		While A2 < 0 do Q0 = Q0 - 1, A2 = A2 + B.
 	*/
 	for internal_is_negative(A2) { // internal_lt(A2, 0) {
-		internal_decr(Q0) or_return
-		internal_add(A2, A2, b) or_return
+		internal_decr(Q0,       allocator) or_return
+		internal_add(A2, A2, b, allocator) or_return
 	}
 
 	/*
 		Return q = (Q1*beta^k) + Q0, r = A2.
 	*/
-	_private_int_shl_leg(Q1, k) or_return
-	internal_add(quotient, Q1, Q0) or_return
+	_private_int_shl_leg(Q1, k,    allocator) or_return
+	internal_add(quotient, Q1, Q0, allocator) or_return
 
-	return internal_copy(remainder, A2)
+	return internal_copy(remainder, A2, allocator = allocator)
 }
 
-_private_int_div_recursive :: proc(quotient, remainder, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
-
+_private_int_div_recursive :: proc(quotient, remainder, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 	A, B, Q, Q1, R, A_div, A_mod := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(A, B, Q, Q1, R, A_div, A_mod)
 
@@ -1287,8 +1270,8 @@ _private_int_div_recursive :: proc(quotient, remainder, a, b: ^Int, allocator :=
 	/*
 		Use that sigma to normalize B.
 	*/
-	internal_shl(B, b, sigma) or_return
-	internal_shl(A, a, sigma) or_return
+	internal_shl(B, b, sigma, allocator) or_return
+	internal_shl(A, a, sigma, allocator) or_return
 
 	/*
 		Fix the sign.
@@ -1311,20 +1294,20 @@ _private_int_div_recursive :: proc(quotient, remainder, a, b: ^Int, allocator :=
 			(q, r) = RecursiveDivRem(A / (beta^(m-n)), B)
 		*/
 		j := (m - n) * _DIGIT_BITS
-		internal_shrmod(A_div, A_mod, A, j) or_return
-		_private_div_recursion(Q1, R, A_div, B) or_return
+		internal_shrmod(A_div, A_mod, A, j, allocator) or_return
+		_private_div_recursion(Q1, R, A_div, B, allocator) or_return
 
 		/*
 			Q = (Q*beta!(n)) + q
 		*/
-		internal_shl(Q, Q, n * _DIGIT_BITS) or_return
-		internal_add(Q, Q, Q1) or_return
+		internal_shl(Q, Q, n * _DIGIT_BITS, allocator) or_return
+		internal_add(Q, Q, Q1, allocator) or_return
 
 		/*
 			A = (r * beta^(m-n)) + (A % beta^(m-n))
 		*/
-		internal_shl(R, R, (m - n) * _DIGIT_BITS) or_return
-		internal_add(A, R, A_mod) or_return
+		internal_shl(R, R, (m - n) * _DIGIT_BITS, allocator) or_return
+		internal_add(A, R, A_mod, allocator) or_return
 
 		/*
 			m = m - n
@@ -1335,13 +1318,13 @@ _private_int_div_recursive :: proc(quotient, remainder, a, b: ^Int, allocator :=
 	/*
 		(q, r) = RecursiveDivRem(A, B)
 	*/
-	_private_div_recursion(Q1, R, A, B) or_return
+	_private_div_recursion(Q1, R, A, B, allocator) or_return
 
 	/*
 		Q = (Q * beta^m) + q, R = r
 	*/
-	internal_shl(Q, Q, m * _DIGIT_BITS) or_return
-	internal_add(Q, Q, Q1) or_return
+	internal_shl(Q, Q, m * _DIGIT_BITS, allocator) or_return
+	internal_add(Q, Q, Q1, allocator) or_return
 
 	/*
 		Get sign before writing to dest.
@@ -1356,7 +1339,7 @@ _private_int_div_recursive :: proc(quotient, remainder, a, b: ^Int, allocator :=
 		/*
 			De-normalize the remainder.
 		*/
-		internal_shrmod(R, nil, R, sigma) or_return
+		internal_shrmod(R, nil, R, sigma, allocator) or_return
 		swap(remainder, R)
 	}
 	return nil
@@ -1373,7 +1356,7 @@ _private_int_div_small :: proc(quotient, remainder, numerator, denominator: ^Int
 	defer internal_destroy(ta, tb, tq, q)
 
 	for {
-		internal_one(tq) or_return
+		internal_one(tq, allocator) or_return
 
 		num_bits, _ := count_bits(numerator)
 		den_bits, _ := count_bits(denominator)
@@ -1422,34 +1405,32 @@ _private_int_div_small :: proc(quotient, remainder, numerator, denominator: ^Int
 /*
 	Binary split factorial algo due to: http://www.luschny.de/math/factorial/binarysplitfact.html
 */
-_private_int_factorial_binary_split :: proc(res: ^Int, n: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_factorial_binary_split :: proc(res: ^Int, n: int, allocator: mem.Allocator) -> (err: Error) {
 
 	inner, outer, start, stop, temp := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(inner, outer, start, stop, temp)
 
-	internal_one(inner, false)                                       or_return
-	internal_one(outer, false)                                       or_return
+	internal_one(inner, false, allocator)                                       or_return
+	internal_one(outer, false, allocator)                                       or_return
 
 	bits_used := ilog2(n)
 
 	for i := bits_used; i >= 0; i -= 1 {
 		start := (n >> (uint(i) + 1)) + 1 | 1
 		stop  := (n >> uint(i)) + 1 | 1
-		_private_int_recursive_product(temp, start, stop, 0)         or_return
-		internal_mul(inner, inner, temp)                             or_return
-		internal_mul(outer, outer, inner)                            or_return
+		_private_int_recursive_product(temp, start, stop, 0, allocator)         or_return
+		internal_mul(inner, inner, temp,  allocator)                            or_return
+		internal_mul(outer, outer, inner, allocator)                            or_return
 	}
 	shift := n - intrinsics.count_ones(n)
 
-	return internal_shl(res, outer, int(shift))
+	return internal_shl(res, outer, int(shift), allocator)
 }
 
 /*
 	Recursive product used by binary split factorial algorithm.
 */
-_private_int_recursive_product :: proc(res: ^Int, start, stop: int, level := int(0), allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_recursive_product :: proc(res: ^Int, start, stop: int, level := int(0), allocator: mem.Allocator) -> (err: Error) {
 
 	t1, t2 := &Int{}, &Int{}
 	defer internal_destroy(t1, t2)
@@ -1460,28 +1441,28 @@ _private_int_recursive_product :: proc(res: ^Int, start, stop: int, level := int
 
 	num_factors := (stop - start) >> 1
 	if num_factors == 2 {
-		internal_set(t1, start, false)                               or_return
+		internal_set(t1, start, false, allocator)                               or_return
 		when true {
-			internal_grow(t2, t1.used + 1, false)                    or_return
-			internal_add(t2, t1, 2)                                  or_return
+			internal_grow(t2, t1.used + 1, false, allocator)                    or_return
+			internal_add(t2, t1, 2, allocator)                                  or_return
 		} else {
-			internal_add(t2, t1, 2)                                  or_return
+			internal_add(t2, t1, 2, allocator)                                  or_return
 		}
-		return internal_mul(res, t1, t2)
+		return internal_mul(res, t1, t2, allocator)
 	}
 
 	if num_factors > 1 {
 		mid := (start + num_factors) | 1
-		_private_int_recursive_product(t1, start,  mid, level + 1)   or_return
-		_private_int_recursive_product(t2,   mid, stop, level + 1)   or_return
-		return internal_mul(res, t1, t2)
+		_private_int_recursive_product(t1, start,  mid, level + 1, allocator)   or_return
+		_private_int_recursive_product(t2,   mid, stop, level + 1, allocator)   or_return
+		return internal_mul(res, t1, t2, allocator)
 	}
 
 	if num_factors == 1 {
-		return #force_inline internal_set(res, start, true)
+		return #force_inline internal_set(res, start, true, allocator)
 	}
 
-	return #force_inline internal_one(res, true)
+	return #force_inline internal_one(res, true, allocator)
 }
 
 /*
@@ -1499,8 +1480,7 @@ _private_int_recursive_product :: proc(res: ^Int, start, stop: int, level := int
 
 	If neither result is wanted, we have nothing to do.
 */
-_private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	if res_gcd == nil && res_lcm == nil {
 		return nil
@@ -1514,10 +1494,10 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 			GCD(0, 0) and LCM(0, 0) are both 0.
 		*/
 		if res_gcd != nil {
-			internal_zero(res_gcd) or_return
+			internal_zero(res_gcd, allocator = allocator) or_return
 		}
 		if res_lcm != nil {
-			internal_zero(res_lcm) or_return
+			internal_zero(res_lcm, allocator = allocator) or_return
 		}
 		return nil
 	} else if a.used == 0 {
@@ -1525,10 +1505,10 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 			We can early out with GCD = B and LCM = 0
 		*/
 		if res_gcd != nil {
-			internal_abs(res_gcd, b) or_return
+			internal_abs(res_gcd, b, allocator) or_return
 		}
 		if res_lcm != nil {
-			internal_zero(res_lcm) or_return
+			internal_zero(res_lcm, allocator = allocator) or_return
 		}
 		return nil
 	} else if b.used == 0 {
@@ -1536,10 +1516,10 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 			We can early out with GCD = A and LCM = 0
 		*/
 		if res_gcd != nil {
-			internal_abs(res_gcd, a) or_return
+			internal_abs(res_gcd, a, allocator) or_return
 		}
 		if res_lcm != nil {
-			internal_zero(res_lcm) or_return
+			internal_zero(res_lcm, allocator = allocator) or_return
 		}
 		return nil
 	}
@@ -1553,8 +1533,8 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 	*/
 	u, v := &Int{}, &Int{}
 	defer internal_destroy(u, v)
-	internal_copy(u, a) or_return
-	internal_copy(v, b) or_return
+	internal_copy(u, a, allocator = allocator) or_return
+	internal_copy(v, b, allocator = allocator) or_return
 
 	/*
 		Must be positive for the remainder of the algorithm.
@@ -1572,18 +1552,18 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 		/*
 			Divide the power of two out.
 		*/
-		internal_shr(u, u, k) or_return
-		internal_shr(v, v, k) or_return
+		internal_shr(u, u, k, allocator) or_return
+		internal_shr(v, v, k, allocator) or_return
 	}
 
 	/*
 		Divide any remaining factors of two out.
 	*/
 	if u_lsb != k {
-		internal_shr(u, u, u_lsb - k) or_return
+		internal_shr(u, u, u_lsb - k, allocator) or_return
 	}
 	if v_lsb != k {
-		internal_shr(v, v, v_lsb - k) or_return
+		internal_shr(v, v, v_lsb - k, allocator) or_return
 	}
 
 	for v.used != 0 {
@@ -1600,19 +1580,19 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 		/*
 			Subtract smallest from largest.
 		*/
-		internal_sub(v, v, u) or_return
+		internal_sub(v, v, u, allocator) or_return
 
 		/*
 			Divide out all factors of two.
 		*/
 		b, _ := internal_count_lsb(v)
-		internal_shr(v, v, b) or_return
+		internal_shr(v, v, b, allocator) or_return
 	}
 
 	/*
 		Multiply by 2**k which we divided out at the beginning.
 	*/
-	internal_shl(temp_gcd_res, u, k) or_return
+	internal_shl(temp_gcd_res, u, k, allocator) or_return
 	temp_gcd_res.sign = .Zero_or_Positive
 
 	/*
@@ -1632,14 +1612,14 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 		/*
 			Store quotient in `t2` such that `t2 * b` is the LCM.
 		*/
-		internal_div(res_lcm, a, temp_gcd_res) or_return
-		err = internal_mul(res_lcm, res_lcm, b)
+		internal_div(res_lcm, a, temp_gcd_res, allocator) or_return
+		err = internal_mul(res_lcm, res_lcm, b, allocator)
 	} else {
 		/*
 			Store quotient in `t2` such that `t2 * a` is the LCM.
 		*/
-		internal_div(res_lcm, b, temp_gcd_res) or_return
-		err = internal_mul(res_lcm, res_lcm, a)
+		internal_div(res_lcm, b, temp_gcd_res, allocator) or_return
+		err = internal_mul(res_lcm, res_lcm, a, allocator)
 	}
 
 	if res_gcd != nil {
@@ -1657,7 +1637,7 @@ _private_int_gcd_lcm :: proc(res_gcd, res_lcm, a, b: ^Int, allocator := context.
 	Internal implementation of log.
 	Assumes `a` not to be `nil` and to have been initialized.
 */
-_private_int_log :: proc(a: ^Int, base: DIGIT, allocator := context.allocator) -> (res: int, err: Error) {
+_private_int_log :: proc(a: ^Int, base: DIGIT, allocator: mem.Allocator) -> (res: int, err: Error) {
 	bracket_low, bracket_high, bracket_mid, t, bi_base := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(bracket_low, bracket_high, bracket_mid, t, bi_base)
 
@@ -1728,8 +1708,7 @@ _private_int_log :: proc(a: ^Int, base: DIGIT, allocator := context.allocator) -
 	which uses the comba method to quickly calculate the columns of the reduction.
 	Based on Algorithm 14.32 on pp.601 of HAC.
 */
-_private_montgomery_reduce_comba :: proc(x, n: ^Int, rho: DIGIT, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_montgomery_reduce_comba :: proc(x, n: ^Int, rho: DIGIT, allocator: mem.Allocator) -> (err: Error) {
 	W: [_WARRAY]_WORD = ---
 
 	if x.used > _WARRAY { return .Invalid_Argument }
@@ -1846,8 +1825,7 @@ _private_montgomery_reduce_comba :: proc(x, n: ^Int, rho: DIGIT, allocator := co
 	Computes xR**-1 == x (mod N) via Montgomery Reduction.
 	Assumes `x` and `n` not to be nil.
 */
-_private_int_montgomery_reduce :: proc(x, n: ^Int, rho: DIGIT, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_montgomery_reduce :: proc(x, n: ^Int, rho: DIGIT, allocator: mem.Allocator) -> (err: Error) {
 	/*
 		Can the fast reduction [comba] method be used?
 		Note that unlike in mul, you're safely allowed *less* than the available columns [255 per default],
@@ -1939,8 +1917,7 @@ _private_int_montgomery_reduce :: proc(x, n: ^Int, rho: DIGIT, allocator := cont
 
 	Assumes `a` and `b` not to be `nil`.
 */
-_private_int_montgomery_calc_normalization :: proc(a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_montgomery_calc_normalization :: proc(a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 	/*
 		How many bits of last digit does b use.
 	*/
@@ -1971,7 +1948,7 @@ _private_int_montgomery_calc_normalization :: proc(a, b: ^Int, allocator := cont
 /*
 	Sets up the Montgomery reduction stuff.
 */
-_private_int_montgomery_setup :: proc(n: ^Int, allocator := context.allocator) -> (rho: DIGIT, err: Error) {
+_private_int_montgomery_setup :: proc(n: ^Int, allocator: mem.Allocator) -> (rho: DIGIT, err: Error) {
 	/*
 		Fast inversion mod 2**k
 		Based on the fact that:
@@ -2007,8 +1984,7 @@ _private_int_montgomery_setup :: proc(n: ^Int, allocator := context.allocator) -
 
 	Assumes `x`, `m` and `mu` all not to be `nil` and have been initialized.
 */
-_private_int_reduce :: proc(x, m, mu: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_reduce :: proc(x, m, mu: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	q := &Int{}
 	defer internal_destroy(q)
@@ -2017,56 +1993,56 @@ _private_int_reduce :: proc(x, m, mu: ^Int, allocator := context.allocator) -> (
 	/*
 		q = x
 	*/
-	internal_copy(q, x)                                              or_return
+	internal_copy(q, x, allocator = allocator)                                              or_return
 
 	/*
 		q1 = x / b**(k-1)
 	*/
-	_private_int_shr_leg(q, um - 1)
+	_private_int_shr_leg(q, um - 1, allocator)
 
 	/*
 		According to HAC this optimization is ok.
 	*/
 	if DIGIT(um) > DIGIT(1) << (_DIGIT_BITS - 1) {
-		internal_mul(q, q, mu)                                       or_return
+		internal_mul(q, q, mu, allocator)                                       or_return
 	} else {
-		_private_int_mul_high(q, q, mu, um)                          or_return
+		_private_int_mul_high(q, q, mu, um, allocator)                          or_return
 	}
 
 	/*
 		q3 = q2 / b**(k+1)
 	*/
-	_private_int_shr_leg(q, um + 1)
+	_private_int_shr_leg(q, um + 1, allocator)
 
 	/*
 		x = x mod b**(k+1), quick (no division)
 	*/
-	internal_int_mod_bits(x, x, _DIGIT_BITS * (um + 1))              or_return
+	internal_int_mod_bits(x, x, _DIGIT_BITS * (um + 1), allocator)              or_return
 
 	/*
 		q = q * m mod b**(k+1), quick (no division)
 	*/
-	_private_int_mul(q, q, m, um + 1)                                or_return
+	_private_int_mul(q, q, m, um + 1, allocator)                                or_return
 
 	/*
 		x = x - q
 	*/
-	internal_sub(x, x, q)                                            or_return
+	internal_sub(x, x, q, allocator)                                            or_return
 
 	/*
 		If x < 0, add b**(k+1) to it.
 	*/
 	if internal_is_negative(x) {
-		internal_set(q, 1)                                           or_return
-		_private_int_shl_leg(q, um + 1)                                or_return
-		internal_add(x, x, q)                                        or_return
+		internal_set(q, 1, allocator = allocator)                               or_return
+		_private_int_shl_leg(q, um + 1, allocator)                                or_return
+		internal_add(x, x, q, allocator)                                        or_return
 	}
 
 	/*
 		Back off if it's too big.
 	*/
 	for internal_gte(x, m) {
-		internal_sub(x, x, m)                                        or_return
+		internal_sub(x, x, m, allocator)                                        or_return
 	}
 
 	return nil
@@ -2075,8 +2051,7 @@ _private_int_reduce :: proc(x, m, mu: ^Int, allocator := context.allocator) -> (
 /*
 	Reduces `a` modulo `n`, where `n` is of the form 2**p - d.
 */
-_private_int_reduce_2k :: proc(a, n: ^Int, d: DIGIT, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_reduce_2k :: proc(a, n: ^Int, d: DIGIT, allocator: mem.Allocator) -> (err: Error) {
 
 	q := &Int{}
 	defer internal_destroy(q)
@@ -2113,13 +2088,12 @@ _private_int_reduce_2k :: proc(a, n: ^Int, d: DIGIT, allocator := context.alloca
 	Reduces `a` modulo `n` where `n` is of the form 2**p - d
 	This differs from reduce_2k since "d" can be larger than a single digit.
 */
-_private_int_reduce_2k_l :: proc(a, n, d: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_reduce_2k_l :: proc(a, n, d: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	q := &Int{}
 	defer internal_destroy(q)
 
-	internal_zero(q)                                                 or_return
+	internal_zero(q, allocator = allocator)                                     or_return
 
 	p := internal_count_bits(n)
 
@@ -2127,19 +2101,19 @@ _private_int_reduce_2k_l :: proc(a, n, d: ^Int, allocator := context.allocator) 
 		/*
 			q = a/2**p, a = a mod 2**p
 		*/
-		internal_shrmod(q, a, a, p)                                  or_return
+		internal_shrmod(q, a, a, p, allocator)                                  or_return
 
 		/*
 			q = q * d
 		*/
-		internal_mul(q, q, d)                                        or_return
+		internal_mul(q, q, d, allocator)                                        or_return
 
 		/*
 			a = a + q
 		*/
-		internal_add(a, a, q)                                        or_return
+		internal_add(a, a, q, allocator)                                        or_return
 		if internal_lt_abs(a, n)                                     { break }
-		internal_sub(a, a, n)                                        or_return
+		internal_sub(a, a, n, allocator)                                        or_return
 	}
 
 	return nil
@@ -2214,8 +2188,7 @@ _private_int_reduce_is_2k_l :: proc(a: ^Int) -> (reducible: bool, err: Error) {
 	Determines the setup value.
 	Assumes `a` is not `nil`.
 */
-_private_int_reduce_2k_setup :: proc(a: ^Int, allocator := context.allocator) -> (d: DIGIT, err: Error) {
-	context.allocator = allocator
+_private_int_reduce_2k_setup :: proc(a: ^Int, allocator: mem.Allocator) -> (d: DIGIT, err: Error) {
 
 	tmp := &Int{}
 	defer internal_destroy(tmp)
@@ -2233,15 +2206,14 @@ _private_int_reduce_2k_setup :: proc(a: ^Int, allocator := context.allocator) ->
 
 	d := (1 << a.bits) - a;
 */
-_private_int_reduce_2k_setup_l :: proc(mu, P: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_reduce_2k_setup_l :: proc(mu, P: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
 	tmp := &Int{}
 	defer internal_destroy(tmp)
-	internal_zero(tmp)                                               or_return
+	internal_zero(tmp, allocator = allocator)                                               or_return
 
-	internal_int_power_of_two(tmp, internal_count_bits(P))           or_return
-	internal_sub(mu, tmp, P)                                         or_return
+	internal_int_power_of_two(tmp, internal_count_bits(P), allocator)           or_return
+	internal_sub(mu, tmp, P, allocator)                                         or_return
 
 	return nil
 }
@@ -2251,11 +2223,10 @@ _private_int_reduce_2k_setup_l :: proc(mu, P: ^Int, allocator := context.allocat
 	For a given modulus "P" it calulates the value required in "mu"
 	Assumes `mu` and `P` are not `nil`.
 */
-_private_int_reduce_setup :: proc(mu, P: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_reduce_setup :: proc(mu, P: ^Int, allocator: mem.Allocator) -> (err: Error) {
 
-	internal_int_power_of_two(mu, P.used * 2 * _DIGIT_BITS)           or_return
-	return internal_int_div(mu, mu, P)
+	internal_int_power_of_two(mu, P.used * 2 * _DIGIT_BITS, allocator)           or_return
+	return internal_int_div(mu, mu, P, allocator)
 }
 
 /*
@@ -2305,7 +2276,7 @@ _private_dr_is_modulus :: proc(a: ^Int) -> (res: bool) {
 	Input x must be in the range 0 <= x <= (n-1)**2
 	Assumes `x` and `n` to not be `nil` and to have been initialized.
 */
-_private_int_dr_reduce :: proc(x, n: ^Int, k: DIGIT, allocator := context.allocator) -> (err: Error) {
+_private_int_dr_reduce :: proc(x, n: ^Int, k: DIGIT, allocator: mem.Allocator) -> (err: Error) {
 	/*
 		m = digits in modulus.
 	*/
@@ -2362,8 +2333,7 @@ _private_int_dr_reduce :: proc(x, n: ^Int, k: DIGIT, allocator := context.alloca
 	Computes res == G**X mod P.
 	Assumes `res`, `G`, `X` and `P` to not be `nil` and for `G`, `X` and `P` to have been initialized.
 */
-_private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator: mem.Allocator) -> (err: Error) {
 
 	M := [_TAB_SIZE]Int{}
 	winsize: uint
@@ -2372,7 +2342,7 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 		Use a pointer to the reduction algorithm.
 		This allows us to use one of many reduction algorithms without modding the guts of the code with if statements everywhere.
 	*/
-	redux: #type proc(x, m, mu: ^Int, allocator := context.allocator) -> (err: Error)
+	redux: #type proc(x, m, mu: ^Int, allocator: mem.Allocator) -> (err: Error)
 
 	defer {
 		internal_destroy(&M[1])
@@ -2408,13 +2378,13 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 		Init M array.
 		Init first cell.
 	*/
-	internal_zero(&M[1])                                             or_return
+	internal_zero(&M[1], allocator = allocator)                                             or_return
 
 	/*
 		Now init the second half of the array.
 	*/
 	for x = 1 << (winsize - 1); x < (1 << winsize); x += 1 {
-		internal_zero(&M[x])                                         or_return
+		internal_zero(&M[x], allocator = allocator)                                         or_return
 	}
 
 	/*
@@ -2422,13 +2392,13 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 	*/
 	mu := &Int{}
 	defer internal_destroy(mu)
-	internal_zero(mu)                                                or_return
+	internal_zero(mu, allocator = allocator)                                                or_return
 
 	if redmode == 0 {
-		_private_int_reduce_setup(mu, P)                             or_return
+		_private_int_reduce_setup(mu, P, allocator)                             or_return
 		redux = _private_int_reduce
 	} else {
-		_private_int_reduce_2k_setup_l(mu, P)                        or_return
+		_private_int_reduce_2k_setup_l(mu, P, allocator)                        or_return
 		redux = _private_int_reduce_2k_l
 	}
 
@@ -2438,7 +2408,7 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 		The M table contains powers of the base, e.g. M[x] = G**x mod P.
 		The first half of the table is not computed, though, except for M[0] and M[1].
 	*/
-	internal_int_mod(&M[1], G, P)                                    or_return
+	internal_int_mod(&M[1], G, P, allocator)                                    or_return
 
 	/*
 		Compute the value at M[1<<(winsize-1)] by squaring M[1] (winsize-1) times.
@@ -2447,18 +2417,18 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 		instead of repeated squaring.
 	*/
 	slot := 1 << (winsize - 1)
-	internal_copy(&M[slot], &M[1])                                   or_return
+	internal_copy(&M[slot], &M[1], allocator = allocator)                                   or_return
 
 	for x = 0; x < int(winsize - 1); x += 1 {
 		/*
 			Square it.
 		*/
-		internal_sqr(&M[slot], &M[slot])                             or_return
+		internal_sqr(&M[slot], &M[slot], allocator)                             or_return
 
 		/*
 			Reduce modulo P
 		*/
-		redux(&M[slot], P, mu)                                       or_return
+		redux(&M[slot], P, mu, allocator)                                       or_return
 	}
 
 	/*
@@ -2466,14 +2436,14 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 		for x = (2**(winsize - 1) + 1) to (2**winsize - 1)
 	*/
 	for x = slot + 1; x < (1 << winsize); x += 1 {
-		internal_mul(&M[x], &M[x - 1], &M[1])                        or_return
-		redux(&M[x], P, mu)                                          or_return
+		internal_mul(&M[x], &M[x - 1], &M[1], allocator)                        or_return
+		redux(&M[x], P, mu, allocator)                                          or_return
 	}
 
 	/*
 		Setup result.
 	*/
-	internal_one(res)                                                or_return
+	internal_one(res, allocator = allocator)                                                or_return
 
 	/*
 		Set initial mode and bit cnt.
@@ -2524,8 +2494,8 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 			If the bit is zero and mode == 1 then we square.
 		*/
 		if mode == 1 && y == 0 {
-			internal_sqr(res, res)                                   or_return
-			redux(res, P, mu)                                        or_return
+			internal_sqr(res, res, allocator)                                   or_return
+			redux(res, P, mu, allocator)                                        or_return
 			continue
 		}
 
@@ -2542,15 +2512,15 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 				Square first.
 			*/
 			for x = 0; x < int(winsize); x += 1 {
-				internal_sqr(res, res)                               or_return
-				redux(res, P, mu)                                    or_return
+				internal_sqr(res, res, allocator)                               or_return
+				redux(res, P, mu, allocator)                                    or_return
 			}
 
 			/*
 				Then multiply.
 			*/
-			internal_mul(res, res, &M[bitbuf])                       or_return
-			redux(res, P, mu)                                        or_return
+			internal_mul(res, res, &M[bitbuf], allocator)                       or_return
+			redux(res, P, mu, allocator)                                        or_return
 
 			/*
 				Empty window and reset.
@@ -2569,16 +2539,16 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 			Square then multiply if the bit is set.
 		*/
 		for x = 0; x < int(bitcpy); x += 1 {
-			internal_sqr(res, res)                                   or_return
-			redux(res, P, mu)                                        or_return
+			internal_sqr(res, res, allocator)                                   or_return
+			redux(res, P, mu, allocator)                                        or_return
 
 			bitbuf <<= 1
 			if ((bitbuf & (1 << winsize)) != 0) {
 				/*
 					Then multiply.
 				*/
-				internal_mul(res, res, &M[1])                        or_return
-				redux(res, P, mu)                                    or_return
+				internal_mul(res, res, &M[1], allocator)                        or_return
+				redux(res, P, mu, allocator)                                    or_return
 			}
 		}
 	}
@@ -2595,8 +2565,7 @@ _private_int_exponent_mod :: proc(res, G, X, P: ^Int, redmode: int, allocator :=
 
 	Assumes `res`, `G`, `X` and `P` to not be `nil` and for `G`, `X` and `P` to have been initialized.
 */
-_private_int_exponent_mod_fast :: proc(res, G, X, P: ^Int, redmode: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_exponent_mod_fast :: proc(res, G, X, P: ^Int, redmode: int, allocator: mem.Allocator) -> (err: Error) {
 
 	M := [_TAB_SIZE]Int{}
 	winsize: uint
@@ -2605,7 +2574,7 @@ _private_int_exponent_mod_fast :: proc(res, G, X, P: ^Int, redmode: int, allocat
 		Use a pointer to the reduction algorithm.
 		This allows us to use one of many reduction algorithms without modding the guts of the code with if statements everywhere.
 	*/
-	redux: #type proc(x, n: ^Int, rho: DIGIT, allocator := context.allocator) -> (err: Error)
+	redux: #type proc(x, n: ^Int, rho: DIGIT, allocator: mem.Allocator) -> (err: Error)
 
 	defer {
 		internal_destroy(&M[1])
@@ -2854,8 +2823,7 @@ _private_int_exponent_mod_fast :: proc(res, G, X, P: ^Int, redmode: int, allocat
 /*
 	hac 14.61, pp608
 */
-_private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_inverse_modulo :: proc(dest, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 	x, y, u, v, A, B, C, D := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(x, y, u, v, A, B, C, D)
 
@@ -2868,8 +2836,8 @@ _private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator
 	internal_init_multi(x, y, u, v, A, B, C, D) or_return
 
 	// `x` = `a` % `b`, `y` = `b`
-	internal_mod(x, a, b) or_return
-	internal_copy(y, b) or_return
+	internal_mod(x, a, b, allocator) or_return
+	internal_copy(y, b, allocator = allocator) or_return
 
 	// 2. [modified] if x,y are both even then return an error!
 	if internal_is_even(x) && internal_is_even(y) {
@@ -2877,10 +2845,10 @@ _private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator
 	}
 
 	// 3. u=x, v=y, A=1, B=0, C=0, D=1
-	internal_copy(u, x) or_return
-	internal_copy(v, y) or_return
-	internal_one(A) or_return
-	internal_one(D) or_return
+	internal_copy(u, x, allocator = allocator) or_return
+	internal_copy(v, y, allocator = allocator) or_return
+	internal_one(A, allocator = allocator) or_return
+	internal_one(D, allocator = allocator) or_return
 
 	for {
 		// 4.  while `u` is even do:
@@ -2891,8 +2859,8 @@ _private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator
 			// 4.2 if `A` or `B` is odd then:
 			if internal_is_odd(A) || internal_is_odd(B) {
 				// `A` = (`A`+`y`) / 2, `B` = (`B`-`x`) / 2
-				internal_add(A, A, y) or_return
-				internal_sub(B, B, x) or_return
+				internal_add(A, A, y, allocator) or_return
+				internal_sub(B, B, x, allocator) or_return
 			}
 			// `A` = `A` / 2, `B` = `B` / 2
 			internal_int_shr1(A, A) or_return
@@ -2907,8 +2875,8 @@ _private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator
 			// 5.2 if `C` or `D` is odd then:
 			if internal_is_odd(C) || internal_is_odd(D) {
 				// `C` = (`C`+`y`) / 2, `D` = (`D`-`x`) / 2
-				internal_add(C, C, y) or_return
-				internal_sub(D, D, x) or_return
+				internal_add(C, C, y, allocator) or_return
+				internal_sub(D, D, x, allocator) or_return
 			}
 			// `C` = `C` / 2, `D` = `D` / 2
 			internal_int_shr1(C, C) or_return
@@ -2918,14 +2886,14 @@ _private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator
 		// 6.  if `u` >= `v` then:
 		if internal_cmp(u, v) != -1 {
 			// `u` = `u` - `v`, `A` = `A` - `C`, `B` = `B` - `D`
-			internal_sub(u, u, v) or_return
-			internal_sub(A, A, C) or_return
-			internal_sub(B, B, D) or_return
+			internal_sub(u, u, v, allocator) or_return
+			internal_sub(A, A, C, allocator) or_return
+			internal_sub(B, B, D, allocator) or_return
 		} else {
 			// v - v - u, C = C - A, D = D - B
-			internal_sub(v, v, u) or_return
-			internal_sub(C, C, A) or_return
-			internal_sub(D, D, B) or_return
+			internal_sub(v, v, u, allocator) or_return
+			internal_sub(C, C, A, allocator) or_return
+			internal_sub(D, D, B, allocator) or_return
 		}
 
 		// If not zero goto step 4
@@ -2943,12 +2911,12 @@ _private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator
 
 	// If its too low.
 	for internal_is_negative(C) {
-		internal_add(C, C, b) or_return
+		internal_add(C, C, b, allocator) or_return
 	}
 
 	// Too big.
 	for internal_cmp_mag(C, b) > -1 {
-		internal_sub(C, C, b) or_return
+		internal_sub(C, C, b, allocator) or_return
 	}
 
 	// `C` is now the inverse.
@@ -2962,8 +2930,7 @@ _private_inverse_modulo :: proc(dest, a, b: ^Int, allocator := context.allocator
 	Based on slow invmod except this is optimized for the case where `b` is odd,
 	as per HAC Note 14.64 on pp. 610.
 */
-_private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator: mem.Allocator) -> (err: Error) {
 	x, y, u, v, B, D := &Int{}, &Int{}, &Int{}, &Int{}, &Int{}, &Int{}
 	defer internal_destroy(x, y, u, v, B, D)
 
@@ -2982,12 +2949,12 @@ _private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator := context.alloc
 	/*
 		`x` == modulus, `y` == value to invert.
 	*/
-	internal_copy(x, b) or_return
+	internal_copy(x, b, allocator = allocator) or_return
 
 	/*
 		We need `y` = `|a|`.
 	*/
-	internal_mod(y, a, b) or_return
+	internal_mod(y, a, b, allocator) or_return
 
 	/*
 		If one of `x`, `y` is zero return an error!
@@ -2997,10 +2964,10 @@ _private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator := context.alloc
 	/*
 		3. `u` = `x`, `v` = `y`, `A` = 1, `B` = 0, `C` = 0, `D` = 1
 	*/
-	internal_copy(u, x) or_return
-	internal_copy(v, y) or_return
+	internal_copy(u, x, allocator = allocator) or_return
+	internal_copy(v, y, allocator = allocator) or_return
 
-	internal_one(D) or_return
+	internal_one(D, allocator = allocator) or_return
 
 	for {
 		/*
@@ -3019,7 +2986,7 @@ _private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator := context.alloc
 				/*
 					`B` = (`B` - `x`) / 2
 				*/
-				internal_sub(B, B, x) or_return
+				internal_sub(B, B, x, allocator) or_return
 			}
 
 			/*
@@ -3044,7 +3011,7 @@ _private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator := context.alloc
 				/*
 					`D` = (`D` - `x`) / 2
 				*/
-				internal_sub(D, D, x) or_return
+				internal_sub(D, D, x, allocator) or_return
 			}
 			/*
 				`D` = `D` / 2
@@ -3059,14 +3026,14 @@ _private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator := context.alloc
 			/*
 				`u` = `u` - `v`, `B` = `B` - `D`
 			*/
-			internal_sub(u, u, v) or_return
-			internal_sub(B, B, D) or_return
+			internal_sub(u, u, v, allocator) or_return
+			internal_sub(B, B, D, allocator) or_return
 		} else {
 			/*
 				`v` - `v` - `u`, `D` = `D` - `B`
 			*/
-			internal_sub(v, v, u) or_return
-			internal_sub(D, D, B) or_return
+			internal_sub(v, v, u, allocator) or_return
+			internal_sub(D, D, B, allocator) or_return
 		}
 
 		/*
@@ -3091,14 +3058,14 @@ _private_inverse_modulo_odd :: proc(dest, a, b: ^Int, allocator := context.alloc
 	*/
 	sign = a.sign
 	for internal_int_is_negative(D) {
-		internal_add(D, D, b) or_return
+		internal_add(D, D, b, allocator) or_return
 	}
 
 	/*
 		Too big.
 	*/
 	for internal_gte_abs(D, b) {
-		internal_sub(D, D, b) or_return
+		internal_sub(D, D, b, allocator) or_return
 	}
 
 	swap(dest, D)
@@ -3145,8 +3112,7 @@ _private_copy_digits :: proc(dest, src: ^Int, digits: int, offset := int(0)) -> 
 /*
 	Shift left by `digits` * _DIGIT_BITS bits.
 */
-_private_int_shl_leg :: proc(quotient: ^Int, digits: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_shl_leg :: proc(quotient: ^Int, digits: int, allocator: mem.Allocator) -> (err: Error) {
 
 	if digits <= 0 { return nil }
 
@@ -3160,7 +3126,7 @@ _private_int_shl_leg :: proc(quotient: ^Int, digits: int, allocator := context.a
 	/*
 		Resize `quotient` to accomodate extra digits.
 	*/
-	#force_inline internal_grow(quotient, quotient.used + digits) or_return
+	#force_inline internal_grow(quotient, quotient.used + digits, allocator = allocator) or_return
 
 	/*
 		Increment the used by the shift amount then copy upwards.
@@ -3182,15 +3148,14 @@ _private_int_shl_leg :: proc(quotient: ^Int, digits: int, allocator := context.a
 /*
 	Shift right by `digits` * _DIGIT_BITS bits.
 */
-_private_int_shr_leg :: proc(quotient: ^Int, digits: int, allocator := context.allocator) -> (err: Error) {
-	context.allocator = allocator
+_private_int_shr_leg :: proc(quotient: ^Int, digits: int, allocator: mem.Allocator) -> (err: Error) {
 
 	if digits <= 0 { return nil }
 
 	/*
 		If digits > used simply zero and return.
 	*/
-	if digits > quotient.used { return internal_zero(quotient) }
+	if digits > quotient.used { return internal_zero(quotient, allocator = allocator) }
 
 	/*
 		Much like `int_shl_digit`, this is implemented using a sliding window,
