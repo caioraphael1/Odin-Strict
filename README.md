@@ -19,23 +19,20 @@
     </a>
 </p>
 
-## Odin Language fork, focused on safety
+# Odin Language fork focused on exploring language design, memory safety, and other completely subjective things
 
-- The goal of this fork is to make Odin a safer language, breaking the implicit patterns from the C language, improving code readability, and making it more enjoyable to work with memory.
+- One of the goals of this fork is to make Odin a safer language, breaking the implicit patterns from the C language, improving code readability, and making it more enjoyable to work with memory.
 - I love Odin, but I don't like how it hides allocations from the user and tries to handle lots of behavior implicitly. If an allocator is invalid, there should be no fallback. A buggy code is a buggy code and should *crash*. Typing one extra word is an absolute worth trade-off over losing track of how your memory is managed. We shouldn't hide when memory is mentioned.
+- Besides that, I also changed a lot of things I consider subjective. I'm taking this as an experiment around language design, as I think it's fun.
+- Feel free to use at your own discretion. That might be a **LOT** of things you don't agree with. I went far enough to remove libraries I won't use, so this is not really for public use, but I decided to keep this as a public fork so I could share a little bit of some of my design choices. 
 
+- Currently, all changes are in `.odin` files. No changes were made to the `.cpp` source code, so the compiler is untouched. Maybe I'll change the compiler if this would result in improvements that could not be achieved by the Odin language alone.
 
-- Currently, all changes are in `.odin` files. No changes were made to the `.cpp` source code, so the compiler is untouched. Maybe I'll change the compiler if this would result in improvements to safety that could not be achieved by the Odin language alone.
+<br>
 
+# Main Changes
 
-- This is a **WIP (work-in-progress)**. Changing every single library in Odin is not easy. There will be a lot of broken code in the beginning, but the goal is a complete overhaul of safety in Odin.
-- If you find something that could be improved, or it's broken, feel free to open an issue or contribute with a PR.
-- As of TODAY (2025-12-14), there will be a LOT of broken things. I'm first fixing the libraries for Windows, but I'll get to the other OSs after the main changes are made.
-
-
-## Main Changes
-
-### Context
+## Context
 
 - This is the new signature for `context`:
 ```odin
@@ -76,12 +73,13 @@ main :: proc() {
 - If this is not the case, `context` will serve you no purpose and can be ignored.
 - The default `"odin"` calling convention should still be used for consistency and for better future third-party integrations with your codebase.
 
+<br>
 
-### Implicit allocations
+## Implicit allocations
 
 - `context.allocator` was **removed**.
 
-#### Before
+### Before
 ```odin
 main :: proc() {
     a := make([dynamic]int)
@@ -95,7 +93,7 @@ main :: proc() {
 }
 ```
 
-#### After
+### After
 - **All** uses of allocators is enforced to be **explicit**.
 - No code inside the library uses implicit allocators. 
 - The signature `allocator := ` was replaced by `allocator: mem.Allocator`.
@@ -118,8 +116,9 @@ main :: proc() {
 ```
 - In this example, the `runtime.heap_allocator()` was used, which is the **same** allocator from the previous `context.allocator`. You'll have the same allocation behavior, but now the allocation has to be **explicit** and is no longer tied to the `context` system. More on that later. 
 
+<br>
 
-### Procedures with allocation and variadic arguments
+## Procedures with allocation and variadic arguments
 
 - This is not allowed in Odin:
 ```odin
@@ -142,7 +141,7 @@ aprint :: proc(args: []any, sep := " ", allocator: mem.Allocator) -> string { }
     ```
 - The solution I went with is not as ergonomic as the one from Odin, but this is a fair price to avoid an implicit allocation.
 
-#### Before
+### Before
 ```odin
 aprint :: proc(args: ..any, sep := " ", allocator := context.allocator) -> string { }
 
@@ -150,7 +149,7 @@ msg := aprint(1, 2, 3, 4)
     // This used the context.allocator implicitly.
 ```
 
-#### After
+### After
 ```odin
 aprint :: proc(args: []any, sep := " ", allocator: mem.Allocator) -> string { }
 
@@ -159,8 +158,9 @@ msg := aprint({1, 2, 3, 4}, allocator = my_allocator)
 ```
 
 
+<br>
 
-### Implicit allocation on change
+## Implicit allocation on change
 
 - Before
 ```odin
@@ -182,8 +182,9 @@ main :: proc() {
 }
 ```
 
+<br>
 
-### Assertions
+## Assertions
 
 - `context.assertion_failure_proc` was **removed**.
 - `runtime.assertion_failure_proc` was created to now hold the user customization of how an assertion should be.
@@ -224,19 +225,48 @@ assert :: proc "contextless" (condition: bool, message := #caller_expression(con
 - The `runtime.assertion_failure_proc` can be changed by the user.
 - The default for `context.assertion_failure_proc` and `runtime.assertion_failure_proc` is the same. If you haven't changed the old `context.assertion_failure_proc` to anything different, the behavior will be the same. 
 
+<br>
 
-### No uses of `@(init)` and `@(fini)`
+## No uses of `@(init)` and `@(fini)`
 
 - TODO
 
 
-### Temporary Allocations
+<br>
+
+## Logger
+
+- `context.logger` was **removed**.
+- The logger provides a system where the API provides the entry points so that user-defined logging implementations can print the messages in the terminal.
+- The idea is ok, but I don't think it's that practical.
+
+### Problems I've encountered
+- The API can choose to override the `context.logger` and use whatever it sees fit. It is not enforced that a library shouldn't touch the user-defined configurations.
+- Not every api uses log. This is not enforced. A lot of APIs just print with `fmt`.
+- A lot of APIs don't actually print anything.
+- There's no room for easy coloring of the things in the terminal. There's a fixed template following the predefined `Options` in the library. One could wrap the log procedures or create their own logging procedure, but trying to print something colorful and customizable is not ergonomic at all with the `log` API.
+- I have never seen a third-party Odin API that uses the logger to its full extent.
+- In the end, the library just seems limiting and extremely situational.
+- It doesn't seem practical, even tho I can appreciate the idea.
+- If the point of `context` is to improve interoperability with bad APIs, using `context.logger` consistently and correctly seems like the last thing they would do.
+- To be fair, the ONLY reasons I have ever used logger were: prints `#caller_location`, and makes error red, warns yellow. It was never for logging flexibility between the user and the API. There is no clear intuition for this.
+- The library itself is ok, but I don't think something so situational, misused, or impractical should be part of the **runtime**. Just like `core:fmt`, this should only be `core`.
+- The `context` usage for it seems really hard to justify.
+- Is there a way the logger could be built that would make it reliable and a standard for any API that wants to use it? I'm not sure, I just don't think the current implementation solves that.
+- My changes don't remove `core:log`, just make logger decoupled from the `runtime` and `context`.
+
+
+
+<br>
+
+## Temporary Allocations
 
 - `context.temp_allocator` will be **removed**.
 - TODO
 
+<br>
 
-### The `core:os` was replaced by `core:os/os2`
+## The `core:os` was replaced by `core:os/os2`
 
 - The `core:os` library was **removed**. 
 - There are plans for Odin to replace the libraries in 2026, but as I was changing the codebase so much for safety reasons, I decided to rush the replacement, as the old `core:os` had a lot of implicit behavior everywhere, and `os2` is a far better library.
