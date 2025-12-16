@@ -1,5 +1,6 @@
 package os2
 
+import "base:runtime"
 import "core:container/queue"
 
 /*
@@ -18,7 +19,7 @@ Walker :: struct {
 }
 
 walker_init_path :: proc(w: ^Walker, path: string) {
-	cloned_path, err := clone_string(path, file_allocator())
+	cloned_path, err := clone_string(path, runtime.heap_allocator())
 	if err != nil {
 		walker_set_error(w, path, err)
 		return
@@ -35,7 +36,7 @@ walker_init_path :: proc(w: ^Walker, path: string) {
 walker_init_file :: proc(w: ^Walker, f: ^File) {
 	handle, err := clone(f)
 	if err != nil {
-		path, _ := clone_string(name(f), file_allocator())
+		path, _ := clone_string(name(f), runtime.heap_allocator())
 		walker_set_error(w, path, err)
 		return
 	}
@@ -106,12 +107,12 @@ walker_clear :: proc(w: ^Walker) {
 	w.iter.f = nil
 	w.skip_dir = false
 
-	w.err.path.allocator = file_allocator()
+	w.err.path.allocator = runtime.heap_allocator()
 	clear(&w.err.path)
 
-	w.todo.data.allocator = file_allocator()
+	w.todo.data.allocator = runtime.heap_allocator()
 	for path in queue.pop_front_safe(&w.todo) {
-		delete(path, file_allocator())
+		delete(path, runtime.heap_allocator())
 	}
 }
 
@@ -178,7 +179,7 @@ walker_walk :: proc(w: ^Walker) -> (fi: File_Info, ok: bool) {
 	if w.skip_dir {
 		w.skip_dir = false
 		if skip, sok := queue.pop_back_safe(&w.todo); sok {
-			delete(skip, file_allocator())
+			delete(skip, runtime.heap_allocator())
 		}
 	}
 
@@ -197,7 +198,7 @@ walker_walk :: proc(w: ^Walker) -> (fi: File_Info, ok: bool) {
 
 		read_directory_iterator_init(&w.iter, handle)
 
-		delete(next, file_allocator())
+		delete(next, runtime.heap_allocator())
 	}
 
 	info, _, iter_ok := read_directory_iterator(&w.iter)
@@ -213,7 +214,7 @@ walker_walk :: proc(w: ^Walker) -> (fi: File_Info, ok: bool) {
 	}
 
 	if info.type == .Directory {
-		path, err := clone_string(info.fullpath, file_allocator())
+		path, err := clone_string(info.fullpath, runtime.heap_allocator())
 		if err != nil {
 			walker_set_error(w, "", err)
 			return

@@ -1,6 +1,6 @@
 package terminal
 
-import "core:os"
+import os "core:os/os2"
 import "core:strings"
 
 // Reference documentation:

@@ -109,7 +109,7 @@ For an example on how to use the iterator, see `read_directory_iterator`.
 */
 read_directory_iterator_init :: proc(it: ^Read_Directory_Iterator, f: ^File) {
 	it.err.err = nil
-	it.err.path.allocator = file_allocator()
+	it.err.path.allocator = runtime.heap_allocator()
 	clear(&it.err.path)
 
 	it.f = f

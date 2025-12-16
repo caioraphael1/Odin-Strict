@@ -41,16 +41,16 @@ _read_directory_iterator :: proc(it: ^Read_Directory_Iterator) -> (fi: File_Info
 
 	for entry_fd == -1 {
 		if len(it.impl.dirent_backing) == 0 {
-			it.impl.dirent_backing = make([]u8, 512, file_allocator())
+			it.impl.dirent_backing = make([]u8, 512, runtime.heap_allocator())
 		}
 
 		loop: for {
 			buflen, errno := linux.getdents(linux.Fd(dfd), it.impl.dirent_backing[:])
 			#partial switch errno {
 			case .EINVAL:
-				delete(it.impl.dirent_backing, file_allocator())
+				delete(it.impl.dirent_backing, runtime.heap_allocator())
 				n := len(it.impl.dirent_backing) * 2
-				it.impl.dirent_backing = make([]u8, n, file_allocator())
+				it.impl.dirent_backing = make([]u8, n, runtime.heap_allocator())
 				continue
 			case .NONE:
 				if buflen == 0 {
@@ -71,10 +71,10 @@ _read_directory_iterator :: proc(it: ^Read_Directory_Iterator) -> (fi: File_Info
 	defer linux.close(entry_fd)
 
 	// PERF: reuse the fullpath string like on posix and wasi.
-	file_info_delete(it.impl.prev_fi, file_allocator())
+	file_info_delete(it.impl.prev_fi, runtime.heap_allocator())
 
 	err: Error
-	fi, err = _fstat_internal(entry_fd, file_allocator())
+	fi, err = _fstat_internal(entry_fd, runtime.heap_allocator())
 	it.impl.prev_fi = fi
 
 	if err != nil {
@@ -115,6 +115,6 @@ _read_directory_iterator_destroy :: proc(it: ^Read_Directory_Iterator) {
 		return
 	}
 
-	delete(it.impl.dirent_backing, file_allocator())
-	file_info_delete(it.impl.prev_fi, file_allocator())
+	delete(it.impl.dirent_backing, runtime.heap_allocator())
+	file_info_delete(it.impl.prev_fi, runtime.heap_allocator())
 }

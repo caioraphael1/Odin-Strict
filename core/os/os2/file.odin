@@ -178,7 +178,7 @@ open :: proc(name: string, flags := File_Flags{.Read}, perm := Permissions_Defau
 */
 @(require_results)
 new_file :: proc(handle: uintptr, name: string) -> ^File {
-	file, err := _new_file(handle, name, file_allocator())
+	file, err := _new_file(handle, name, runtime.heap_allocator())
 	if err != nil {
 		panic(error_string(err))
 	}
@@ -551,8 +551,8 @@ _copy_file :: proc(dst_path, src_path: string) -> Error {
 	src := open(src_path) or_return
 	defer close(src)
 
-	info := fstat(src, file_allocator()) or_return
-	defer file_info_delete(info, file_allocator())
+	info := fstat(src, runtime.heap_allocator()) or_return
+	defer file_info_delete(info, runtime.heap_allocator())
 	if info.type == .Directory {
 		return .Invalid_File
 	}

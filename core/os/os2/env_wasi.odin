@@ -33,11 +33,11 @@ build_env :: proc() -> (err: Error) {
 		return _get_platform_error(_err)
 	}
 
-	g_env = make(map[string]string, num_envs, file_allocator()) or_return
+	g_env = make(map[string]string, num_envs, runtime.heap_allocator()) or_return
 	defer if err != nil { delete(g_env) }
 
-	g_env_buf = make([]byte, size_of_envs, file_allocator()) or_return
-	defer if err != nil { delete(g_env_buf, file_allocator()) }
+	g_env_buf = make([]byte, size_of_envs, runtime.heap_allocator()) or_return
+	defer if err != nil { delete(g_env_buf, runtime.heap_allocator()) }
 
 	temp_allocator := TEMP_ALLOCATOR_GUARD({})
 
@@ -62,7 +62,7 @@ delete_string_if_not_original :: proc(str: string) {
 	end   := start + uintptr(len(g_env_buf))
 	ptr   := uintptr(raw_data(str))
 	if ptr < start || ptr > end {
-		delete(str, file_allocator())
+		delete(str, runtime.heap_allocator())
 	}
 }
 
@@ -120,17 +120,17 @@ _set_env :: proc(key, value: string) -> (err: Error) {
 	key_ptr, value_ptr, just_inserted := map_entry(&g_env, key) or_return
 
 	if just_inserted {
-		key_ptr^ = clone_string(key, file_allocator()) or_return
+		key_ptr^ = clone_string(key, runtime.heap_allocator()) or_return
 		defer if err != nil {
-			delete(key_ptr^, file_allocator())
+			delete(key_ptr^, runtime.heap_allocator())
 		}
-		value_ptr^ = clone_string(value, file_allocator()) or_return
+		value_ptr^ = clone_string(value, runtime.heap_allocator()) or_return
 		return
 	}
 
 	delete_string_if_not_original(value_ptr^)
 
-	value_ptr^ = clone_string(value, file_allocator()) or_return
+	value_ptr^ = clone_string(value, runtime.heap_allocator()) or_return
 	return
 }
 
@@ -156,7 +156,7 @@ _clear_env :: proc() {
 		delete_string_if_not_original(v)
 	}
 
-	delete(g_env_buf, file_allocator())
+	delete(g_env_buf, runtime.heap_allocator())
 	g_env_buf = {}
 
 	clear(&g_env)

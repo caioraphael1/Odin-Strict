@@ -95,10 +95,10 @@ _set_working_directory :: proc(dir: string) -> (err: Error) {
 	}
 
 	if g_wd != "" {
-		delete(g_wd, file_allocator())
+		delete(g_wd, runtime.heap_allocator())
 	}
 
-	g_wd = clone_string(dir, file_allocator()) or_return
+	g_wd = clone_string(dir, runtime.heap_allocator()) or_return
 	return
 }
 

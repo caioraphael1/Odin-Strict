@@ -62,7 +62,7 @@ _read_directory_iterator_init :: proc(it: ^Read_Directory_Iterator, f: ^File) {
 	impl := (^File_Impl)(f.impl)
 
 	// NOTE: Allow calling `init` to target a new directory with the same iterator.
-	it.impl.fullpath.allocator = file_allocator()
+	it.impl.fullpath.allocator = runtime.heap_allocator()
 	clear(&it.impl.fullpath)
 	if err := reserve(&it.impl.fullpath, len(impl.name)+128); err != nil {
 		read_directory_iterator_set_error(it, name(f), err)

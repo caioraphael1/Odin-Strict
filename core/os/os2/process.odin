@@ -18,7 +18,7 @@ args: []string
 
 init_args :: proc "contextless" () {
 	context = {}
-	args = make([]string, len(runtime.args__), heap_allocator())
+	args = make([]string, len(runtime.args__), runtime.heap_allocator())
 	for rt_arg, i in runtime.args__ {
 		args[i] = string(rt_arg)
 	}
@@ -26,7 +26,7 @@ init_args :: proc "contextless" () {
 
 fini_args :: proc "contextless" () {
 	context = {}
-	delete(args, heap_allocator())
+	delete(args, runtime.heap_allocator())
 }
 
 /*

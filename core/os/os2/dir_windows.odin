@@ -53,10 +53,10 @@ Read_Directory_Iterator_Impl :: struct {
 _read_directory_iterator :: proc(it: ^Read_Directory_Iterator) -> (fi: File_Info, index: int, ok: bool) {
 	for !it.impl.no_more_files {
 		err: Error
-		file_info_delete(it.impl.prev_fi, file_allocator())
+		file_info_delete(it.impl.prev_fi, runtime.heap_allocator())
 		it.impl.prev_fi = {}
 
-		fi, err = find_data_to_file_info(it.impl.path, &it.impl.find_data, file_allocator())
+		fi, err = find_data_to_file_info(it.impl.path, &it.impl.find_data, runtime.heap_allocator())
 		if err != nil {
 			read_directory_iterator_set_error(it, it.impl.path, err)
 			return
@@ -99,7 +99,7 @@ _read_directory_iterator_init :: proc(it: ^Read_Directory_Iterator, f: ^File) {
 		win32.FindClose(it.impl.find_handle)
 	}
 	if it.impl.path != "" {
-		delete(it.impl.path, file_allocator())
+		delete(it.impl.path, runtime.heap_allocator())
 	}
 
 	if !is_directory(impl.name) {
@@ -126,7 +126,7 @@ _read_directory_iterator_init :: proc(it: ^Read_Directory_Iterator, f: ^File) {
 	}
 
 	err: Error
-	it.impl.path, err = _cleanpath_from_buf(wpath, file_allocator())
+	it.impl.path, err = _cleanpath_from_buf(wpath, runtime.heap_allocator())
 	if err != nil {
 		read_directory_iterator_set_error(it, impl.name, err)
 	}
@@ -138,7 +138,7 @@ _read_directory_iterator_destroy :: proc(it: ^Read_Directory_Iterator) {
 	if it.f == nil {
 		return
 	}
-	file_info_delete(it.impl.prev_fi, file_allocator())
-	delete(it.impl.path, file_allocator())
+	file_info_delete(it.impl.prev_fi, runtime.heap_allocator())
+	delete(it.impl.path, runtime.heap_allocator())
 	win32.FindClose(it.impl.find_handle)
 }

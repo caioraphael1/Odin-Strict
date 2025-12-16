@@ -21,20 +21,20 @@ _pipe :: proc() -> (r, w: ^File, err: Error) {
 		return
 	}
 
-	r = __new_file(fds[0], file_allocator())
+	r = __new_file(fds[0], runtime.heap_allocator())
 	ri := (^File_Impl)(r.impl)
 
-	rname := strings.builder_make(file_allocator())
+	rname := strings.builder_make(runtime.heap_allocator())
 	// TODO(laytan): is this on all the posix targets?
 	strings.write_string(&rname, "/dev/fd/")
 	strings.write_int(&rname, int(fds[0]))
 	ri.name  = strings.to_string(rname)
 	ri.cname = strings.to_cstring(&rname) or_return
 
-	w = __new_file(fds[1], file_allocator())
+	w = __new_file(fds[1], runtime.heap_allocator())
 	wi := (^File_Impl)(w.impl)
 	
-	wname := strings.builder_make(file_allocator())
+	wname := strings.builder_make(runtime.heap_allocator())
 	// TODO(laytan): is this on all the posix targets?
 	strings.write_string(&wname, "/dev/fd/")
 	strings.write_int(&wname, int(fds[1]))

@@ -84,7 +84,7 @@ init_preopens :: proc "contextless" () {
 	}
 
 	alloc_err: runtime.Allocator_Error
-	preopens, alloc_err = make([]Preopen, n, file_allocator())
+	preopens, alloc_err = make([]Preopen, n, runtime.heap_allocator())
 	if alloc_err != nil {
 		print_error(stderr, alloc_err, "could not allocate memory for wasi preopens")
 		return
@@ -99,7 +99,7 @@ init_preopens :: proc "contextless" () {
 		switch desc.tag {
 		case .DIR:
 			buf: []byte
-			buf, alloc_err = make([]byte, desc.dir.pr_name_len, file_allocator())
+			buf, alloc_err = make([]byte, desc.dir.pr_name_len, runtime.heap_allocator())
 			if alloc_err != nil {
 				print_error(stderr, alloc_err, "could not allocate memory for wasi preopen dir name")
 				continue loop
@@ -199,7 +199,7 @@ _open :: proc(name: string, flags: File_Flags, perm: Permissions) -> (f: ^File, 
 		return
 	}
 
-	return _new_file(uintptr(fd), name, file_allocator())
+	return _new_file(uintptr(fd), name, runtime.heap_allocator())
 }
 
 _new_file :: proc(handle: uintptr, name: string, allocator: runtime.Allocator) -> (f: ^File, err: Error) {
@@ -248,7 +248,7 @@ _clone :: proc(f: ^File) -> (clone: ^File, err: Error) {
 		return
 	}
 
-	return _new_file(uintptr(fd), name(f), file_allocator())
+	return _new_file(uintptr(fd), name(f), runtime.heap_allocator())
 }
 
 _close :: proc(f: ^File_Impl) -> (err: Error) {

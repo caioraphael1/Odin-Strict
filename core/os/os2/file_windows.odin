@@ -151,7 +151,7 @@ _open_internal :: proc(name: string, flags: File_Flags, perm: Permissions) -> (h
 _open :: proc(name: string, flags: File_Flags, perm: Permissions) -> (f: ^File, err: Error) {
 	flags := flags if flags != nil else {.Read}
 	handle := _open_internal(name, flags, perm) or_return
-	return _new_file(handle, name, file_allocator())
+	return _new_file(handle, name, runtime.heap_allocator())
 }
 
 _new_file :: proc(handle: uintptr, name: string, allocator: runtime.Allocator) -> (f: ^File, err: Error) {
@@ -198,11 +198,11 @@ _open_buffered :: proc(name: string, buffer_size: uint, flags := File_Flags{.Rea
 }
 
 _new_file_buffered :: proc(handle: uintptr, name: string, buffer_size: uint) -> (f: ^File, err: Error) {
-	f, err = _new_file(handle, name, file_allocator())
+	f, err = _new_file(handle, name, runtime.heap_allocator())
 	if f != nil && err == nil {
 		impl := (^File_Impl)(f.impl)
-		impl.r_buf = make([]byte, buffer_size, file_allocator())
-		impl.w_buf = make([]byte, buffer_size, file_allocator())
+		impl.r_buf = make([]byte, buffer_size, runtime.heap_allocator())
+		impl.w_buf = make([]byte, buffer_size, runtime.heap_allocator())
 	}
 	return
 }
@@ -228,7 +228,7 @@ _clone :: proc(f: ^File) -> (clone: ^File, err: Error) {
 	}
 	defer if err != nil { win32.CloseHandle(clonefd) }
 
-	return _new_file(uintptr(clonefd), name(f), file_allocator())
+	return _new_file(uintptr(clonefd), name(f), runtime.heap_allocator())
 }
 
 _fd :: proc "contextless" (f: ^File) -> uintptr {

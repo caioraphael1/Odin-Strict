@@ -79,7 +79,7 @@ _read_directory_iterator_init :: proc(it: ^Read_Directory_Iterator, f: ^File) {
 	if it.impl.buf != nil {
 		buf = slice.into_dynamic(it.impl.buf)
 	}
-	buf.allocator = file_allocator()
+	buf.allocator = runtime.heap_allocator()
 
 	defer if it.err.err != nil { delete(buf) }
 
@@ -105,7 +105,7 @@ _read_directory_iterator_init :: proc(it: ^Read_Directory_Iterator, f: ^File) {
 	it.impl.buf = buf[:]
 
 	// NOTE: Allow calling `init` to target a new directory with the same iterator.
-	it.impl.fullpath.allocator = file_allocator()
+	it.impl.fullpath.allocator = runtime.heap_allocator()
 	clear(&it.impl.fullpath)
 	if err := reserve(&it.impl.fullpath, len(impl.name)+128); err != nil {
 		read_directory_iterator_set_error(it, name(f), err)
@@ -119,6 +119,6 @@ _read_directory_iterator_init :: proc(it: ^Read_Directory_Iterator, f: ^File) {
 }
 
 _read_directory_iterator_destroy :: proc(it: ^Read_Directory_Iterator) {
-	delete(it.impl.buf, file_allocator())
+	delete(it.impl.buf, runtime.heap_allocator())
 	delete(it.impl.fullpath)
 }

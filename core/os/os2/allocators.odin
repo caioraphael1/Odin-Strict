@@ -2,10 +2,6 @@ package os2
 
 import "base:runtime"
 
-@(require_results)
-file_allocator :: proc() -> runtime.Allocator {
-	return heap_allocator()
-}
 
 @(private="file", thread_local) global_default_temp_allocator_arenas: [MAX_TEMP_ARENA_COUNT]runtime.Arena
 
@@ -49,7 +45,7 @@ TEMP_ALLOCATOR_GUARD :: #force_inline proc(collisions: []runtime.Allocator, loc 
 	}
 	assert(good_arena != nil)
 	if good_arena.backing_allocator.procedure == nil {
-		good_arena.backing_allocator = heap_allocator()
+		good_arena.backing_allocator = runtime.heap_allocator()
 	}
 	tmp := runtime.arena_temp_begin(good_arena, loc)
 	return { good_arena, runtime.arena_allocator(good_arena), tmp, loc }

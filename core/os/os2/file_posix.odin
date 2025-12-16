@@ -77,7 +77,7 @@ _open :: proc(name: string, flags: File_Flags, perm: Permissions) -> (f: ^File, 
 		return
 	}
 
-	return _new_file(uintptr(fd), name, file_allocator())
+	return _new_file(uintptr(fd), name, runtime.heap_allocator())
 }
 
 _new_file :: proc(handle: uintptr, name: string, allocator: runtime.Allocator) -> (f: ^File, err: Error) {
@@ -127,9 +127,9 @@ _clone :: proc(f: ^File) -> (clone: ^File, err: Error) {
 	}
 	defer if err != nil { posix.close(fd) }
 
-	clone = __new_file(fd, file_allocator())	
+	clone = __new_file(fd, runtime.heap_allocator())	
 	clone_impl := (^File_Impl)(clone.impl)
-	clone_impl.cname = clone_to_cstring(impl.name, file_allocator()) or_return
+	clone_impl.cname = clone_to_cstring(impl.name, runtime.heap_allocator()) or_return
 	clone_impl.name  = string(clone_impl.cname)
 
 	return
