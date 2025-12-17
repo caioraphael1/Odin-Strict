@@ -4,18 +4,13 @@ import "base:runtime"
 
 import "core:mem"
 
-@(private) g_ctx:       runtime.Context
-@(private) g_allocator: mem.Compat_Allocator
+g_ctx:       runtime.Context
+g_allocator: mem.Compat_Allocator
 
 // @@init don't care
 init_context :: proc() {
 	// Wrapping the allocator with the mem.Compat_Allocator so we can
 	// mimic the realloc semantics.
 	mem.compat_allocator_init(&g_allocator, g_ctx.allocator)
-	g_ctx.allocator = mem.compat_allocator(&g_allocator)
-}
-
-// NOTE: the allocator must respect an `old_size` of `-1` on resizes!
-set_context :: proc(ctx := context) {
-	g_ctx = ctx
+	// g_ctx.allocator = mem.compat_allocator(&g_allocator)
 }

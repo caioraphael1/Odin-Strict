@@ -164,7 +164,7 @@ aligned_alloc :: #force_inline proc "c" (alignment, size: size_t) -> rawptr {
 		}
 		return _aligned_malloc(size=size, alignment=alignment)
 	} else when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
-		context = runtime.{}
+		context = {}
 		data, _ := runtime.mem_alloc_bytes(auto_cast size, auto_cast alignment)
 		return raw_data(data)
 	} else {
@@ -183,7 +183,7 @@ aligned_free :: #force_inline proc "c" (ptr: rawptr) {
 		}
 		_aligned_free(ptr)
 	} else when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
-		context = runtime.{}
+		context = {}
 		runtime.mem_free(ptr)
 	} else {
 		free(ptr)

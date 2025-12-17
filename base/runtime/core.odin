@@ -31,11 +31,6 @@ foreign {
 	_cleanup_runtime :: proc "odin" () ---
 }
 
-_cleanup_runtime_contextless :: proc "contextless" () {
-	context = {}
-	_cleanup_runtime()
-}
-
 
 args__: []cstring
 

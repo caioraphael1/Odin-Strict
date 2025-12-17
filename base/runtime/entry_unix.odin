@@ -14,7 +14,7 @@ when ODIN_BUILD_MODE == .Dynamic {
 	}
 	@(link_name="_odin_exit_point", linkage="strong", require/*, link_section=".fini"*/)
 	_odin_exit_point :: proc "c" () {
-		context = {}
+		// context = {}
 		// #force_no_inline _cleanup_runtime()
 	}
 	@(link_name="main", linkage="strong", require)

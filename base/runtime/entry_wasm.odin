@@ -15,7 +15,7 @@ when !ODIN_TEST && !ODIN_NO_ENTRY_POINT {
 		}
 		@(linkage="strong", require, export)
 		oc_on_terminate :: proc "c" () {
-			context = {}
+			// context = {}
 			// #force_no_inline _cleanup_runtime()
 		}
 	} else {
@@ -32,7 +32,7 @@ when !ODIN_TEST && !ODIN_NO_ENTRY_POINT {
 		}
 		@(link_name="_end", linkage="strong", require, export)
 		_end :: proc "c" () {
-			context = {}
+			// context = {}
 			// #force_no_inline _cleanup_runtime()
 		}
 	}
