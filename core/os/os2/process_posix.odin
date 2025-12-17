@@ -48,14 +48,14 @@ _process_start :: proc(desc: Process_Desc) -> (process: Process, err: Error) {
 		return
 	}
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	// search PATH if just a plain name is provided.
-	exe_builder := strings.builder_make(temp_allocator)
+	exe_builder := strings.builder_make(runtime.temp_allocator)
 	exe_name    := desc.command[0]
 	if strings.index_byte(exe_name, '/') < 0 {
-		path_env  := get_env("PATH", temp_allocator)
-		path_dirs := split_path_list(path_env, temp_allocator) or_return
+		path_env  := get_env("PATH", runtime.temp_allocator)
+		path_dirs := split_path_list(path_env, runtime.temp_allocator) or_return
 
 		found: bool
 		for dir in path_dirs {
@@ -104,12 +104,12 @@ _process_start :: proc(desc: Process_Desc) -> (process: Process, err: Error) {
 	}
 
 	cwd: cstring; if desc.working_dir != "" {
-		cwd = clone_to_cstring(desc.working_dir, temp_allocator) or_return
+		cwd = clone_to_cstring(desc.working_dir, runtime.temp_allocator) or_return
 	}
 
-	cmd := make([]cstring, len(desc.command) + 1, temp_allocator)
+	cmd := make([]cstring, len(desc.command) + 1, runtime.temp_allocator)
 	for part, i in desc.command {
-		cmd[i] = clone_to_cstring(part, temp_allocator) or_return
+		cmd[i] = clone_to_cstring(part, runtime.temp_allocator) or_return
 	}
 
 	env: [^]cstring
@@ -117,9 +117,9 @@ _process_start :: proc(desc: Process_Desc) -> (process: Process, err: Error) {
 		// take this process's current environment
 		env = posix.environ
 	} else {
-		cenv := make([]cstring, len(desc.env) + 1, temp_allocator)
+		cenv := make([]cstring, len(desc.env) + 1, runtime.temp_allocator)
 		for env, i in desc.env {
-			cenv[i] = clone_to_cstring(env, temp_allocator) or_return
+			cenv[i] = clone_to_cstring(env, runtime.temp_allocator) or_return
 		}
 		env = raw_data(cenv)
 	}

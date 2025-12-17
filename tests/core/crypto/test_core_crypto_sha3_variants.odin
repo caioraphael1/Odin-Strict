@@ -10,7 +10,7 @@ import "core:strings"
 
 @(test)
 test_shake :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	test_vectors := []struct {
 		sec_strength: int,
@@ -66,7 +66,7 @@ test_shake :: proc(t: ^testing.T) {
 
 @(test)
 test_cshake :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	test_vectors := []struct {
 		sec_strength: int,
@@ -154,7 +154,7 @@ test_cshake :: proc(t: ^testing.T) {
 
 @(test)
 test_tuplehash :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	test_vectors := []struct {
 		sec_strength: int,
@@ -344,7 +344,7 @@ test_tuplehash :: proc(t: ^testing.T) {
 
 @(test)
 test_kmac :: proc(t:^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	test_vectors := []struct {
 		sec_strength: int,

@@ -25,7 +25,6 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority, allocator: ru
 		t := (^Thread)(t)
 
 		t.id = sync.current_thread_id()
-
 		for (.Started not_in sync.atomic_load(&t.flags)) {
 			sync.wait(&t.start_ok)
 		}
@@ -33,22 +32,15 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority, allocator: ru
 		// Enable thread's cancelability.
 		err := posix.pthread_setcancelstate(.ENABLE, nil)
 		assert(err == nil)
-
 		// NOTE(laytan): .ASYNCHRONOUS should make `pthread_cancel` cancel immediately
 		// instead of waiting for a cancellation point.
 		// This does not seem to work on at least Darwin and NetBSD though.
 		err = posix.pthread_setcanceltype(.ASYNCHRONOUS, nil)
 		assert(err == nil)
 
-        runtime.temp_allocator_init(0, runtime.general_allocator)
         t.procedure(t)
-        runtime.temp_allocator_destroy()
-
-        runtime.run_thread_local_cleaners()
-            // Fix: this is for os2.
 
 		sync.atomic_or(&t.flags, { .Done })
-
 		if .Self_Cleanup in sync.atomic_load(&t.flags) {
 			res := posix.pthread_detach(t.unix_thread)
 			assert(res == nil)
@@ -80,7 +72,7 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority, allocator: ru
 		assert(res == nil)
 	}
 
-	thread := new(Thread)
+	thread := new(Thread, allocator)
 	if thread == nil {
 		return nil
 	}

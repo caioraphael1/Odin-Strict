@@ -37,7 +37,7 @@ init_os_version :: proc() {
 	version := string(cstring(raw_data(kernel_version_buf[:])))
 	strings.write_string(&b, version)
 
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	// Parse kernel version
 	triplet := strings.split(version, ".", runtime.temp_allocator)

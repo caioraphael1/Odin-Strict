@@ -52,7 +52,7 @@ when ODIN_OS == .Windows {
 @(private)
 init_dns_configuration :: proc() {
 	when ODIN_OS == .Windows {
-		runtime.TEMP_ALLOCATOR_GUARD()
+		runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 		val := os.replace_environment_placeholders(dns_configuration.hosts_file, runtime.temp_allocator)
 		copy(dns_configuration.hosts_file_buf[:], val)
 		dns_configuration.hosts_file = string(dns_configuration.hosts_file_buf[:len(val)])

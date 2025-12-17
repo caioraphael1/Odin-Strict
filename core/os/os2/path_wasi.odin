@@ -42,13 +42,13 @@ _mkdir_all :: proc(path: string, perm: int) -> Error {
 		return .Invalid_Path
 	}
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	if exists(path) {
 		return .Exist
 	}
 
-	clean_path := clean_path(path, temp_allocator) or_return
+	clean_path := clean_path(path, runtime.temp_allocator) or_return
 	return internal_mkdir_all(clean_path)
 }
 

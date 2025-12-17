@@ -148,7 +148,7 @@ clean :: proc(path: string, allocator: mem.Allocator) -> string {
 join :: proc(elems: []string, allocator: mem.Allocator) -> string {
 	for elem, i in elems {
 		if elem != "" {
-			runtime.TEMP_ALLOCATOR_GUARD(runtime.temp_allocator == allocator)
+			runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 			s := strings.join(elems[i:], "/", runtime.temp_allocator)
 			return clean(s, allocator)
 		}

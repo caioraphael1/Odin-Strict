@@ -9,7 +9,7 @@ import "core:odin/parser"
 @test
 test_parse_file_tags :: proc(t: ^testing.T) {
 	context.allocator = context.temp_allocator
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	Test_Case :: struct {
 		src:              string,

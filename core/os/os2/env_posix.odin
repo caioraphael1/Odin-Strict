@@ -12,9 +12,9 @@ _lookup_env_alloc :: proc(key: string, allocator: runtime.Allocator) -> (value: 
 		return
 	}
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 
-	ckey := strings.clone_to_cstring(key, temp_allocator)
+	ckey := strings.clone_to_cstring(key, runtime.temp_allocator)
 	cval := posix.getenv(ckey)
 	if cval == nil {
 		return
@@ -57,10 +57,10 @@ _lookup_env_buf :: proc(buf: []u8, key: string) -> (value: string, error: Error)
 _lookup_env :: proc{_lookup_env_alloc, _lookup_env_buf}
 
 _set_env :: proc(key, value: string) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
-	ckey := strings.clone_to_cstring(key, temp_allocator) or_return
-	cval := strings.clone_to_cstring(value, temp_allocator) or_return
+	ckey := strings.clone_to_cstring(key,   runtime.temp_allocator) or_return
+	cval := strings.clone_to_cstring(value, runtime.temp_allocator) or_return
 
 	if posix.setenv(ckey, cval, true) != nil {
 		err = _get_platform_error_from_errno()
@@ -69,9 +69,9 @@ _set_env :: proc(key, value: string) -> (err: Error) {
 }
 
 _unset_env :: proc(key: string) -> (ok: bool) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
-	ckey := strings.clone_to_cstring(key, temp_allocator)
+	ckey := strings.clone_to_cstring(key, runtime.temp_allocator)
 
 	ok = posix.unsetenv(ckey) == .OK
 	return

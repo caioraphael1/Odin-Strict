@@ -28,7 +28,7 @@ abs :: proc(path: string, allocator: mem.Allocator) -> (string, bool) {
 join :: proc(elems: []string, allocator: mem.Allocator) -> (joined: string, err: runtime.Allocator_Error) #optional_allocator_error {
 	for e, i in elems {
 		if e != "" {
-			runtime.TEMP_ALLOCATOR_GUARD(runtime.temp_allocator == allocator)
+			runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 			p := strings.join(elems[i:], SEPARATOR_STRING, runtime.temp_allocator) or_return
 			return clean(p, allocator)
 		}

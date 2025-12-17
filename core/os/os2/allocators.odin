@@ -20,40 +20,49 @@ fini_temp_allocators :: proc() {
 Temp_Allocator :: struct {
 	using arena:     ^runtime.Arena,
 	using allocator: runtime.Allocator,
-	tmp:             runtime.Arena_Temp,
+	arena_temp:      runtime.Arena_Temp,
 	loc:             runtime.Source_Code_Location,
 }
-	
-TEMP_ALLOCATOR_GUARD_END :: proc(temp: Temp_Allocator) {
-	runtime.arena_temp_end(temp.tmp, temp.loc)
-}
 
-@(deferred_out=TEMP_ALLOCATOR_GUARD_END)
+@(deferred_out=temp_allocator_temp_end)
 TEMP_ALLOCATOR_GUARD :: #force_inline proc(collisions: []runtime.Allocator, loc := #caller_location) -> Temp_Allocator {
 	assert(len(collisions) <= MAX_TEMP_ARENA_COLLISIONS, "Maximum collision count exceeded. MAX_TEMP_ARENA_COUNT must be increased!")
-	good_arena: ^runtime.Arena
-	for i in 0..<MAX_TEMP_ARENA_COUNT {
-		good_arena = &global_default_temp_allocator_arenas[i]
-		for c in collisions {
-			if good_arena == c.data {
-				good_arena = nil
+
+    // Get an arena with no collisions.
+	arena_with_no_collisions: ^runtime.Arena
+	loop_outer: for i in 0..<MAX_TEMP_ARENA_COUNT {
+		arena_with_no_collisions = &global_default_temp_allocator_arenas[i]
+		for col in collisions {
+            // Collided with an arena.
+			if col.data == arena_with_no_collisions {
+				arena_with_no_collisions = nil
+                continue loop_outer
 			}
 		}
-		if good_arena != nil {
-			break
-		}
+
+        // Arena with no collisions found.
+        break loop_outer
 	}
-	assert(good_arena != nil)
-	if good_arena.backing_allocator.procedure == nil {
-		good_arena.backing_allocator = runtime.general_allocator
+	assert(arena_with_no_collisions != nil)
+
+	if arena_with_no_collisions.backing_allocator.procedure == nil {
+		arena_with_no_collisions.backing_allocator = runtime.general_allocator
             // TODO(caio): I should remove this implicit assignment somehow.
 	}
-	tmp := runtime.arena_temp_begin(good_arena, loc)
-	return { good_arena, runtime.arena_allocator(good_arena), tmp, loc }
+	return { 
+        arena      = arena_with_no_collisions, 
+        allocator  = runtime.arena_allocator(arena_with_no_collisions), 
+        arena_temp = runtime.arena_temp_begin(arena_with_no_collisions, loc),
+        loc        = loc,
+    }
 }
 
+	
+temp_allocator_temp_end :: proc(temp: Temp_Allocator) {
+	runtime.arena_temp_end(temp.arena_temp, temp.loc)
+}
 
 @(deferred_out=runtime.arena_temp_end)
-TEMP_ALLOCATOR_SCOPE :: proc(tmp: Temp_Allocator, loc := #caller_location) -> (runtime.Arena_Temp, runtime.Source_Code_Location) {
-	return runtime.arena_temp_begin(tmp.arena), loc
+TEMP_ALLOCATOR_SCOPE :: proc(arena_temp: Temp_Allocator, loc := #caller_location) -> (runtime.Arena_Temp, runtime.Source_Code_Location) {
+	return runtime.arena_temp_begin(arena_temp.arena), loc
 }

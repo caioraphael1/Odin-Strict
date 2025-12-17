@@ -15,13 +15,13 @@ MAX_ATTEMPTS :: 1<<13 // Should be enough for everyone, right?
 // The caller must `close` the file once finished with.
 @(require_results)
 create_temp_file :: proc(dir, pattern: string, allocator: runtime.Allocator) -> (f: ^File, err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	dir := dir if dir != "" else temp_directory(temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	dir := dir if dir != "" else temp_directory(runtime.temp_allocator) or_return
 	prefix, suffix := _prefix_and_suffix(pattern) or_return
-	prefix = temp_join_path(dir, prefix, temp_allocator) or_return
+	prefix = temp_join_path(dir, prefix, runtime.temp_allocator) or_return
 
 	rand_buf: [10]byte
-	name_buf := make([]byte, len(prefix)+len(rand_buf)+len(suffix), temp_allocator)
+	name_buf := make([]byte, len(prefix)+len(rand_buf)+len(suffix), runtime.temp_allocator)
 
 	attempts := 0
 	for {
@@ -47,13 +47,13 @@ mkdir_temp :: make_directory_temp
 // If `dir` is an empty tring, `temp_directory()` will be used.
 @(require_results)
 make_directory_temp :: proc(dir, pattern: string, allocator: runtime.Allocator) -> (temp_path: string, err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
-	dir := dir if dir != "" else temp_directory(temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
+	dir := dir if dir != "" else temp_directory(runtime.temp_allocator) or_return
 	prefix, suffix := _prefix_and_suffix(pattern) or_return
-	prefix = temp_join_path(dir, prefix, temp_allocator) or_return
+	prefix = temp_join_path(dir, prefix, runtime.temp_allocator) or_return
 
 	rand_buf: [10]byte
-	name_buf := make([]byte, len(prefix)+len(rand_buf)+len(suffix), temp_allocator)
+	name_buf := make([]byte, len(prefix)+len(rand_buf)+len(suffix), runtime.temp_allocator)
 
 	attempts := 0
 	for {
@@ -70,7 +70,7 @@ make_directory_temp :: proc(dir, pattern: string, allocator: runtime.Allocator) 
 			return "", err
 		}
 		if err == .Not_Exist {
-			if _, serr := stat(dir, temp_allocator); serr == .Not_Exist {
+			if _, serr := stat(dir, runtime.temp_allocator); serr == .Not_Exist {
 				return "", serr
 			}
 		}

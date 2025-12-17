@@ -9,7 +9,7 @@ import "core:crypto/pbkdf2"
 
 @(test)
 test_hkdf :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	tmp: [128]byte // Good enough.
 
@@ -72,7 +72,7 @@ test_hkdf :: proc(t: ^testing.T) {
 
 @(test)
 test_pbkdf2 :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	tmp: [64]byte // 512-bits is enough for every output for now.
 

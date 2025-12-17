@@ -68,8 +68,8 @@ _open :: proc(name: string, flags: File_Flags, perm: Permissions, allocator: run
 	if .Trunc       in flags { sys_flags += {.TRUNC} }
 	if .Inheritable in flags { sys_flags -= {.CLOEXEC} }
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 
 	fd := posix.open(cname, sys_flags, transmute(posix.mode_t)posix._mode_t(transmute(u32)perm))
 	if fd < 0 {
@@ -182,8 +182,8 @@ _truncate :: proc(f: ^File, size: i64) -> Error {
 }
 
 _remove :: proc(name: string) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 	if posix.remove(cname) != 0 {
 		return _get_platform_error()
 	}
@@ -191,9 +191,9 @@ _remove :: proc(name: string) -> (err: Error) {
 }
 
 _rename :: proc(old_path, new_path: string) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cold := clone_to_cstring(old_path, temp_allocator) or_return
-	cnew := clone_to_cstring(new_path, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cold := clone_to_cstring(old_path, runtime.temp_allocator) or_return
+	cnew := clone_to_cstring(new_path, runtime.temp_allocator) or_return
 	if posix.rename(cold, cnew) != 0 {
 		return _get_platform_error()
 	}
@@ -201,9 +201,9 @@ _rename :: proc(old_path, new_path: string) -> (err: Error) {
 }
 
 _link :: proc(old_name, new_name: string) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cold := clone_to_cstring(old_name, temp_allocator) or_return
-	cnew := clone_to_cstring(new_name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cold := clone_to_cstring(old_name, runtime.temp_allocator) or_return
+	cnew := clone_to_cstring(new_name, runtime.temp_allocator) or_return
 	if posix.link(cold, cnew) != .OK {
 		return _get_platform_error()
 	}
@@ -211,9 +211,9 @@ _link :: proc(old_name, new_name: string) -> (err: Error) {
 }
 
 _symlink :: proc(old_name, new_name: string) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cold := clone_to_cstring(old_name, temp_allocator) or_return
-	cnew := clone_to_cstring(new_name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cold := clone_to_cstring(old_name, runtime.temp_allocator) or_return
+	cnew := clone_to_cstring(new_name, runtime.temp_allocator) or_return
 	if posix.symlink(cold, cnew) != .OK {
 		return _get_platform_error()
 	}
@@ -221,8 +221,8 @@ _symlink :: proc(old_name, new_name: string) -> (err: Error) {
 }
 
 _read_link :: proc(name: string, allocator: runtime.Allocator) -> (s: string, err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 
 	buf: [dynamic]byte
 	buf.allocator = allocator
@@ -267,8 +267,8 @@ _read_link :: proc(name: string, allocator: runtime.Allocator) -> (s: string, er
 }
 
 _chdir :: proc(name: string) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 	if posix.chdir(cname) != .OK {
 		return _get_platform_error()
 	}
@@ -290,8 +290,8 @@ _fchmod :: proc(f: ^File, mode: Permissions) -> Error {
 }
 
 _chmod :: proc(name: string, mode: Permissions) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 	if posix.chmod(cname, transmute(posix.mode_t)posix._mode_t(transmute(u32)mode)) != .OK {
 		return _get_platform_error()
 	}
@@ -306,8 +306,8 @@ _fchown :: proc(f: ^File, uid, gid: int) -> Error {
 }
 
 _chown :: proc(name: string, uid, gid: int) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 	if posix.chown(cname, posix.uid_t(uid), posix.gid_t(gid)) != .OK {
 		return _get_platform_error()
 	}
@@ -315,8 +315,8 @@ _chown :: proc(name: string, uid, gid: int) -> (err: Error) {
 }
 
 _lchown :: proc(name: string, uid, gid: int) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 	if posix.lchown(cname, posix.uid_t(uid), posix.gid_t(gid)) != .OK {
 		return _get_platform_error()
 	}
@@ -335,8 +335,8 @@ _chtimes :: proc(name: string, atime, mtime: time.Time) -> (err: Error) {
 		},
 	}
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cname := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cname := clone_to_cstring(name, runtime.temp_allocator) or_return
 
 	if posix.utimes(cname, &times) != .OK {
 		return _get_platform_error()
@@ -363,8 +363,8 @@ _fchtimes :: proc(f: ^File, atime, mtime: time.Time) -> Error {
 }
 
 _exists :: proc(path: string) -> bool {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	cpath, err := clone_to_cstring(path, temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	cpath, err := clone_to_cstring(path, runtime.temp_allocator)
 	if err != nil { return false }
 	return posix.access(cpath) == .OK
 }

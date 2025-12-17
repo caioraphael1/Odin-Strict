@@ -512,8 +512,8 @@ exists :: proc(path: string) -> bool {
 */
 @(require_results)
 is_file :: proc(path: string) -> bool {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	fi, err := stat(path, temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	fi, err := stat(path, runtime.temp_allocator)
 	if err != nil {
 		return false
 	}
@@ -527,8 +527,8 @@ is_dir :: is_directory
 */
 @(require_results)
 is_directory :: proc(path: string) -> bool {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	fi, err := stat(path, temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	fi, err := stat(path, runtime.temp_allocator)
 	if err != nil {
 		return false
 	}

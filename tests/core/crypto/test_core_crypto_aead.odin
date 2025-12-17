@@ -10,7 +10,7 @@ import "core:testing"
 
 @(test)
 test_aead :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	aes_impls := make([dynamic]aead.Implementation, context.temp_allocator)
 	for impl in supported_aes_impls() {

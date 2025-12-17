@@ -19,10 +19,10 @@ _posix_absolute_path :: proc(fd: posix.FD, name: string, allocator: runtime.Allo
 }
 
 _copy_file_native :: proc(dst_path, src_path: string) -> (err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
-	csrc := clone_to_cstring(src_path, temp_allocator) or_return
-	cdst := clone_to_cstring(dst_path, temp_allocator) or_return
+	csrc := clone_to_cstring(src_path, runtime.temp_allocator) or_return
+	cdst := clone_to_cstring(dst_path, runtime.temp_allocator) or_return
 
 	// Disallow directories, as specified by the generic implementation.
 

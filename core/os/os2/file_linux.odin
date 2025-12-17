@@ -62,8 +62,8 @@ _standard_stream_init :: proc "contextless" () {
 }
 
 _open :: proc(name: string, flags: File_Flags, perm: Permissions, allocator: runtime.Allocator) -> (f: ^File, err: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 
 	// Just default to using O_NOCTTY because needing to open a controlling
 	// terminal would be incredibly rare. This has no effect on files while
@@ -295,8 +295,8 @@ _truncate :: proc(f: ^File, size: i64) -> Error {
 }
 
 _remove :: proc(name: string) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 
 	if fd, errno := linux.open(name_cstr, _OPENDIR_FLAGS + {.NOFOLLOW}); errno == .NONE {
 		linux.close(fd)
@@ -307,25 +307,25 @@ _remove :: proc(name: string) -> Error {
 }
 
 _rename :: proc(old_name, new_name: string) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	old_name_cstr := clone_to_cstring(old_name, temp_allocator) or_return
-	new_name_cstr := clone_to_cstring(new_name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	old_name_cstr := clone_to_cstring(old_name, runtime.temp_allocator) or_return
+	new_name_cstr := clone_to_cstring(new_name, runtime.temp_allocator) or_return
 
 	return _get_platform_error(linux.rename(old_name_cstr, new_name_cstr))
 }
 
 _link :: proc(old_name, new_name: string) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	old_name_cstr := clone_to_cstring(old_name, temp_allocator) or_return
-	new_name_cstr := clone_to_cstring(new_name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	old_name_cstr := clone_to_cstring(old_name, runtime.temp_allocator) or_return
+	new_name_cstr := clone_to_cstring(new_name, runtime.temp_allocator) or_return
 
 	return _get_platform_error(linux.link(old_name_cstr, new_name_cstr))
 }
 
 _symlink :: proc(old_name, new_name: string) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	old_name_cstr := clone_to_cstring(old_name, temp_allocator) or_return
-	new_name_cstr := clone_to_cstring(new_name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	old_name_cstr := clone_to_cstring(old_name, runtime.temp_allocator) or_return
+	new_name_cstr := clone_to_cstring(new_name, runtime.temp_allocator) or_return
 	return _get_platform_error(linux.symlink(old_name_cstr, new_name_cstr))
 }
 
@@ -348,14 +348,14 @@ _read_link_cstr :: proc(name_cstr: cstring, allocator: runtime.Allocator) -> (st
 }
 
 _read_link :: proc(name: string, allocator: runtime.Allocator) -> (s: string, e: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 	return _read_link_cstr(name_cstr, allocator)
 }
 
 _chdir :: proc(name: string) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 	return _get_platform_error(linux.chdir(name_cstr))
 }
 
@@ -365,8 +365,8 @@ _fchdir :: proc(f: ^File) -> Error {
 }
 
 _chmod :: proc(name: string, mode: Permissions) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 	return _get_platform_error(linux.chmod(name_cstr, transmute(linux.Mode)transmute(u32)mode))
 }
 
@@ -377,15 +377,15 @@ _fchmod :: proc(f: ^File, mode: Permissions) -> Error {
 
 // NOTE: will throw error without super user priviledges
 _chown :: proc(name: string, uid, gid: int) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 	return _get_platform_error(linux.chown(name_cstr, linux.Uid(uid), linux.Gid(gid)))
 }
 
 // NOTE: will throw error without super user priviledges
 _lchown :: proc(name: string, uid, gid: int) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 	return _get_platform_error(linux.lchown(name_cstr, linux.Uid(uid), linux.Gid(gid)))
 }
 
@@ -396,8 +396,8 @@ _fchown :: proc(f: ^File, uid, gid: int) -> Error {
 }
 
 _chtimes :: proc(name: string, atime, mtime: time.Time) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 	times := [2]linux.Time_Spec {
 		{
 			uint(atime._nsec) / uint(time.Second),
@@ -427,8 +427,8 @@ _fchtimes :: proc(f: ^File, atime, mtime: time.Time) -> Error {
 }
 
 _exists :: proc(name: string) -> bool {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	name_cstr, _ := clone_to_cstring(name, temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	name_cstr, _ := clone_to_cstring(name, runtime.temp_allocator)
 	return linux.access(name_cstr, linux.F_OK) == .NONE
 }
 
@@ -436,8 +436,8 @@ _exists :: proc(name: string) -> bool {
 _read_entire_pseudo_file :: proc { _read_entire_pseudo_file_string, _read_entire_pseudo_file_cstring }
 
 _read_entire_pseudo_file_string :: proc(name: string, allocator: runtime.Allocator) -> (b: []u8, e: Error) {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
-	name_cstr := clone_to_cstring(name, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
+	name_cstr := clone_to_cstring(name, runtime.temp_allocator) or_return
 	return _read_entire_pseudo_file_cstring(name_cstr, allocator)
 }
 

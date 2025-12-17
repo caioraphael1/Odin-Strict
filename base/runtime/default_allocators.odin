@@ -32,11 +32,17 @@ temp_allocator_destroy :: proc() {
     arena_destroy(&temp_allocator_arena)
 }
 
-// Fix: The correct name should be TEMP_ALLOCATOR_TEMP_GUARD, for consistency.
 @(deferred_out=arena_temp_end)
-TEMP_ALLOCATOR_GUARD :: #force_inline proc(ignore := false, loc := #caller_location) -> (Arena_Temp, Source_Code_Location) {
-	if ignore {
+TEMP_ALLOCATOR_TEMP_GUARD :: #force_inline proc(collision: Allocator = {}, loc := #caller_location) -> (Arena_Temp, Source_Code_Location) {
+	if collision == temp_allocator {
 		return {}, loc
 	}
     return arena_temp_begin(&temp_allocator_arena, loc), loc
 }
+
+
+@(deferred_out=arena_temp_end)
+TEMP_ALLOCATOR_TEMP_SCOPE :: proc(arena_temp: Arena_Temp, loc := #caller_location) -> (Arena_Temp, Source_Code_Location) {
+	return arena_temp_begin(arena_temp.arena), loc
+}
+

@@ -282,7 +282,7 @@ init_ram :: proc() {
 init_gpu_info :: proc(allocator: runtime.Allocator) {
 	GPU_ROOT_KEY :: `SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}`
 
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	gpu_key: sys.HKEY
 	if status := sys.RegOpenKeyExW(
@@ -350,7 +350,7 @@ read_reg_string :: proc(hkey: sys.HKEY, subkey, val: string, allocator: runtime.
 		return
 	}
 
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	BUF_SIZE :: 1024
 	key_name_wide := make([]u16, BUF_SIZE, runtime.temp_allocator)
@@ -388,7 +388,7 @@ read_reg_i32 :: proc(hkey: sys.HKEY, subkey, val: string) -> (res: i32, ok: bool
 		return
 	}
 
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	BUF_SIZE :: 1024
 	key_name_wide := make([]u16, BUF_SIZE, runtime.temp_allocator)
@@ -416,7 +416,7 @@ read_reg_i64 :: proc(hkey: sys.HKEY, subkey, val: string) -> (res: i64, ok: bool
 		return
 	}
 
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	BUF_SIZE :: 1024
 	key_name_wide := make([]u16, BUF_SIZE, runtime.temp_allocator)

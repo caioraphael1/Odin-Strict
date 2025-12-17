@@ -35,11 +35,11 @@ _get_executable_path :: proc(allocator: runtime.Allocator) -> (path: string, err
 		return real(arg, allocator)
 	}
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 
-	buf := strings.builder_make(temp_allocator)
+	buf := strings.builder_make(runtime.temp_allocator)
 
-	paths := get_env("PATH", temp_allocator)
+	paths := get_env("PATH", runtime.temp_allocator)
 	for dir in strings.split_iterator(&paths, ":") {
 		strings.builder_reset(&buf)
 		strings.write_string(&buf, dir)

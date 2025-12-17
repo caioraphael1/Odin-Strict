@@ -17,7 +17,7 @@ DSA_ITERS :: 10000
 
 @(test)
 benchmark_crypto_ecc :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	bench_ecdh()
 	bench_dsa()

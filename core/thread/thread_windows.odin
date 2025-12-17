@@ -33,12 +33,7 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority, allocator: ru
 			sync.wait(&t.start_ok)
 		}
 
-        runtime.temp_allocator_init(0, runtime.general_allocator)
         t.procedure(t)
-        runtime.temp_allocator_destroy()
-
-        runtime.run_thread_local_cleaners()
-            // Fix: this is for os2.
 
 		intrinsics.atomic_or(&t.flags, {.Done})
 		if .Self_Cleanup in sync.atomic_load(&t.flags) {

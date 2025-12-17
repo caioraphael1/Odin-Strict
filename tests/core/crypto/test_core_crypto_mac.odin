@@ -11,7 +11,7 @@ import "core:crypto/siphash"
 
 @(test)
 test_hmac :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	// Test cases pulled out of RFC 6234, note that HMAC is a generic
 	// construct so as long as the underlying hash is correct and all
@@ -102,7 +102,7 @@ test_hmac :: proc(t: ^testing.T) {
 
 @(test)
 test_poly1305 :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	// Test cases taken from poly1305-donna.
 	key := [poly1305.KEY_SIZE]byte {

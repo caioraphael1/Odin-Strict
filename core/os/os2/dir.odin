@@ -23,12 +23,12 @@ read_directory :: proc(f: ^File, n: int, allocator: runtime.Allocator) -> (files
 		size = 100
 	}
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 
 	it := read_directory_iterator_create(f, allocator)
 	defer _read_directory_iterator_destroy(&it, allocator)
 
-	dfi := make([dynamic]File_Info, 0, size, temp_allocator)
+	dfi := make([dynamic]File_Info, 0, size, runtime.temp_allocator)
 	defer if err != nil {
 		for fi in dfi {
 			file_info_delete(fi, allocator)
@@ -224,12 +224,12 @@ _copy_directory_all :: proc(dst, src: string, dst_perm := 0o755, allocator: runt
 		return err
 	}
 
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
-	abs_src := get_absolute_path(src, temp_allocator) or_return
-	abs_dst := get_absolute_path(dst, temp_allocator) or_return
+	abs_src := get_absolute_path(src, runtime.temp_allocator) or_return
+	abs_dst := get_absolute_path(dst, runtime.temp_allocator) or_return
 
-	dst_buf := make([dynamic]byte, 0, len(abs_dst) + 256, temp_allocator) or_return
+	dst_buf := make([dynamic]byte, 0, len(abs_dst) + 256, runtime.temp_allocator) or_return
 
 	w: Walker
 	walker_init_path(&w, src, allocator)

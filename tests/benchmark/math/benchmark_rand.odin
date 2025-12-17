@@ -20,7 +20,7 @@ SAMPLE_SEED : string : "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456"
 
 @(test)
 benchmark_rng :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	tbl: table.Table
 	table.init(&tbl)

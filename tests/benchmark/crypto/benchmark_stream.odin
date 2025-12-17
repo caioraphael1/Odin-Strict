@@ -18,7 +18,7 @@ AES_CTR_KEY_SIZES := []int{128, 192, 256}
 
 @(test)
 benchmark_crypto_stream :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	tbl: table.Table
 	table.init(&tbl)

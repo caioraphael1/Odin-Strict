@@ -9,7 +9,7 @@ import "core:crypto/hash"
 
 @(test)
 test_hash :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	// TODO:
 	// - Stick the test vectors in a JSON file or something.

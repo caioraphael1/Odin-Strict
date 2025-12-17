@@ -128,7 +128,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 	options := options
 
 	// For compress.read_slice(), until that's rewritten to not use temp allocator
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	if .info in options {
 		options += {.return_metadata, .do_not_decompress_image}

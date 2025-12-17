@@ -73,7 +73,7 @@ temp_full_path :: proc(name: string) -> (path: string, err: os.Error) {
 }
 
 abs :: proc(path: string, allocator: mem.Allocator) -> (string, bool) {
-	runtime.TEMP_ALLOCATOR_GUARD(allocator == runtime.temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 	full_path, err := temp_full_path(path)
 	if err != nil {
 		return "", false
@@ -92,7 +92,7 @@ join :: proc(elems: []string, allocator: mem.Allocator) -> (string, runtime.Allo
 }
 
 join_non_empty :: proc(elems: []string, allocator: mem.Allocator) -> (joined: string, err: runtime.Allocator_Error) {
-	runtime.TEMP_ALLOCATOR_GUARD(allocator == runtime.temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 	
 	if len(elems[0]) == 2 && elems[0][1] == ':' {
 		i := 1

@@ -1,15 +1,17 @@
 #+private
 package os2
 
-import win32 "core:sys/windows"
 import "base:runtime"
+import win32 "core:sys/windows"
 
 _lookup_env_alloc :: proc(key: string, allocator: runtime.Allocator) -> (value: string, found: bool) {
 	if key == "" {
 		return
 	}
-	temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
-	wkey, _ := win32_utf8_to_wstring(key, temp_allocator)
+
+    runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
+
+	wkey, _ := win32_utf8_to_wstring(key, runtime.temp_allocator)
 
 	n := win32.GetEnvironmentVariableW(wkey, nil, 0)
 	if n == 0 {
@@ -20,7 +22,7 @@ _lookup_env_alloc :: proc(key: string, allocator: runtime.Allocator) -> (value: 
 		return "", true
 	}
 
-	b := make([]u16, n+1, temp_allocator)
+	b := make([]u16, n+1, runtime.temp_allocator)
 
 	n = win32.GetEnvironmentVariableW(wkey, raw_data(b), u32(len(b)))
 	if n == 0 {
@@ -67,9 +69,9 @@ _lookup_env_buf :: proc(buf: []u8, key: string) -> (value: string, err: Error) {
 _lookup_env :: proc{_lookup_env_alloc, _lookup_env_buf}
 
 _set_env :: proc(key, value: string) -> Error {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	k := win32_utf8_to_wstring(key,   temp_allocator) or_return
-	v := win32_utf8_to_wstring(value, temp_allocator) or_return
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	k := win32_utf8_to_wstring(key,   runtime.temp_allocator) or_return
+	v := win32_utf8_to_wstring(value, runtime.temp_allocator) or_return
 
 	if !win32.SetEnvironmentVariableW(k, v) {
 		return _get_platform_error()
@@ -78,14 +80,14 @@ _set_env :: proc(key, value: string) -> Error {
 }
 
 _unset_env :: proc(key: string) -> bool {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	k, _ := win32_utf8_to_wstring(key, temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	k, _ := win32_utf8_to_wstring(key, runtime.temp_allocator)
 	return bool(win32.SetEnvironmentVariableW(k, nil))
 }
 
 _clear_env :: proc() {
-	temp_allocator := TEMP_ALLOCATOR_GUARD({})
-	envs, _ := environ(temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+	envs, _ := environ(runtime.temp_allocator)
 	for env in envs {
 		for j in 1..<len(env) {
 			if env[j] == '=' {

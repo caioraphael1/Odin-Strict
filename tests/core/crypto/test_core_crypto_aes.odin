@@ -10,7 +10,7 @@ import "core:crypto/sha2"
 
 @(test)
 test_aes :: proc(t: ^testing.T) {
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	impls := supported_aes_impls()
 

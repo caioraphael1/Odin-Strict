@@ -373,7 +373,7 @@ _parse_header_pam :: proc(data: []byte, allocator := context.allocator) -> (head
 	}
 	length = header_end_index + len(HEADER_END)
 
-	runtime.TEMP_ALLOCATOR_GUARD(runtime.temp_allocator == allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 
 	// string buffer for the tupltype
 	tupltype: strings.Builder

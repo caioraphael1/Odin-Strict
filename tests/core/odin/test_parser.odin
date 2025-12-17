@@ -12,7 +12,7 @@ import "core:testing"
 @test
 test_parse_demo :: proc(t: ^testing.T) {
 	context.allocator = context.temp_allocator
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	pkg, ok := parser.parse_package_from_path(ODIN_ROOT + "examples/demo")
 	
@@ -26,7 +26,7 @@ test_parse_demo :: proc(t: ^testing.T) {
 @test
 test_parse_bitfield :: proc(t: ^testing.T) {
 	context.allocator = context.temp_allocator
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	file := ast.File{
 		fullpath = "test.odin",
@@ -70,7 +70,7 @@ Foo :: bit_field uint {
 @test
 test_parse_parser :: proc(t: ^testing.T) {
 	context.allocator = context.temp_allocator
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	pkg, ok := parser.parse_package_from_path(ODIN_ROOT + "core/odin/parser")
 	
@@ -84,7 +84,7 @@ test_parse_parser :: proc(t: ^testing.T) {
 @test
 test_parse_stb_image :: proc(t: ^testing.T) {
 	context.allocator = context.temp_allocator
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	pkg, ok := parser.parse_package_from_path(ODIN_ROOT + "vendor/stb/image")
 	

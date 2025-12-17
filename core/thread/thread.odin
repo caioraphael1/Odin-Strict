@@ -38,30 +38,30 @@ Thread_State :: enum u8 {
 Type representing a thread handle and the associated with that thread data.
 */
 Thread :: struct {
-	using specific: Thread_Os_Specific,
-	flags: bit_set[Thread_State; u8],
+	using specific:     Thread_Os_Specific,
+	flags:              bit_set[Thread_State; u8],
 
 	// Thread ID. Depending on the platform, may start out as 0 (zero) until the thread
 	// has had a chance to run.
-	id: int,
+	id:                 int,
 
 	// The thread procedure.
-	procedure: Thread_Proc,
+	procedure:          Thread_Proc,
 
 	// User-supplied pointer, that will be available to the thread once it is
 	// started. Should be set after the thread has been created, but before
 	// it is started.
-	data: rawptr,
+	data:               rawptr,
 
 	// User-supplied integer, that will be available to the thread once it is
 	// started. Should be set after the thread has been created, but before
 	// it is started.
-	user_index: int,
+	user_index:         int,
 
 	// User-supplied array of arguments, that will be available to the thread,
 	// once it is started. Should be set after the thread has been created,
 	// but before it is started.
-	user_args: [MAX_USER_ARGUMENTS]rawptr,
+	user_args:          [MAX_USER_ARGUMENTS]rawptr,
 
 	// The allocator used to allocate data for the thread.
 	creation_allocator: mem.Allocator,

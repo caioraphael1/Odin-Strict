@@ -1,6 +1,7 @@
 #+private
 package os2
 
+import "base:runtime"
 import "core:sys/linux"
 
 Read_Directory_Iterator_Impl :: struct {
@@ -78,8 +79,8 @@ _read_directory_iterator :: proc(it: ^Read_Directory_Iterator, allocator: runtim
 	it.impl.prev_fi = fi
 
 	if err != nil {
-		temp_allocator := TEMP_ALLOCATOR_GUARD({})
-		path, _ := _get_full_path(entry_fd, temp_allocator)
+		runtime.TEMP_ALLOCATOR_TEMP_GUARD()
+		path, _ := _get_full_path(entry_fd, runtime.temp_allocator)
 		read_directory_iterator_set_error(it, path, err)
 	}
 

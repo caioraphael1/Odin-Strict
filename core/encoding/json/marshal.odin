@@ -69,7 +69,7 @@ marshal :: proc(v: any, opt: Marshal_Options = {}, allocator: mem.Allocator, loc
 	}
 	
 	// temp guard in case we are sorting map keys, which will use temp allocations
-	runtime.TEMP_ALLOCATOR_GUARD(allocator == runtime.temp_allocator)
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 
 	opt := opt
 	marshal_to_builder(&b, v, &opt) or_return

@@ -47,7 +47,7 @@ init_os_version :: proc() {
 		return
 	}
 
-	runtime.TEMP_ALLOCATOR_GUARD()
+	runtime.TEMP_ALLOCATOR_TEMP_GUARD()
 
 	// Parse kernel version
 	release := string(cstring(raw_data(kernel_version_buf[:])))
