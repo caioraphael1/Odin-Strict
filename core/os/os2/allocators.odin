@@ -46,19 +46,14 @@ TEMP_ALLOCATOR_GUARD :: #force_inline proc(collisions: []runtime.Allocator, loc 
 	assert(good_arena != nil)
 	if good_arena.backing_allocator.procedure == nil {
 		good_arena.backing_allocator = runtime.general_allocator
+            // TODO(caio): I should remove this implicit assignment somehow.
 	}
 	tmp := runtime.arena_temp_begin(good_arena, loc)
 	return { good_arena, runtime.arena_allocator(good_arena), tmp, loc }
 }
 
-temp_allocator_begin :: runtime.arena_temp_begin
-temp_allocator_end :: runtime.arena_temp_end
-@(deferred_out=_temp_allocator_end)
-temp_allocator_scope :: proc(tmp: Temp_Allocator) -> (runtime.Arena_Temp) {
-	return temp_allocator_begin(tmp.arena)
-}
-@(private="file")
-_temp_allocator_end :: proc(tmp: runtime.Arena_Temp) {
-	temp_allocator_end(tmp)
-}
 
+@(deferred_out=runtime.arena_temp_end)
+TEMP_ALLOCATOR_SCOPE :: proc(tmp: Temp_Allocator, loc := #caller_location) -> (runtime.Arena_Temp, runtime.Source_Code_Location) {
+	return runtime.arena_temp_begin(tmp.arena), loc
+}

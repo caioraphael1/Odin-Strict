@@ -159,7 +159,7 @@ _process_info_by_pid :: proc(pid: int, selection: Process_Info_Fields, allocator
 		}
 		temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
 		if selection >= {.Command_Line, .Command_Args} {
-			temp_allocator_scope(temp_allocator)
+			TEMP_ALLOCATOR_SCOPE(temp_allocator)
 			cmdline_w := make([]u16, process_params.CommandLine.Length, temp_allocator) or_return
 			_, err = read_memory_as_slice(ph, process_params.CommandLine.Buffer, cmdline_w)
 			if err != nil {
@@ -175,7 +175,7 @@ _process_info_by_pid :: proc(pid: int, selection: Process_Info_Fields, allocator
 			}
 		}
 		if .Environment in selection {
-			temp_allocator_scope(temp_allocator)
+			TEMP_ALLOCATOR_SCOPE(temp_allocator)
 			env_len := process_params.EnvironmentSize / 2
 			envs_w := make([]u16, env_len, temp_allocator) or_return
 			_, err = read_memory_as_slice(ph, process_params.Environment, envs_w)
@@ -186,7 +186,7 @@ _process_info_by_pid :: proc(pid: int, selection: Process_Info_Fields, allocator
 			info.fields += {.Environment}
 		}
 		if .Working_Dir in selection {
-			temp_allocator_scope(temp_allocator)
+			TEMP_ALLOCATOR_SCOPE(temp_allocator)
 			cwd_w := make([]u16, process_params.CurrentDirectoryPath.Length, temp_allocator) or_return
 			_, err = read_memory_as_slice(ph, process_params.CurrentDirectoryPath.Buffer, cwd_w)
 			if err != nil {
@@ -270,7 +270,7 @@ _process_info_by_handle :: proc(process: Process, selection: Process_Info_Fields
 		}
 		temp_allocator := TEMP_ALLOCATOR_GUARD({ allocator })
 		if selection >= {.Command_Line, .Command_Args} {
-			temp_allocator_scope(temp_allocator)
+			TEMP_ALLOCATOR_SCOPE(temp_allocator)
 			cmdline_w := make([]u16, process_params.CommandLine.Length, temp_allocator) or_return
 			_, err = read_memory_as_slice(ph, process_params.CommandLine.Buffer, cmdline_w)
 			if err != nil {
@@ -286,7 +286,7 @@ _process_info_by_handle :: proc(process: Process, selection: Process_Info_Fields
 			}
 		}
 		if .Environment in selection {
-			temp_allocator_scope(temp_allocator)
+			TEMP_ALLOCATOR_SCOPE(temp_allocator)
 			env_len := process_params.EnvironmentSize / 2
 			envs_w := make([]u16, env_len, temp_allocator) or_return
 			_, err = read_memory_as_slice(ph, process_params.Environment, envs_w)
@@ -297,7 +297,7 @@ _process_info_by_handle :: proc(process: Process, selection: Process_Info_Fields
 			info.fields += {.Environment}
 		}
 		if .Working_Dir in selection {
-			temp_allocator_scope(temp_allocator)
+			TEMP_ALLOCATOR_SCOPE(temp_allocator)
 			cwd_w := make([]u16, process_params.CurrentDirectoryPath.Length, temp_allocator) or_return
 			_, err = read_memory_as_slice(ph, process_params.CurrentDirectoryPath.Buffer, cwd_w)
 			if err != nil {
