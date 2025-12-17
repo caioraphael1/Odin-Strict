@@ -34,10 +34,9 @@ _create :: proc(procedure: Thread_Proc, priority: Thread_Priority, allocator: ru
 			sync.wait(&t.start_ok)
 		}
 
-        err := runtime.arena_init(&runtime.temp_allocator_arena, 0, runtime.general_allocator)
-        assert(err != nil, "Failure initializing the arena")
+        runtime.temp_allocator_init(0, runtime.general_allocator)
         t.procedure(t)
-        runtime.arena_destroy(&runtime.temp_allocator_arena)
+        runtime.temp_allocator_destroy()
 
         runtime.run_thread_local_cleaners()
             // Fix: this is for os2.

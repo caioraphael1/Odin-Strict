@@ -892,8 +892,8 @@ Output:
 	["aaa", "bbb", "ccc", "ddd", "eee"]
 
 */
-split :: proc(s, sep: string, allocator: mem.Allocator) -> (res: []string, err: mem.Allocator_Error) #optional_allocator_error {
-	return _split(s, sep, 0, -1, allocator)
+split :: proc(s, sep: string, allocator: mem.Allocator, loc := #caller_location) -> (res: []string, err: mem.Allocator_Error) #optional_allocator_error {
+	return _split(s, sep, 0, -1, allocator, loc)
 }
 
 /*
