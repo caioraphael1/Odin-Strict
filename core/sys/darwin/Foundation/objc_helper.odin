@@ -18,12 +18,12 @@ Class_VTable_Info :: struct {
 }
 
 @(require_results)
-class_get_metaclass :: #force_inline proc "contextless" (cls: Class) -> Class {
+class_get_metaclass :: #force_inline proc(cls: Class) -> Class {
 	return (^Class)(cls)^
 }
 
 @(require_results)
-object_get_vtable_info :: proc "contextless" (obj: id) -> ^Class_VTable_Info {
+object_get_vtable_info :: proc(obj: id) -> ^Class_VTable_Info {
 	return (^Class_VTable_Info)(object_getIndexedIvars(obj))
 }
 
@@ -109,7 +109,7 @@ register_subclass :: proc(
 }
 
 @(require_results)
-class_get_vtable_info :: proc "contextless" (cls: Class) -> ^Class_VTable_Info {
+class_get_vtable_info :: proc(cls: Class) -> ^Class_VTable_Info {
 	meta_cls  := class_get_metaclass(cls)
 	meta_size := uint(class_getInstanceSize(meta_cls))
 
@@ -122,7 +122,7 @@ class_get_vtable_info :: proc "contextless" (cls: Class) -> ^Class_VTable_Info {
 }
 
 @(require_results)
-alloc_user_object :: proc "contextless" (cls: Class, _context: Maybe(runtime.Context) = nil) -> id {
+alloc_user_object :: proc(cls: Class, _context: Maybe(runtime.Context) = nil) -> id {
 	info := class_get_vtable_info(cls)
 
 	obj := class_createInstance(cls, size_of(Class_VTable_Info))

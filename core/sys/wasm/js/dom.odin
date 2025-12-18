@@ -24,7 +24,7 @@ foreign dom_lib {
 	set_element_style :: proc(id: string, key: string, value: string) ---
 }
 
-get_element_value_string :: proc "contextless" (id: string, buf: []byte) -> string {
+get_element_value_string :: proc(id: string, buf: []byte) -> string {
 	@(default_calling_convention="contextless")
 	foreign dom_lib {
 		@(link_name="get_element_value_string")
@@ -34,7 +34,7 @@ get_element_value_string :: proc "contextless" (id: string, buf: []byte) -> stri
 	return string(buf[:n])
 }
 
-get_element_key_string :: proc "contextless" (id: string, key: string, buf: []byte) -> string {
+get_element_key_string :: proc(id: string, key: string, buf: []byte) -> string {
 	@(default_calling_convention="contextless")
 	foreign dom_lib {
 		@(link_name="get_element_key_string")
@@ -47,7 +47,7 @@ get_element_key_string :: proc "contextless" (id: string, key: string, buf: []by
 
 
 
-get_element_min_max :: proc "contextless" (id: string) -> (min, max: f64) {
+get_element_min_max :: proc(id: string) -> (min, max: f64) {
 	@(default_calling_convention="contextless")
 	foreign dom_lib {
 		@(link_name="get_element_min_max")
@@ -63,7 +63,7 @@ Rect :: struct {
 	x, y, width, height: f64,
 }
 
-get_bounding_client_rect :: proc "contextless" (id: string) -> (rect: Rect) {
+get_bounding_client_rect :: proc(id: string) -> (rect: Rect) {
 	@(default_calling_convention="contextless")
 	foreign dom_lib {
 		@(link_name="get_bounding_client_rect")
@@ -73,7 +73,7 @@ get_bounding_client_rect :: proc "contextless" (id: string) -> (rect: Rect) {
 	return
 }
 
-window_get_rect :: proc "contextless" () -> (rect: Rect) {
+window_get_rect :: proc() -> (rect: Rect) {
 	@(default_calling_convention="contextless")
 	foreign dom_lib {
 		@(link_name="window_get_rect")
@@ -83,7 +83,7 @@ window_get_rect :: proc "contextless" () -> (rect: Rect) {
 	return
 }
 
-window_get_scroll :: proc "contextless" () -> (x, y: f64) {
+window_get_scroll :: proc() -> (x, y: f64) {
 	@(default_calling_convention="contextless")
 	foreign dom_lib {
 		@(link_name="window_get_scroll")

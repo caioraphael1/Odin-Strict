@@ -9,7 +9,7 @@ __setup_signal_handler :: proc() {
 	libc.signal(posix.SIGTRAP, stop_test_callback)
 }
 
-_test_thread_cancel :: proc "contextless" () {
+_test_thread_cancel :: proc() {
 	// NOTE(Feoramund): Some UNIX-like platforms may require this.
 	//
 	// During testing, I found that NetBSD 10.0 refused to

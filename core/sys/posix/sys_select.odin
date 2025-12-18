@@ -86,7 +86,7 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 	}
 
 	@(private)
-	__check_fd_set :: #force_inline proc "contextless" (_a: FD, _b: rawptr) -> bool {
+	__check_fd_set :: #force_inline proc(_a: FD, _b: rawptr) -> bool {
 		if _a < 0 {
 			set_errno(.EINVAL)
 		}
@@ -98,13 +98,13 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 		return true
 	}
 
-	FD_CLR :: #force_inline proc "contextless" (_fd: FD, _p: ^fd_set) {
+	FD_CLR :: #force_inline proc(_fd: FD, _p: ^fd_set) {
 		if __check_fd_set(_fd, _p) {
 			_p.fds_bits[cast(c.ulong)_fd / __NFDBITS] &= ~cast(c.int32_t)((cast(c.ulong)1) << (cast(c.ulong)_fd % __NFDBITS))
 		}
 	}
 
-	FD_ISSET :: #force_inline proc "contextless" (_fd: FD, _p: ^fd_set) -> bool {
+	FD_ISSET :: #force_inline proc(_fd: FD, _p: ^fd_set) -> bool {
 		if __check_fd_set(_fd, _p) {
 			return bool(_p.fds_bits[cast(c.ulong)_fd / __NFDBITS] & cast(c.int32_t)((cast(c.ulong)1) << (cast(c.ulong)_fd % __NFDBITS)))
 		}
@@ -112,13 +112,13 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 		return false
 	}
 
-	FD_SET :: #force_inline proc "contextless" (_fd: FD, _p: ^fd_set) {
+	FD_SET :: #force_inline proc(_fd: FD, _p: ^fd_set) {
 		if __check_fd_set(_fd, _p) {
 			_p.fds_bits[cast(c.ulong)_fd / __NFDBITS] |= cast(c.int32_t)((cast(c.ulong)1) << (cast(c.ulong)_fd % __NFDBITS))
 		}
 	}
 
-	FD_ZERO :: #force_inline proc "contextless" (_p: ^fd_set) {
+	FD_ZERO :: #force_inline proc(_p: ^fd_set) {
 		intrinsics.mem_zero(_p, size_of(fd_set))
 	}
 

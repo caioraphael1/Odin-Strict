@@ -38,7 +38,7 @@ _VEC_TWO: simd.u64x4 : {2, 0, 2, 0}
 
 // is_performant returns true iff the target and current host both support
 // "enough" SIMD to make this implementation performant.
-is_performant :: proc "contextless" () -> bool {
+is_performant :: proc() -> bool {
 	req_features :: info.CPU_Features{.avx, .avx2}
 
 	features, ok := info.cpu.features.?
@@ -50,7 +50,7 @@ is_performant :: proc "contextless" () -> bool {
 }
 
 @(private = "file")
-_dq_round_simd256 :: #force_inline proc "contextless" (
+_dq_round_simd256 :: #force_inline proc(
 	v0, v1, v2, v3: simd.u32x8,
 ) -> (
 	simd.u32x8,
@@ -114,7 +114,7 @@ _dq_round_simd256 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_add_and_permute_state_simd256 :: #force_inline proc "contextless" (
+_add_and_permute_state_simd256 :: #force_inline proc(
 	v0, v1, v2, v3, s0, s1, s2, s3: simd.u32x8,
 ) -> (
 	simd.u32x8,
@@ -141,7 +141,7 @@ _add_and_permute_state_simd256 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_xor_simd256 :: #force_inline proc "contextless" (
+_xor_simd256 :: #force_inline proc(
 	src: [^]simd.u32x8,
 	v0, v1, v2, v3: simd.u32x8,
 ) -> (
@@ -161,7 +161,7 @@ _xor_simd256 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_xor_simd256_x1 :: #force_inline proc "contextless" (
+_xor_simd256_x1 :: #force_inline proc(
 	src: [^]simd.u32x8,
 	v0, v1: simd.u32x8,
 ) -> (
@@ -177,7 +177,7 @@ _xor_simd256_x1 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_store_simd256 :: #force_inline proc "contextless" (
+_store_simd256 :: #force_inline proc(
 	dst: [^]simd.u32x8,
 	v0, v1, v2, v3: simd.u32x8,
 ) {
@@ -188,7 +188,7 @@ _store_simd256 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_store_simd256_x1 :: #force_inline proc "contextless" (
+_store_simd256_x1 :: #force_inline proc(
 	dst: [^]simd.u32x8,
 	v0, v1: simd.u32x8,
 ) {
@@ -311,7 +311,7 @@ stream_blocks :: proc(ctx: ^_chacha20.Context, dst, src: []byte, nr_blocks: int)
 }
 
 @(enable_target_feature = "sse2,ssse3,avx")
-hchacha20 :: proc "contextless" (dst, key, iv: []byte) {
+hchacha20 :: proc(dst, key, iv: []byte) {
 	// We can just enable AVX and call the simd128 code as going
 	// wider has 0 performance benefit, but VEX encoded instructions
 	// is nice.

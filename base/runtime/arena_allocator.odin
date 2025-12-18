@@ -30,7 +30,7 @@ Arena :: struct {
 
 
 @(private, require_results)
-safe_add :: #force_inline proc "contextless" (x, y: uint) -> (uint, bool) {
+safe_add :: #force_inline proc(x, y: uint) -> (uint, bool) {
 	z, did_overflow := intrinsics.overflow_add(x, y)
 	return z, !did_overflow
 }
@@ -71,7 +71,7 @@ memory_block_dealloc :: proc(block_to_free: ^Memory_Block, loc := #caller_locati
 
 @(require_results)
 alloc_from_memory_block :: proc(block: ^Memory_Block, min_size, alignment: uint) -> (data: []byte, err: Allocator_Error) {
-	calc_alignment_offset :: proc "contextless" (block: ^Memory_Block, alignment: uintptr) -> uint {
+	calc_alignment_offset :: proc(block: ^Memory_Block, alignment: uintptr) -> uint {
 		alignment_offset := uint(0)
 		ptr := uintptr(block.base[block.used:])
 		mask := alignment-1
@@ -104,7 +104,7 @@ alloc_from_memory_block :: proc(block: ^Memory_Block, min_size, alignment: uint)
 
 @(require_results)
 arena_alloc :: proc(arena: ^Arena, size, alignment: uint, loc := #caller_location) -> (data: []byte, err: Allocator_Error) {
-	align_forward_uint :: proc "contextless" (ptr, align: uint) -> uint {
+	align_forward_uint :: proc(ptr, align: uint) -> uint {
 		p := ptr
 		modulo := p & (align-1)
 		if modulo != 0 {

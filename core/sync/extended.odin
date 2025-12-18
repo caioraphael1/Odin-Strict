@@ -39,7 +39,7 @@ This procedure atomically increments a number to the specified wait group's
 internal counter by a specified amount. This operation can be done on any
 thread.
 */
-wait_group_add :: proc "contextless" (wg: ^Wait_Group, delta: int) {
+wait_group_add :: proc(wg: ^Wait_Group, delta: int) {
 	if delta == 0 {
 		return
 	}
@@ -65,7 +65,7 @@ This procedure decrements the internal counter of the specified wait group and
 wakes up the waiting thread. Once the internal counter reaches zero, the waiting
 thread resumes execution.
 */
-wait_group_done :: proc "contextless" (wg: ^Wait_Group) {
+wait_group_done :: proc(wg: ^Wait_Group) {
 	wait_group_add(wg, -1)
 }
 
@@ -75,7 +75,7 @@ Wait for all worker threads in the wait group.
 This procedure blocks the execution of the current thread, until the specified
 wait group's internal counter reaches zero.
 */
-wait_group_wait :: proc "contextless" (wg: ^Wait_Group) {
+wait_group_wait :: proc(wg: ^Wait_Group) {
 	guard(&wg.mutex)
 
 	for atomic_load(&wg.counter) != 0 {
@@ -91,7 +91,7 @@ wait group's internal counter reaches zero, or until the timeout is reached.
 
 This procedure returns `false`, if the timeout was reached, `true` otherwise.
 */
-wait_group_wait_with_timeout :: proc "contextless" (wg: ^Wait_Group, duration: time.Duration) -> bool {
+wait_group_wait_with_timeout :: proc(wg: ^Wait_Group, duration: time.Duration) -> bool {
 	if duration <= 0 {
 		return false
 	}
@@ -159,7 +159,7 @@ Initialize a barrier.
 This procedure initializes the barrier for the specified amount of participant
 threads.
 */
-barrier_init :: proc "contextless" (b: ^Barrier, thread_count: int) {
+barrier_init :: proc(b: ^Barrier, thread_count: int) {
 	when ODIN_VALGRIND_SUPPORT {
 		vg.helgrind_barrier_resize_pre(b, uint(thread_count))
 	}
@@ -175,7 +175,7 @@ This procedure blocks the execution of the current thread, until all threads
 have reached the same point in the execution of the thread proc. Multiple calls
 to `barrier_wait` are allowed within the thread procedure.
 */
-barrier_wait :: proc "contextless" (b: ^Barrier) -> (is_leader: bool) {
+barrier_wait :: proc(b: ^Barrier) -> (is_leader: bool) {
 	when ODIN_VALGRIND_SUPPORT {
 		vg.helgrind_barrier_wait_pre(b)
 	}
@@ -220,7 +220,7 @@ Signal an auto-reset event.
 This procedure signals an auto-reset event, waking up exactly one waiting
 thread.
 */
-auto_reset_event_signal :: proc "contextless" (e: ^Auto_Reset_Event) {
+auto_reset_event_signal :: proc(e: ^Auto_Reset_Event) {
 	old_status := atomic_load_explicit(&e.status, .Relaxed)
 	new_status := old_status + 1 if old_status < 1 else 1
 	for {
@@ -240,7 +240,7 @@ Wait on an auto-reset event.
 This procedure blocks the execution of the current thread, until the event is
 signalled by another thread.
 */
-auto_reset_event_wait :: proc "contextless" (e: ^Auto_Reset_Event) {
+auto_reset_event_wait :: proc(e: ^Auto_Reset_Event) {
 	old_status := atomic_sub_explicit(&e.status, 1, .Acquire)
 	if old_status < 1 {
 		sema_wait(&e.sema)
@@ -276,7 +276,7 @@ Once the lock is acquired, any thread calling `ticket_mutex_lock` will be
 blocked from entering any critical sections associated with the same ticket
 mutex, until the lock is released.
 */
-ticket_mutex_lock :: #force_inline proc "contextless" (m: ^Ticket_Mutex) {
+ticket_mutex_lock :: #force_inline proc(m: ^Ticket_Mutex) {
 	ticket := atomic_add_explicit(&m.ticket, 1, .Relaxed)
 	for ticket != atomic_load_explicit(&m.serving, .Acquire) {
 		cpu_relax()
@@ -290,7 +290,7 @@ This procedure releases the lock on a ticket mutex. If any of the threads are
 waiting to acquire the lock, exactly one of those threads is unblocked and
 allowed into the critical section.
 */
-ticket_mutex_unlock :: #force_inline proc "contextless" (m: ^Ticket_Mutex) {
+ticket_mutex_unlock :: #force_inline proc(m: ^Ticket_Mutex) {
 	atomic_add_explicit(&m.serving, 1, .Release)
 }
 
@@ -315,7 +315,7 @@ section by putting the function inside the `if` statement.
 	}
 */
 @(deferred_in=ticket_mutex_unlock)
-ticket_mutex_guard :: proc "contextless" (m: ^Ticket_Mutex) -> bool {
+ticket_mutex_guard :: proc(m: ^Ticket_Mutex) -> bool {
 	ticket_mutex_lock(m)
 	return true
 }
@@ -348,7 +348,7 @@ Once a lock is acquired, all threads attempting to take a lock will be blocked
 from entering any critical sections associated with the same benaphore, until
 until the lock is released.
 */
-benaphore_lock :: proc "contextless" (b: ^Benaphore) {
+benaphore_lock :: proc(b: ^Benaphore) {
 	if atomic_add_explicit(&b.counter, 1, .Acquire) > 0 {
 		sema_wait(&b.sema)
 	}
@@ -365,7 +365,7 @@ If the lock is acquired, all threads that attempt to acquire a lock will be
 blocked from entering any critical sections associated with the same benaphore,
 until the lock is released.
 */
-benaphore_try_lock :: proc "contextless" (b: ^Benaphore) -> bool {
+benaphore_try_lock :: proc(b: ^Benaphore) -> bool {
 	v, _ := atomic_compare_exchange_strong_explicit(&b.counter, 0, 1, .Acquire, .Acquire)
 	return v == 0
 }
@@ -377,7 +377,7 @@ This procedure releases a lock on the specified benaphore. If any of the threads
 are waiting on the lock, exactly one thread is allowed into a critical section
 associated with the same benaphore.
 */
-benaphore_unlock :: proc "contextless" (b: ^Benaphore) {
+benaphore_unlock :: proc(b: ^Benaphore) {
 	if atomic_sub_explicit(&b.counter, 1, .Release) > 1 {
 		sema_post(&b.sema)
 	}
@@ -404,7 +404,7 @@ section by putting the function inside the `if` statement.
 	}
 */
 @(deferred_in=benaphore_unlock)
-benaphore_guard :: proc "contextless" (m: ^Benaphore) -> bool {
+benaphore_guard :: proc(m: ^Benaphore) -> bool {
 	benaphore_lock(m)
 	return true
 }
@@ -441,7 +441,7 @@ Once a lock is acquired, all other threads attempting to acquire a lock will
 be blocked from entering any critical sections associated with the same
 recursive benaphore, until the lock is released.
 */
-recursive_benaphore_lock :: proc "contextless" (b: ^Recursive_Benaphore) {
+recursive_benaphore_lock :: proc(b: ^Recursive_Benaphore) {
 	tid := current_thread_id()
 	check_owner: if tid != atomic_load_explicit(&b.owner, .Acquire) {
 		atomic_add_explicit(&b.counter, 1, .Relaxed)
@@ -466,7 +466,7 @@ If the lock is acquired, all other threads attempting to acquire a lock will
 be blocked from entering any critical sections assciated with the same recursive
 benaphore, until the lock is released.
 */
-recursive_benaphore_try_lock :: proc "contextless" (b: ^Recursive_Benaphore) -> bool {
+recursive_benaphore_try_lock :: proc(b: ^Recursive_Benaphore) -> bool {
 	tid := current_thread_id()
 	check_owner: if tid != atomic_load_explicit(&b.owner, .Acquire) {
 		if _, ok := atomic_compare_exchange_strong_explicit(&b.owner, 0, tid, .Release, .Relaxed); ok {
@@ -487,7 +487,7 @@ This procedure releases a lock on the specified recursive benaphore. It also
 causes the critical sections associated with the same benaphore, to become open
 for other threads for entering.
 */
-recursive_benaphore_unlock :: proc "contextless" (b: ^Recursive_Benaphore) {
+recursive_benaphore_unlock :: proc(b: ^Recursive_Benaphore) {
 	tid := current_thread_id()
 	assert(tid == atomic_load_explicit(&b.owner, .Relaxed), "tid != b.owner")
 	b.recursion -= 1
@@ -525,7 +525,7 @@ section by calling this procedure inside an `if` statement.
 	}
 */
 @(deferred_in=recursive_benaphore_unlock)
-recursive_benaphore_guard :: proc "contextless" (m: ^Recursive_Benaphore) -> bool {
+recursive_benaphore_guard :: proc(m: ^Recursive_Benaphore) -> bool {
 	recursive_benaphore_lock(m)
 	return true
 }
@@ -549,9 +549,7 @@ called from the perspective of a specific `Once` struct.
 */
 once_do :: proc{
 	once_do_without_data,
-	once_do_without_data_contextless,
 	once_do_with_data,
-	once_do_with_data_contextless,
 }
 
 /*
@@ -572,23 +570,6 @@ once_do_without_data :: proc(o: ^Once, fn: proc()) {
 	}
 }
 
-/*
-Call a contextless function with no data once.
-*/
-once_do_without_data_contextless :: proc "contextless" (o: ^Once, fn: proc "contextless" ()) {
-	@(cold)
-	do_slow :: proc "contextless" (o: ^Once, fn: proc "contextless" ()) {
-		guard(&o.m)
-		if !o.done {
-			fn()
-			atomic_store_explicit(&o.done, true, .Release)
-		}
-	}
-
-	if atomic_load_explicit(&o.done, .Acquire) == false {
-		do_slow(o, fn)
-	}
-}
 
 /*
 Call a function with data once.
@@ -596,24 +577,6 @@ Call a function with data once.
 once_do_with_data :: proc(o: ^Once, fn: proc(data: rawptr), data: rawptr) {
 	@(cold)
 	do_slow :: proc(o: ^Once, fn: proc(data: rawptr), data: rawptr) {
-		guard(&o.m)
-		if !o.done {
-			fn(data)
-			atomic_store_explicit(&o.done, true, .Release)
-		}
-	}
-
-	if atomic_load_explicit(&o.done, .Acquire) == false {
-		do_slow(o, fn, data)
-	}
-}
-
-/*
-Call a contextless function with data once.
-*/
-once_do_with_data_contextless :: proc "contextless" (o: ^Once, fn: proc "contextless" (data: rawptr), data: rawptr) {
-	@(cold)
-	do_slow :: proc "contextless" (o: ^Once, fn: proc "contextless" (data: rawptr), data: rawptr) {
 		guard(&o.m)
 		if !o.done {
 			fn(data)
@@ -653,7 +616,7 @@ made available.
 **Note**: This procedure assumes this is only called by the thread that owns
 the Parker.
 */
-park :: proc "contextless" (p: ^Parker) {
+park :: proc(p: ^Parker) {
 	if atomic_sub_explicit(&p.state, 1, .Acquire) == PARKER_NOTIFIED {
 		return
 	}
@@ -674,7 +637,7 @@ available, or until the timeout has expired, whatever happens first.
 **Note**: This procedure assumes this is only called by the thread that owns
 the Parker.
 */
-park_with_timeout :: proc "contextless" (p: ^Parker, duration: time.Duration) {
+park_with_timeout :: proc(p: ^Parker, duration: time.Duration) {
 	start_tick := time.tick_now()
 	remaining_duration := duration
 	if atomic_sub_explicit(&p.state, 1, .Acquire) == PARKER_NOTIFIED {
@@ -697,7 +660,7 @@ park_with_timeout :: proc "contextless" (p: ^Parker, duration: time.Duration) {
 /*
 Make the token available.
 */
-unpark :: proc "contextless" (p: ^Parker)  {
+unpark :: proc(p: ^Parker)  {
 	if atomic_exchange_explicit((^u32)(&p.state), PARKER_NOTIFIED, .Release) == PARKER_PARKED {
 		futex_signal(&p.state)
 	}
@@ -723,7 +686,7 @@ Block until the event is made available.
 This procedure blocks the execution of the current thread, until the event is
 made available.
 */
-one_shot_event_wait :: proc "contextless" (e: ^One_Shot_Event) {
+one_shot_event_wait :: proc(e: ^One_Shot_Event) {
 	for atomic_load_explicit(&e.state, .Acquire) == 0 {
 		futex_wait(&e.state, 0)
 	}
@@ -732,7 +695,7 @@ one_shot_event_wait :: proc "contextless" (e: ^One_Shot_Event) {
 /*
 Make event available.
 */
-one_shot_event_signal :: proc "contextless" (e: ^One_Shot_Event) {
+one_shot_event_signal :: proc(e: ^One_Shot_Event) {
 	atomic_store_explicit(&e.state, 1, .Release)
 	futex_broadcast(&e.state)
 }

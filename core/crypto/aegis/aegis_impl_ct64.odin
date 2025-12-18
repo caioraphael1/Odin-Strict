@@ -32,7 +32,7 @@ State_SW :: struct {
 }
 
 @(private)
-init_sw :: proc "contextless" (ctx: ^Context, st: ^State_SW, iv: []byte) {
+init_sw :: proc(ctx: ^Context, st: ^State_SW, iv: []byte) {
 	switch ctx._key_len {
 	case KEY_SIZE_128L:
 		key_0, key_1 := aes.load_interleaved(ctx._key[:16])
@@ -76,7 +76,7 @@ init_sw :: proc "contextless" (ctx: ^Context, st: ^State_SW, iv: []byte) {
 }
 
 @(private = "file")
-update_sw_128l :: proc "contextless" (st: ^State_SW, m0_0, m0_1, m1_0, m1_1: u64) {
+update_sw_128l :: proc(st: ^State_SW, m0_0, m0_1, m1_0, m1_1: u64) {
 	st.q_k[0], st.q_k[4] = aes.xor_interleaved(st.s0_0, st.s0_1, m0_0, m0_1)
 	st.q_k[1], st.q_k[5] = st.s1_0, st.s1_1
 	st.q_k[2], st.q_k[6] = st.s2_0, st.s2_1
@@ -126,7 +126,7 @@ update_sw_128l :: proc "contextless" (st: ^State_SW, m0_0, m0_1, m1_0, m1_1: u64
 }
 
 @(private = "file")
-update_sw_256 :: proc "contextless" (st: ^State_SW, m_0, m_1: u64) {
+update_sw_256 :: proc(st: ^State_SW, m_0, m_1: u64) {
 	st.q_k[0], st.q_k[4] = aes.xor_interleaved(st.s0_0, st.s0_1, m_0, m_1)
 	st.q_k[1], st.q_k[5] = st.s1_0, st.s1_1
 	st.q_k[2], st.q_k[6] = st.s2_0, st.s2_1
@@ -170,20 +170,20 @@ update_sw_256 :: proc "contextless" (st: ^State_SW, m_0, m_1: u64) {
 }
 
 @(private = "file")
-absorb_sw_128l :: #force_inline proc "contextless" (st: ^State_SW, ai: []byte) #no_bounds_check {
+absorb_sw_128l :: #force_inline proc(st: ^State_SW, ai: []byte) #no_bounds_check {
 	t0_0, t0_1 := aes.load_interleaved(ai[:16])
 	t1_0, t1_1 := aes.load_interleaved(ai[16:])
 	update_sw_128l(st, t0_0, t0_1, t1_0, t1_1)
 }
 
 @(private = "file")
-absorb_sw_256 :: #force_inline proc "contextless" (st: ^State_SW, ai: []byte) {
+absorb_sw_256 :: #force_inline proc(st: ^State_SW, ai: []byte) {
 	m_0, m_1 := aes.load_interleaved(ai)
 	update_sw_256(st, m_0, m_1)
 }
 
 @(private)
-absorb_sw :: proc "contextless" (st: ^State_SW, aad: []byte) #no_bounds_check {
+absorb_sw :: proc(st: ^State_SW, aad: []byte) #no_bounds_check {
 	ai, l := aad, len(aad)
 
 	switch st.rate {
@@ -216,7 +216,7 @@ absorb_sw :: proc "contextless" (st: ^State_SW, aad: []byte) #no_bounds_check {
 }
 
 @(private = "file", require_results)
-z_sw_128l :: proc "contextless" (st: ^State_SW) -> (u64, u64, u64, u64) {
+z_sw_128l :: proc(st: ^State_SW) -> (u64, u64, u64, u64) {
 	z0_0, z0_1 := aes.and_interleaved(st.s2_0, st.s2_1, st.s3_0, st.s3_1)
 	z0_0, z0_1 = aes.xor_interleaved(st.s1_0, st.s1_1, z0_0, z0_1)
 	z0_0, z0_1 = aes.xor_interleaved(st.s6_0, st.s6_1, z0_0, z0_1)
@@ -229,7 +229,7 @@ z_sw_128l :: proc "contextless" (st: ^State_SW) -> (u64, u64, u64, u64) {
 }
 
 @(private = "file", require_results)
-z_sw_256 :: proc "contextless" (st: ^State_SW) -> (u64, u64) {
+z_sw_256 :: proc(st: ^State_SW) -> (u64, u64) {
 	z_0, z_1 := aes.and_interleaved(st.s2_0, st.s2_1, st.s3_0, st.s3_1)
 	z_0, z_1 = aes.xor_interleaved(st.s5_0, st.s5_1, z_0, z_1)
 	z_0, z_1 = aes.xor_interleaved(st.s4_0, st.s4_1, z_0, z_1)
@@ -237,7 +237,7 @@ z_sw_256 :: proc "contextless" (st: ^State_SW) -> (u64, u64) {
 }
 
 @(private = "file")
-enc_sw_128l :: #force_inline proc "contextless" (st: ^State_SW, ci, xi: []byte) #no_bounds_check {
+enc_sw_128l :: #force_inline proc(st: ^State_SW, ci, xi: []byte) #no_bounds_check {
 	z0_0, z0_1, z1_0, z1_1 := z_sw_128l(st)
 
 	t0_0, t0_1 := aes.load_interleaved(xi[:16])
@@ -251,7 +251,7 @@ enc_sw_128l :: #force_inline proc "contextless" (st: ^State_SW, ci, xi: []byte) 
 }
 
 @(private = "file")
-enc_sw_256 :: #force_inline proc "contextless" (st: ^State_SW, ci, xi: []byte) #no_bounds_check {
+enc_sw_256 :: #force_inline proc(st: ^State_SW, ci, xi: []byte) #no_bounds_check {
 	z_0, z_1 := z_sw_256(st)
 
 	xi_0, xi_1 := aes.load_interleaved(xi)
@@ -262,7 +262,7 @@ enc_sw_256 :: #force_inline proc "contextless" (st: ^State_SW, ci, xi: []byte) #
 }
 
 @(private)
-enc_sw :: proc "contextless" (st: ^State_SW, dst, src: []byte) #no_bounds_check {
+enc_sw :: proc(st: ^State_SW, dst, src: []byte) #no_bounds_check {
 	ci, xi, l := dst, src, len(src)
 
 	switch st.rate {
@@ -297,7 +297,7 @@ enc_sw :: proc "contextless" (st: ^State_SW, dst, src: []byte) #no_bounds_check 
 }
 
 @(private = "file")
-dec_sw_128l :: #force_inline proc "contextless" (st: ^State_SW, xi, ci: []byte) #no_bounds_check {
+dec_sw_128l :: #force_inline proc(st: ^State_SW, xi, ci: []byte) #no_bounds_check {
 	z0_0, z0_1, z1_0, z1_1 := z_sw_128l(st)
 
 	t0_0, t0_1 := aes.load_interleaved(ci[:16])
@@ -311,7 +311,7 @@ dec_sw_128l :: #force_inline proc "contextless" (st: ^State_SW, xi, ci: []byte) 
 }
 
 @(private = "file")
-dec_sw_256 :: #force_inline proc "contextless" (st: ^State_SW, xi, ci: []byte) #no_bounds_check {
+dec_sw_256 :: #force_inline proc(st: ^State_SW, xi, ci: []byte) #no_bounds_check {
 	z_0, z_1 := z_sw_256(st)
 
 	ci_0, ci_1 := aes.load_interleaved(ci)
@@ -322,7 +322,7 @@ dec_sw_256 :: #force_inline proc "contextless" (st: ^State_SW, xi, ci: []byte) #
 }
 
 @(private = "file")
-dec_partial_sw_128l :: proc "contextless" (st: ^State_SW, xn, cn: []byte) #no_bounds_check {
+dec_partial_sw_128l :: proc(st: ^State_SW, xn, cn: []byte) #no_bounds_check {
 	tmp: [_RATE_128L]byte
 	defer mem.zero_explicit(&tmp, size_of(tmp))
 
@@ -347,7 +347,7 @@ dec_partial_sw_128l :: proc "contextless" (st: ^State_SW, xn, cn: []byte) #no_bo
 }
 
 @(private = "file")
-dec_partial_sw_256 :: proc "contextless" (st: ^State_SW, xn, cn: []byte) #no_bounds_check {
+dec_partial_sw_256 :: proc(st: ^State_SW, xn, cn: []byte) #no_bounds_check {
 	tmp: [_RATE_256]byte
 	defer mem.zero_explicit(&tmp, size_of(tmp))
 
@@ -368,7 +368,7 @@ dec_partial_sw_256 :: proc "contextless" (st: ^State_SW, xn, cn: []byte) #no_bou
 }
 
 @(private)
-dec_sw :: proc "contextless" (st: ^State_SW, dst, src: []byte) #no_bounds_check {
+dec_sw :: proc(st: ^State_SW, dst, src: []byte) #no_bounds_check {
 	xi, ci, l := dst, src, len(src)
 
 	switch st.rate {
@@ -400,7 +400,7 @@ dec_sw :: proc "contextless" (st: ^State_SW, dst, src: []byte) #no_bounds_check 
 }
 
 @(private)
-finalize_sw :: proc "contextless" (st: ^State_SW, tag: []byte, ad_len, msg_len: int) {
+finalize_sw :: proc(st: ^State_SW, tag: []byte, ad_len, msg_len: int) {
 	tmp: [16]byte
 	endian.unchecked_put_u64le(tmp[0:], u64(ad_len) * 8)
 	endian.unchecked_put_u64le(tmp[8:], u64(msg_len) * 8)
@@ -447,6 +447,6 @@ finalize_sw :: proc "contextless" (st: ^State_SW, tag: []byte, ad_len, msg_len: 
 }
 
 @(private)
-reset_state_sw :: proc "contextless" (st: ^State_SW) {
+reset_state_sw :: proc(st: ^State_SW) {
 	mem.zero_explicit(st, size_of(st^))
 }

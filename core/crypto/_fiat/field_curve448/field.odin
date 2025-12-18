@@ -2,25 +2,25 @@ package field_curve448
 
 import "core:mem"
 
-fe_relax_cast :: #force_inline proc "contextless" (
+fe_relax_cast :: #force_inline proc(
 	arg1: ^Tight_Field_Element,
 ) -> ^Loose_Field_Element {
 	return (^Loose_Field_Element)(arg1)
 }
 
-fe_tighten_cast :: #force_inline proc "contextless" (
+fe_tighten_cast :: #force_inline proc(
 	arg1: ^Loose_Field_Element,
 ) -> ^Tight_Field_Element {
 	return (^Tight_Field_Element)(arg1)
 }
 
-fe_clear :: proc "contextless" (
+fe_clear :: proc(
 	arg1: $T,
 ) where T == ^Tight_Field_Element || T == ^Loose_Field_Element {
 	mem.zero_explicit(arg1, size_of(arg1^))
 }
 
-fe_clear_vec :: proc "contextless" (
+fe_clear_vec :: proc(
 	arg1: $T,
 ) where T == []^Tight_Field_Element || T == []^Loose_Field_Element {
 	for fe in arg1 {
@@ -28,7 +28,7 @@ fe_clear_vec :: proc "contextless" (
 	}
 }
 
-fe_carry_mul_small :: proc "contextless" (
+fe_carry_mul_small :: proc(
 	out1: ^Tight_Field_Element,
 	arg1: ^Loose_Field_Element,
 	arg2: u64,
@@ -37,7 +37,7 @@ fe_carry_mul_small :: proc "contextless" (
 	fe_carry_mul(out1, arg1, &arg2_)
 }
 
-fe_carry_pow2k :: proc "contextless" (
+fe_carry_pow2k :: proc(
 	out1: ^Tight_Field_Element,
 	arg1: ^Loose_Field_Element,
 	arg2: uint,
@@ -54,7 +54,7 @@ fe_carry_pow2k :: proc "contextless" (
 	}
 }
 
-fe_carry_inv :: proc "contextless" (
+fe_carry_inv :: proc(
 	out1: ^Tight_Field_Element,
 	arg1: ^Loose_Field_Element,
 ) {
@@ -164,7 +164,7 @@ fe_carry_inv :: proc "contextless" (
 	fe_clear_vec([]^Tight_Field_Element{&t0, &t1, &t2})
 }
 
-fe_zero :: proc "contextless" (out1: ^Tight_Field_Element) {
+fe_zero :: proc(out1: ^Tight_Field_Element) {
 	out1[0] = 0
 	out1[1] = 0
 	out1[2] = 0
@@ -175,7 +175,7 @@ fe_zero :: proc "contextless" (out1: ^Tight_Field_Element) {
 	out1[7] = 0
 }
 
-fe_one :: proc "contextless" (out1: ^Tight_Field_Element) {
+fe_one :: proc(out1: ^Tight_Field_Element) {
 	out1[0] = 1
 	out1[1] = 0
 	out1[2] = 0
@@ -186,7 +186,7 @@ fe_one :: proc "contextless" (out1: ^Tight_Field_Element) {
 	out1[7] = 0
 }
 
-fe_set :: proc "contextless" (out1, arg1: ^Tight_Field_Element) {
+fe_set :: proc(out1, arg1: ^Tight_Field_Element) {
 	x1 := arg1[0]
 	x2 := arg1[1]
 	x3 := arg1[2]
@@ -206,7 +206,7 @@ fe_set :: proc "contextless" (out1, arg1: ^Tight_Field_Element) {
 }
 
 @(optimization_mode = "none")
-fe_cond_swap :: #force_no_inline proc "contextless" (out1, out2: ^Tight_Field_Element, arg1: int) {
+fe_cond_swap :: #force_no_inline proc(out1, out2: ^Tight_Field_Element, arg1: int) {
 	mask := (u64(arg1) * 0xffffffffffffffff)
 	x := (out1[0] ~ out2[0]) & mask
 	x1, y1 := out1[0] ~ x, out2[0] ~ x

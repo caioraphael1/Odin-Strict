@@ -97,19 +97,19 @@ destroy :: proc(t: ^$T/Tree($Value), call_on_remove: bool = true) {
 }
 
 // len returns the number of elements in the tree.
-len :: proc "contextless" (t: ^$T/Tree($Value)) -> int {
+len :: proc(t: ^$T/Tree($Value)) -> int {
 	return t._size
 }
 
 // first returns the first node in the tree (in-order) or nil iff
 // the tree is empty.
-first :: proc "contextless" (t: ^$T/Tree($Value)) -> ^Node(Value) {
+first :: proc(t: ^$T/Tree($Value)) -> ^Node(Value) {
 	return tree_first_or_last_in_order(t, Direction.Backward)
 }
 
 // last returns the last element in the tree (in-order) or nil iff
 // the tree is empty.
-last :: proc "contextless" (t: ^$T/Tree($Value)) -> ^Node(Value) {
+last :: proc(t: ^$T/Tree($Value)) -> ^Node(Value) {
 	return tree_first_or_last_in_order(t, Direction.Forward)
 }
 
@@ -251,7 +251,7 @@ remove_node :: proc(t: ^$T/Tree($Value), node: ^Node(Value), call_on_remove: boo
 }
 
 // iterator returns a tree iterator in the specified direction.
-iterator :: proc "contextless" (t: ^$T/Tree($Value), direction: Direction) -> Iterator(Value) {
+iterator :: proc(t: ^$T/Tree($Value), direction: Direction) -> Iterator(Value) {
 	it: Iterator(Value)
 	it._tree = transmute(^Tree(Value))t
 	it._direction = direction
@@ -263,7 +263,7 @@ iterator :: proc "contextless" (t: ^$T/Tree($Value), direction: Direction) -> It
 
 // iterator_from_pos returns a tree iterator in the specified direction,
 // spanning the range [pos, last] (inclusive).
-iterator_from_pos :: proc "contextless" (
+iterator_from_pos :: proc(
 	t: ^$T/Tree($Value),
 	pos: ^Node(Value),
 	direction: Direction,
@@ -284,7 +284,7 @@ iterator_from_pos :: proc "contextless" (
 // iterator_get returns the node currently pointed to by the iterator,
 // or nil iff the node has been removed, the tree is empty, or the end
 // of the tree has been reached.
-iterator_get :: proc "contextless" (it: ^$I/Iterator($Value)) -> ^Node(Value) {
+iterator_get :: proc(it: ^$I/Iterator($Value)) -> ^Node(Value) {
 	return it._cur
 }
 
@@ -309,7 +309,7 @@ iterator_remove :: proc(it: ^$I/Iterator($Value), call_on_remove: bool = true) -
 //
 // Note: The first call to iterator_next will return the first node instead
 // of advancing the iterator.
-iterator_next :: proc "contextless" (it: ^$I/Iterator($Value)) -> (^Node(Value), bool) {
+iterator_next :: proc(it: ^$I/Iterator($Value)) -> (^Node(Value), bool) {
 	// This check is needed so that the first element gets returned from
 	// a brand-new iterator, and so that the somewhat contrived case where
 	// iterator_remove is called before the first call to iterator_next
@@ -339,7 +339,7 @@ iterator_next :: proc "contextless" (it: ^$I/Iterator($Value)) -> (^Node(Value),
 }
 
 @(private)
-tree_first_or_last_in_order :: proc "contextless" (
+tree_first_or_last_in_order :: proc(
 	t: ^$T/Tree($Value),
 	direction: Direction,
 ) -> ^Node(Value) {
@@ -358,7 +358,7 @@ tree_first_or_last_in_order :: proc "contextless" (
 }
 
 @(private)
-tree_replace_child :: proc "contextless" (
+tree_replace_child :: proc(
 	t: ^$T/Tree($Value),
 	parent, old_child, new_child: ^Node(Value),
 ) {
@@ -374,7 +374,7 @@ tree_replace_child :: proc "contextless" (
 }
 
 @(private)
-tree_rotate :: proc "contextless" (t: ^$T/Tree($Value), a: ^Node(Value), sign: i8) {
+tree_rotate :: proc(t: ^$T/Tree($Value), a: ^Node(Value), sign: i8) {
 	b := node_get_child(a, -sign)
 	e := node_get_child(b, +sign)
 	p := a._parent
@@ -393,7 +393,7 @@ tree_rotate :: proc "contextless" (t: ^$T/Tree($Value), a: ^Node(Value), sign: i
 }
 
 @(private)
-tree_double_rotate :: proc "contextless" (
+tree_double_rotate :: proc(
 	t: ^$T/Tree($Value),
 	b, a: ^Node(Value),
 	sign: i8,
@@ -436,7 +436,7 @@ tree_double_rotate :: proc "contextless" (
 }
 
 @(private)
-tree_handle_subtree_growth :: proc "contextless" (
+tree_handle_subtree_growth :: proc(
 	t: ^$T/Tree($Value),
 	node, parent: ^Node(Value),
 	sign: i8,
@@ -465,7 +465,7 @@ tree_handle_subtree_growth :: proc "contextless" (
 }
 
 @(private)
-tree_rebalance_after_insert :: proc "contextless" (t: ^$T/Tree($Value), inserted: ^Node(Value)) {
+tree_rebalance_after_insert :: proc(t: ^$T/Tree($Value), inserted: ^Node(Value)) {
 	node, parent := inserted, inserted._parent
 	switch {
 	case parent == nil:
@@ -495,7 +495,7 @@ tree_rebalance_after_insert :: proc "contextless" (t: ^$T/Tree($Value), inserted
 }
 
 @(private)
-tree_swap_with_successor :: proc "contextless" (
+tree_swap_with_successor :: proc(
 	t: ^$T/Tree($Value),
 	x: ^Node(Value),
 ) -> (
@@ -539,7 +539,7 @@ tree_swap_with_successor :: proc "contextless" (
 }
 
 @(private)
-tree_handle_subtree_shrink :: proc "contextless" (
+tree_handle_subtree_shrink :: proc(
 	t: ^$T/Tree($Value),
 	parent: ^Node(Value),
 	sign: i8,
@@ -579,7 +579,7 @@ tree_handle_subtree_shrink :: proc "contextless" (
 }
 
 @(private)
-node_reset :: proc "contextless" (n: ^Node($Value)) {
+node_reset :: proc(n: ^Node($Value)) {
 	// Mostly pointless as n will be deleted after this is called, but
 	// attempt to be able to catch cases of n not being in the tree.
 	n._parent = n
@@ -589,7 +589,7 @@ node_reset :: proc "contextless" (n: ^Node($Value)) {
 }
 
 @(private)
-node_set_parent_balance :: #force_inline proc "contextless" (
+node_set_parent_balance :: #force_inline proc(
 	n, parent: ^Node($Value),
 	balance: i8,
 ) {
@@ -598,7 +598,7 @@ node_set_parent_balance :: #force_inline proc "contextless" (
 }
 
 @(private)
-node_get_child :: #force_inline proc "contextless" (n: ^Node($Value), sign: i8) -> ^Node(Value) {
+node_get_child :: #force_inline proc(n: ^Node($Value), sign: i8) -> ^Node(Value) {
 	if sign < 0 {
 		return n._left
 	}
@@ -606,7 +606,7 @@ node_get_child :: #force_inline proc "contextless" (n: ^Node($Value), sign: i8) 
 }
 
 @(private)
-node_next_or_prev_in_order :: proc "contextless" (
+node_next_or_prev_in_order :: proc(
 	n: ^Node($Value),
 	direction: Direction,
 ) -> ^Node(Value) {
@@ -631,7 +631,7 @@ node_next_or_prev_in_order :: proc "contextless" (
 }
 
 @(private)
-node_set_child :: #force_inline proc "contextless" (
+node_set_child :: #force_inline proc(
 	n: ^Node($Value),
 	sign: i8,
 	child: ^Node(Value),
@@ -644,12 +644,12 @@ node_set_child :: #force_inline proc "contextless" (
 }
 
 @(private)
-node_adjust_balance_factor :: #force_inline proc "contextless" (n: ^Node($Value), amount: i8) {
+node_adjust_balance_factor :: #force_inline proc(n: ^Node($Value), amount: i8) {
 	n._balance += amount
 }
 
 @(private)
-iterator_first :: proc "contextless" (it: ^Iterator($Value)) {
+iterator_first :: proc(it: ^Iterator($Value)) {
 	// This is private because behavior when the user manually calls
 	// iterator_first followed by iterator_next is unintuitive, since
 	// the first call to iterator_next MUST return the first node

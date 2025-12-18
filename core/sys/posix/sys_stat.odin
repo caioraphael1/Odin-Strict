@@ -196,37 +196,37 @@ S_IFREG  :: mode_t{ .IFREG }
 #assert(_S_IFBLK  == _S_IFDIR|_S_IFCHR)
 
 // Test for a block special file.
-S_ISBLK :: #force_inline proc "contextless" (m: mode_t) -> bool {
+S_ISBLK :: #force_inline proc(m: mode_t) -> bool {
 	return (m & S_IFMT) == S_IFBLK
 }
 
 // Test for a character special file.
-S_ISCHR :: #force_inline proc "contextless" (m: mode_t) -> bool {
+S_ISCHR :: #force_inline proc(m: mode_t) -> bool {
 	return (m & S_IFMT) == S_IFCHR
 }
 
 // Test for a pipe or FIFO special file.
-S_ISFIFO :: #force_inline proc "contextless" (m: mode_t) -> bool {
+S_ISFIFO :: #force_inline proc(m: mode_t) -> bool {
 	return (m & S_IFMT) == S_IFIFO
 }
 
 // Test for a regular file.
-S_ISREG :: #force_inline proc "contextless" (m: mode_t) -> bool {
+S_ISREG :: #force_inline proc(m: mode_t) -> bool {
 	return (m & S_IFMT) == S_IFREG
 }
 
 // Test for a directory.
-S_ISDIR :: #force_inline proc "contextless" (m: mode_t) -> bool {
+S_ISDIR :: #force_inline proc(m: mode_t) -> bool {
 	return (m & S_IFMT) == S_IFDIR
 }
 
 // Test for a symbolic link.
-S_ISLNK :: #force_inline proc "contextless" (m: mode_t) -> bool {
+S_ISLNK :: #force_inline proc(m: mode_t) -> bool {
 	return (m & S_IFMT) == S_IFLNK
 }
 
 // Test for a socket.
-S_ISSOCK :: #force_inline proc "contextless" (m: mode_t) -> bool {
+S_ISSOCK :: #force_inline proc(m: mode_t) -> bool {
 	return (m & S_IFMT) == S_IFSOCK
 }
 

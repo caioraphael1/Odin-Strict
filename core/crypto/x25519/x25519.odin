@@ -18,7 +18,7 @@ POINT_SIZE :: 32
 _BASE_POINT: [32]byte = {9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 @(private)
-_scalar_bit :: #force_inline proc "contextless" (s: ^[32]byte, i: int) -> u8 {
+_scalar_bit :: #force_inline proc(s: ^[32]byte, i: int) -> u8 {
 	if i < 0 {
 		return 0
 	}
@@ -26,7 +26,7 @@ _scalar_bit :: #force_inline proc "contextless" (s: ^[32]byte, i: int) -> u8 {
 }
 
 @(private)
-_scalarmult :: proc "contextless" (out, scalar, point: ^[32]byte) {
+_scalarmult :: proc(out, scalar, point: ^[32]byte) {
 	// Montgomery pseduo-multiplication taken from Monocypher.
 
 	// computes the scalar product

@@ -150,13 +150,13 @@ open :: proc(ctx: ^Context, dst, iv, aad, ciphertext, tag: []byte) -> bool {
 
 // reset sanitizes the Context.  The Context must be
 // re-initialized to be used again.
-reset :: proc "contextless" (ctx: ^Context) {
+reset :: proc(ctx: ^Context) {
 	mem.zero_explicit(&ctx._subkeys, len(ctx._subkeys))
 	ctx._is_initialized = false
 }
 
 @(private = "file")
-derive_ks :: proc "contextless" (ctx: ^Context, key: []byte) {
+derive_ks :: proc(ctx: ^Context, key: []byte) {
 	// Derive the constant component of each subtweakkey.
 	//
 	// The key schedule is as thus:
@@ -227,7 +227,7 @@ derive_ks :: proc "contextless" (ctx: ^Context, key: []byte) {
 }
 
 @(private = "file")
-lfsr2 :: #force_inline proc "contextless" (tk: simd.u8x16) -> simd.u8x16 {
+lfsr2 :: #force_inline proc(tk: simd.u8x16) -> simd.u8x16 {
 	// LFSR2 is a application of the following LFSR to each byte of input.
 	// (x7||x6||x5||x4||x3||x2||x1||x0) -> (x6||x5||x4||x3||x2||x1||x0||x7 ^ x5)
 	return simd.bit_or(
@@ -243,7 +243,7 @@ lfsr2 :: #force_inline proc "contextless" (tk: simd.u8x16) -> simd.u8x16 {
 }
 
 @(private = "file")
-lfsr3 :: #force_inline proc "contextless"  (tk: simd.u8x16) -> simd.u8x16 {
+lfsr3 :: #force_inline proc (tk: simd.u8x16) -> simd.u8x16 {
 	// LFSR3 is a application of the following LFSR to each byte of input.
 	// (x7||x6||x5||x4||x3||x2||x1||x0) -> (x0 ^ x6||x7||x6||x5||x4||x3||x2||x1)
 	return simd.bit_or(
@@ -259,7 +259,7 @@ lfsr3 :: #force_inline proc "contextless"  (tk: simd.u8x16) -> simd.u8x16 {
 }
 
 @(private)
-h :: #force_inline proc "contextless" (tk: simd.u8x16) -> simd.u8x16 {
+h :: #force_inline proc(tk: simd.u8x16) -> simd.u8x16 {
 	return simd.swizzle(
 		tk,
 		0x01, 0x06, 0x0b, 0x0c, 0x05, 0x0a, 0x0f, 0x00,
@@ -268,7 +268,7 @@ h :: #force_inline proc "contextless" (tk: simd.u8x16) -> simd.u8x16 {
 }
 
 @(private = "file")
-rcon :: #force_inline proc "contextless" (rd: int) -> simd.u8x16 #no_bounds_check {
+rcon :: #force_inline proc(rd: int) -> simd.u8x16 #no_bounds_check {
 	rc := _RCONS[rd]
 	return simd.u8x16{
 		1, 2, 4, 8,

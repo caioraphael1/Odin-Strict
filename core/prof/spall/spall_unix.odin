@@ -10,7 +10,7 @@ import "core:sys/posix"
 MAX_RW :: 0x7fffffff
 
 @(no_instrumentation)
-_write :: proc "contextless" (fd: os.Handle, data: []byte) -> (n: int, err: os.Error) #no_bounds_check /* bounds check would segfault instrumentation */ {
+_write :: proc(fd: os.Handle, data: []byte) -> (n: int, err: os.Error) #no_bounds_check /* bounds check would segfault instrumentation */ {
 	if len(data) == 0 {
 		return 0, nil
 	}
@@ -36,7 +36,7 @@ when ODIN_OS == .Darwin {
 }
 
 @(no_instrumentation)
-_tick_now :: proc "contextless" () -> (ns: i64) {
+_tick_now :: proc() -> (ns: i64) {
 	t: posix.timespec
 	posix.clock_gettime(CLOCK, &t)
 	return i64(t.tv_sec)*1e9 + i64(t.tv_nsec)

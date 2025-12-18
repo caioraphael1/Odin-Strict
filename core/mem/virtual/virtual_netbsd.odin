@@ -2,9 +2,9 @@ package mem_virtual
 
 import "core:sys/posix"
 
-_reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
+_reserve :: proc(size: uint) -> (data: []byte, err: Allocator_Error) {
 
-	PROT_MPROTECT :: proc "contextless" (flags: posix.Prot_Flags) -> posix.Prot_Flags {
+	PROT_MPROTECT :: proc(flags: posix.Prot_Flags) -> posix.Prot_Flags {
 		return transmute(posix.Prot_Flags)(transmute(i32)flags << 3)
 	}
 
@@ -17,7 +17,7 @@ _reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Err
 	return ([^]byte)(uintptr(result))[:size], nil
 }
 
-_decommit :: proc "contextless" (data: rawptr, size: uint) {
+_decommit :: proc(data: rawptr, size: uint) {
 	MADV_FREE :: 6
 
 	posix.mprotect(data, size, {})

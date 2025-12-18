@@ -6,7 +6,7 @@ import "core:c"
 
 foreign import pthread "system:System"
 
-_current_thread_id :: proc "contextless" () -> int {
+_current_thread_id :: proc() -> int {
 	tid: u64
 	// NOTE(Oskar): available from OSX 10.6 and iOS 3.2.
 	// For older versions there is `syscall(SYS_thread_selfid)`, but not really

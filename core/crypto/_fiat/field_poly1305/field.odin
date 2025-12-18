@@ -3,19 +3,19 @@ package field_poly1305
 import "core:encoding/endian"
 import "core:mem"
 
-fe_relax_cast :: #force_inline proc "contextless" (
+fe_relax_cast :: #force_inline proc(
 	arg1: ^Tight_Field_Element,
 ) -> ^Loose_Field_Element {
 	return (^Loose_Field_Element)(arg1)
 }
 
-fe_tighten_cast :: #force_inline proc "contextless" (
+fe_tighten_cast :: #force_inline proc(
 	arg1: ^Loose_Field_Element,
 ) -> ^Tight_Field_Element {
 	return (^Tight_Field_Element)(arg1)
 }
 
-fe_from_bytes :: #force_inline proc "contextless" (
+fe_from_bytes :: #force_inline proc(
 	out1: ^Tight_Field_Element,
 	arg1: []byte,
 	arg2: byte,
@@ -49,7 +49,7 @@ fe_from_bytes :: #force_inline proc "contextless" (
 	out1[2] = ((hi >> 23) & 0x7ffffffffff) | hibit
 }
 
-fe_from_u64s :: proc "contextless" (out1: ^Tight_Field_Element, lo, hi: u64) {
+fe_from_u64s :: proc(out1: ^Tight_Field_Element, lo, hi: u64) {
 	tmp: [32]byte
 	endian.unchecked_put_u64le(tmp[0:], lo)
 	endian.unchecked_put_u64le(tmp[8:], hi)
@@ -60,13 +60,13 @@ fe_from_u64s :: proc "contextless" (out1: ^Tight_Field_Element, lo, hi: u64) {
 	mem.zero_explicit(&tmp, size_of(tmp))
 }
 
-fe_zero :: proc "contextless" (out1: ^Tight_Field_Element) {
+fe_zero :: proc(out1: ^Tight_Field_Element) {
 	out1[0] = 0
 	out1[1] = 0
 	out1[2] = 0
 }
 
-fe_set :: #force_inline proc "contextless" (out1, arg1: ^Tight_Field_Element) {
+fe_set :: #force_inline proc(out1, arg1: ^Tight_Field_Element) {
 	x1 := arg1[0]
 	x2 := arg1[1]
 	x3 := arg1[2]
@@ -76,7 +76,7 @@ fe_set :: #force_inline proc "contextless" (out1, arg1: ^Tight_Field_Element) {
 }
 
 @(optimization_mode = "none")
-fe_cond_swap :: #force_no_inline proc "contextless" (
+fe_cond_swap :: #force_no_inline proc(
 	out1, out2: ^Tight_Field_Element,
 	arg1: bool,
 ) {

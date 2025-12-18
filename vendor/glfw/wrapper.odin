@@ -57,11 +57,11 @@ SetGammaRamp :: glfw.SetGammaRamp
 CreateWindow  :: glfw.CreateWindow
 DestroyWindow :: glfw.DestroyWindow
 
-WindowHint_int :: proc "contextless" (hint: c.int, value: c.int) {
+WindowHint_int :: proc(hint: c.int, value: c.int) {
 	glfw.WindowHint(hint, value)
 }
 
-WindowHint_bool :: proc "contextless" (hint: c.int, value: b32) {
+WindowHint_bool :: proc(hint: c.int, value: b32) {
 	glfw.WindowHint(hint, cast(c.int) value)
 }
 

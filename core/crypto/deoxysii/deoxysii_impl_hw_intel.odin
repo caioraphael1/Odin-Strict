@@ -24,12 +24,12 @@ _PREFIX_MSG_FINAL :: x86.__m128i{PREFIX_MSG_FINAL << PREFIX_SHIFT, 0}
 
 // is_hardware_accelerated returns true iff hardware accelerated Deoxys-II
 // is supported.
-is_hardware_accelerated :: proc "contextless" () -> bool {
+is_hardware_accelerated :: proc() -> bool {
 	return aes.is_hardware_accelerated()
 }
 
 @(private = "file", enable_target_feature = "sse4.1", require_results)
-auth_tweak :: #force_inline proc "contextless" (
+auth_tweak :: #force_inline proc(
 	prefix:   x86.__m128i,
 	block_nr: int,
 ) -> x86.__m128i {
@@ -37,7 +37,7 @@ auth_tweak :: #force_inline proc "contextless" (
 }
 
 @(private = "file", enable_target_feature = "sse2", require_results)
-enc_tweak :: #force_inline proc "contextless" (
+enc_tweak :: #force_inline proc(
 	tag:      x86.__m128i,
 	block_nr: int,
 ) -> x86.__m128i {
@@ -48,12 +48,12 @@ enc_tweak :: #force_inline proc "contextless" (
 }
 
 @(private = "file", enable_target_feature = "ssse3", require_results)
-h_ :: #force_inline proc "contextless" (tk1: x86.__m128i) -> x86.__m128i {
+h_ :: #force_inline proc(tk1: x86.__m128i) -> x86.__m128i {
 	return transmute(x86.__m128i)h(transmute(simd.u8x16)tk1)
 }
 
 @(private = "file", enable_target_feature = "sse2,ssse3,aes", require_results)
-bc_x4 :: #force_inline proc "contextless" (
+bc_x4 :: #force_inline proc(
 	ctx: ^Context,
 	s_0, s_1, s_2, s_3:                 x86.__m128i,
 	tweak_0, tweak_1, tweak_2, tweak_3: x86.__m128i,
@@ -95,7 +95,7 @@ bc_x4 :: #force_inline proc "contextless" (
 }
 
 @(private = "file", enable_target_feature = "sse2,ssse3,aes", require_results)
-bc_x1 :: #force_inline proc "contextless" (
+bc_x1 :: #force_inline proc(
 	ctx:   ^Context,
 	s:     x86.__m128i,
 	tweak: x86.__m128i,
@@ -121,7 +121,7 @@ bc_x1 :: #force_inline proc "contextless" (
 }
 
 @(private = "file", enable_target_feature = "sse2,ssse3,sse4.1,aes", require_results)
-bc_absorb :: proc "contextless" (
+bc_absorb :: proc(
 	ctx:          ^Context,
 	tag:          x86.__m128i,
 	src:          []byte,
@@ -172,7 +172,7 @@ bc_absorb :: proc "contextless" (
 }
 
 @(private = "file", enable_target_feature = "sse2,ssse3,aes", require_results)
-bc_final :: proc "contextless" (
+bc_final :: proc(
 	ctx: ^Context,
 	tag: x86.__m128i,
 	iv:  []byte,
@@ -188,7 +188,7 @@ bc_final :: proc "contextless" (
 }
 
 @(private = "file", enable_target_feature = "sse2,ssse3,aes", require_results)
-bc_encrypt :: proc "contextless" (
+bc_encrypt :: proc(
 	ctx:          ^Context,
 	dst:          []byte,
 	src:          []byte,
@@ -267,7 +267,7 @@ bc_encrypt :: proc "contextless" (
 }
 
 @(private)
-e_hw :: proc "contextless" (ctx: ^Context, dst, tag, iv, aad, plaintext: []byte) #no_bounds_check {
+e_hw :: proc(ctx: ^Context, dst, tag, iv, aad, plaintext: []byte) #no_bounds_check {
 	tmp: [BLOCK_SIZE]byte
 	copy(tmp[1:], iv)
 	iv_ := intrinsics.unaligned_load((^x86.__m128i)(raw_data(&tmp)))
@@ -346,7 +346,7 @@ e_hw :: proc "contextless" (ctx: ^Context, dst, tag, iv, aad, plaintext: []byte)
 }
 
 @(private, require_results)
-d_hw :: proc "contextless" (ctx: ^Context, dst, iv, aad, ciphertext, tag: []byte) -> bool {
+d_hw :: proc(ctx: ^Context, dst, iv, aad, ciphertext, tag: []byte) -> bool {
 	tmp: [BLOCK_SIZE]byte
 	copy(tmp[1:], iv)
 	iv_ := intrinsics.unaligned_load((^x86.__m128i)(raw_data(&tmp)))

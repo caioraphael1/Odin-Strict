@@ -7,7 +7,7 @@ import "core:sys/darwin"
 
 _ :: darwin
 
-sysctl :: proc "contextless" (mib: []i32, val: ^$T) -> (ok: bool) {
+sysctl :: proc(mib: []i32, val: ^$T) -> (ok: bool) {
 	result_size := uint(size_of(T))
 	when ODIN_NO_CRT {
 		res := darwin.syscall_sysctl(
@@ -33,7 +33,7 @@ sysctl :: proc "contextless" (mib: []i32, val: ^$T) -> (ok: bool) {
 	}
 }
 
-sysctlbyname :: proc "contextless" (name: cstring, val: ^$T) -> (ok: bool) {
+sysctlbyname :: proc(name: cstring, val: ^$T) -> (ok: bool) {
 	result_size := uint(size_of(T))
 	when ODIN_NO_CRT {
 		res := darwin.syscall_sysctlbyname(

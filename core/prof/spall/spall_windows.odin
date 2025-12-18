@@ -10,7 +10,7 @@ import win32 "core:sys/windows"
 MAX_RW :: 1<<30
 
 @(no_instrumentation)
-_write :: proc "contextless" (fd: os.Handle, data: []byte) -> (int, os.Error) #no_bounds_check /* bounds check would segfault instrumentation */ {
+_write :: proc(fd: os.Handle, data: []byte) -> (int, os.Error) #no_bounds_check /* bounds check would segfault instrumentation */ {
 	if len(data) == 0 {
 		return 0, nil
 	}
@@ -33,9 +33,9 @@ _write :: proc "contextless" (fd: os.Handle, data: []byte) -> (int, os.Error) #n
 }
 
 @(no_instrumentation)
-_tick_now :: proc "contextless" () -> (ns: i64) {
+_tick_now :: proc() -> (ns: i64) {
 	@(no_instrumentation)
-	mul_div_u64 :: #force_inline proc "contextless" (val, num, den: i64) -> i64 {
+	mul_div_u64 :: #force_inline proc(val, num, den: i64) -> i64 {
 		q := val / den
 		r := val % den
 		return q * num + r * num / den

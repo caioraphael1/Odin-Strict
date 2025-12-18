@@ -47,7 +47,7 @@ decrypt_ecb :: proc(ctx: ^Context_ECB, dst, src: []byte) {
 
 // reset_ecb sanitizes the Context_ECB.  The Context_ECB must be
 // re-initialized to be used again.
-reset_ecb :: proc "contextless" (ctx: ^Context_ECB) {
+reset_ecb :: proc(ctx: ^Context_ECB) {
 	reset_impl(&ctx._impl)
 	ctx._is_initialized = false
 }

@@ -182,20 +182,20 @@ allocator_proc :: proc(allocator_data: rawptr, mode: runtime.Allocator_Mode,
 
 // Exported solely to facilitate testing
 @(require_results)
-ffs :: proc "contextless" (word: u32) -> (bit: i32) {
+ffs :: proc(word: u32) -> (bit: i32) {
 	return -1 if word == 0 else i32(intrinsics.count_trailing_zeros(word))
 }
 
 // Exported solely to facilitate testing
 @(require_results)
-fls :: proc "contextless" (word: u32) -> (bit: i32) {
+fls :: proc(word: u32) -> (bit: i32) {
 	N :: (size_of(u32) * 8) - 1
 	return i32(N - intrinsics.count_leading_zeros(word))
 }
 
 // Exported solely to facilitate testing
 @(require_results)
-fls_uint :: proc "contextless" (size: uint) -> (bit: i32) {
+fls_uint :: proc(size: uint) -> (bit: i32) {
 	N :: (size_of(uint) * 8) - 1
 	return i32(N - intrinsics.count_leading_zeros(size))
 }

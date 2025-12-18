@@ -91,19 +91,19 @@ destroy :: proc(t: ^$T/Tree($Key, $Value), call_on_remove: bool = true) {
 	}
 }
 
-len :: proc "contextless" (t: ^$T/Tree($Key, $Value)) -> (node_count: int) {
+len :: proc(t: ^$T/Tree($Key, $Value)) -> (node_count: int) {
 	return t._size
 }
 
 // first returns the first node in the tree (in-order) or nil iff
 // the tree is empty.
-first :: proc "contextless" (t: ^$T/Tree($Key, $Value)) -> ^Node(Key, Value) {
+first :: proc(t: ^$T/Tree($Key, $Value)) -> ^Node(Key, Value) {
 	return tree_first_or_last_in_order(t, Direction.Backward)
 }
 
 // last returns the last element in the tree (in-order) or nil iff
 // the tree is empty.
-last :: proc "contextless" (t: ^$T/Tree($Key, $Value)) -> ^Node(Key, Value) {
+last :: proc(t: ^$T/Tree($Key, $Value)) -> ^Node(Key, Value) {
 	return tree_first_or_last_in_order(t, Direction.Forward)
 }
 
@@ -208,7 +208,7 @@ remove_node :: proc(t: ^$T/Tree($Key, $Value), node: ^$N/Node(Key, Value), call_
 }
 
 // iterator returns a tree iterator in the specified direction.
-iterator :: proc "contextless" (t: ^$T/Tree($Key, $Value), direction: Direction) -> Iterator(Key, Value) {
+iterator :: proc(t: ^$T/Tree($Key, $Value), direction: Direction) -> Iterator(Key, Value) {
 	it: Iterator(Key, Value)
 	it._tree      = cast(^Tree(Key, Value))t
 	it._direction = direction
@@ -220,7 +220,7 @@ iterator :: proc "contextless" (t: ^$T/Tree($Key, $Value), direction: Direction)
 
 // iterator_from_pos returns a tree iterator in the specified direction,
 // spanning the range [pos, last] (inclusive).
-iterator_from_pos :: proc "contextless" (t: ^$T/Tree($Key, $Value), pos: ^Node(Key, Value), direction: Direction) -> Iterator(Key, Value) {
+iterator_from_pos :: proc(t: ^$T/Tree($Key, $Value), pos: ^Node(Key, Value), direction: Direction) -> Iterator(Key, Value) {
 	it: Iterator(Key, Value)
 	it._tree        = transmute(^Tree(Key, Value))t
 	it._direction   = direction
@@ -237,7 +237,7 @@ iterator_from_pos :: proc "contextless" (t: ^$T/Tree($Key, $Value), pos: ^Node(K
 // iterator_get returns the node currently pointed to by the iterator,
 // or nil iff the node has been removed, the tree is empty, or the end
 // of the tree has been reached.
-iterator_get :: proc "contextless" (it: ^$I/Iterator($Key, $Value)) -> ^Node(Key, Value) {
+iterator_get :: proc(it: ^$I/Iterator($Key, $Value)) -> ^Node(Key, Value) {
 	return it._cur
 }
 
@@ -262,7 +262,7 @@ iterator_remove :: proc(it: ^$I/Iterator($Key, $Value), call_on_remove: bool = t
 //
 // Note: The first call to iterator_next will return the first node instead
 // of advancing the iterator.
-iterator_next :: proc "contextless" (it: ^$I/Iterator($Key, $Value)) -> (^Node(Key, Value), bool) {
+iterator_next :: proc(it: ^$I/Iterator($Key, $Value)) -> (^Node(Key, Value), bool) {
 	// This check is needed so that the first element gets returned from
 	// a brand-new iterator, and so that the somewhat contrived case where
 	// iterator_remove is called before the first call to iterator_next
@@ -292,7 +292,7 @@ iterator_next :: proc "contextless" (it: ^$I/Iterator($Key, $Value)) -> (^Node(K
 }
 
 @(private)
-tree_first_or_last_in_order :: proc "contextless" (t: ^$T/Tree($Key, $Value), direction: Direction) -> ^Node(Key, Value) {
+tree_first_or_last_in_order :: proc(t: ^$T/Tree($Key, $Value), direction: Direction) -> ^Node(Key, Value) {
 	first, sign := t._root, i8(direction)
 	if first != nil {
 		for {
@@ -307,7 +307,7 @@ tree_first_or_last_in_order :: proc "contextless" (t: ^$T/Tree($Key, $Value), di
 }
 
 @(private)
-node_get_child :: #force_inline proc "contextless" (n: ^Node($Key, $Value), sign: i8) -> ^Node(Key, Value) {
+node_get_child :: #force_inline proc(n: ^Node($Key, $Value), sign: i8) -> ^Node(Key, Value) {
 	if sign < 0 {
 		return n._left
 	}
@@ -315,7 +315,7 @@ node_get_child :: #force_inline proc "contextless" (n: ^Node($Key, $Value), sign
 }
 
 @(private)
-node_next_or_prev_in_order :: proc "contextless" (n: ^Node($Key, $Value), direction: Direction) -> ^Node(Key, Value) {
+node_next_or_prev_in_order :: proc(n: ^Node($Key, $Value), direction: Direction) -> ^Node(Key, Value) {
 	next, tmp: ^Node(Key, Value)
 	sign := i8(direction)
 
@@ -337,7 +337,7 @@ node_next_or_prev_in_order :: proc "contextless" (n: ^Node($Key, $Value), direct
 }
 
 @(private)
-iterator_first :: proc "contextless" (it: ^Iterator($Key, $Value)) {
+iterator_first :: proc(it: ^Iterator($Key, $Value)) {
 	// This is private because behavior when the user manually calls
 	// iterator_first followed by iterator_next is unintuitive, since
 	// the first call to iterator_next MUST return the first node

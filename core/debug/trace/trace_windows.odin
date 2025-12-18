@@ -13,7 +13,7 @@ _Context :: struct {
 	lock:     win32.SRWLOCK,
 }
 
-_init :: proc "contextless" (ctx: ^Context) -> (ok: bool) {
+_init :: proc(ctx: ^Context) -> (ok: bool) {
 	defer if !ok { _destroy(ctx) }
 	ctx.impl.hProcess = win32.GetCurrentProcess()
 	win32.SymInitialize(ctx.impl.hProcess, nil, true) or_return
@@ -21,14 +21,14 @@ _init :: proc "contextless" (ctx: ^Context) -> (ok: bool) {
 	return true
 }
 
-_destroy :: proc "contextless" (ctx: ^Context) -> bool {
+_destroy :: proc(ctx: ^Context) -> bool {
 	if ctx != nil {
 		win32.SymCleanup(ctx.impl.hProcess)
 	}
 	return true
 }
 
-_frames :: proc "contextless" (ctx: ^Context, skip: uint, frames_buffer: []Frame) -> []Frame {
+_frames :: proc(ctx: ^Context, skip: uint, frames_buffer: []Frame) -> []Frame {
 	frame_count := win32.RtlCaptureStackBackTrace(u32(skip) + 2, u32(len(frames_buffer)), ([^]rawptr)(&frames_buffer[0]), nil)
 	for i in 0..<frame_count {
 		// NOTE: Return address is one after the call instruction so subtract a byte to

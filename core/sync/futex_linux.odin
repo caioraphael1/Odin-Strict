@@ -5,7 +5,7 @@ package sync
 import "core:time"
 import "core:sys/linux"
 
-_futex_wait :: proc "contextless" (futex: ^Futex, expected: u32) -> bool {
+_futex_wait :: proc(futex: ^Futex, expected: u32) -> bool {
 	errno := linux.futex(cast(^linux.Futex) futex, linux.FUTEX_WAIT, {.PRIVATE}, expected)
 	if errno == .ETIMEDOUT {
 		return false
@@ -19,7 +19,7 @@ _futex_wait :: proc "contextless" (futex: ^Futex, expected: u32) -> bool {
 	}
 }
 
-_futex_wait_with_timeout :: proc "contextless" (futex: ^Futex, expected: u32, duration: time.Duration) -> bool {
+_futex_wait_with_timeout :: proc(futex: ^Futex, expected: u32, duration: time.Duration) -> bool {
 	if duration <= 0 {
 		return false
 	}
@@ -38,7 +38,7 @@ _futex_wait_with_timeout :: proc "contextless" (futex: ^Futex, expected: u32, du
 	}
 }
 
-_futex_signal :: proc "contextless" (futex: ^Futex) {
+_futex_signal :: proc(futex: ^Futex) {
 	_, errno := linux.futex(cast(^linux.Futex) futex, linux.FUTEX_WAKE, {.PRIVATE}, 1)
 	#partial switch errno {
 	case .NONE:
@@ -48,7 +48,7 @@ _futex_signal :: proc "contextless" (futex: ^Futex) {
 	}
 }
 
-_futex_broadcast :: proc "contextless" (futex: ^Futex)  {
+_futex_broadcast :: proc(futex: ^Futex)  {
 	_, errno := linux.futex(cast(^linux.Futex) futex, linux.FUTEX_WAKE, {.PRIVATE}, max(i32))
 	#partial switch errno {
 	case .NONE:

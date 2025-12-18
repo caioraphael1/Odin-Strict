@@ -25,7 +25,7 @@ import "core:math/bits"
 //   Stephen L. Moshier
 //   moshier@na-net.ornl.gov
 
-sin_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+sin_complex128 :: proc(x: complex128) -> complex128 {
 	// Complex circular sine
 	//
 	// DESCRIPTION:
@@ -65,7 +65,7 @@ sin_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(s*ch, c*sh)
 }
 
-cos_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+cos_complex128 :: proc(x: complex128) -> complex128 {
 	// Complex circular cosine
 	//
 	// DESCRIPTION:
@@ -102,7 +102,7 @@ cos_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(c*ch, -s*sh)
 }
 
-sinh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+sinh_complex128 :: proc(x: complex128) -> complex128 {
 	// Complex hyperbolic sine
 	//
 	// DESCRIPTION:
@@ -134,7 +134,7 @@ sinh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(c*sh, s*ch)
 }
 
-cosh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+cosh_complex128 :: proc(x: complex128) -> complex128 {
 	// Complex hyperbolic cosine
 	//
 	// DESCRIPTION:
@@ -165,7 +165,7 @@ cosh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(c*ch, s*sh)
 }
 
-tan_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+tan_complex128 :: proc(x: complex128) -> complex128 {
 	// Complex circular tangent
 	//
 	// DESCRIPTION:
@@ -213,7 +213,7 @@ tan_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(math.sin(2*real(x))/d, math.sinh(2*imag(x))/d)
 }
 
-tanh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+tanh_complex128 :: proc(x: complex128) -> complex128 {
 	switch re, im := real(x), imag(x); {
 	case math.is_inf(re, 0):
 		switch {
@@ -231,7 +231,7 @@ tanh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(math.sinh(2*real(x))/d, math.sin(2*imag(x))/d)
 }
 
-cot_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+cot_complex128 :: proc(x: complex128) -> complex128 {
 	d := math.cosh(2*imag(x)) - math.cos(2*real(x))
 	if abs(d) < 0.25 {
 		d = _tan_series_f64(x)
@@ -244,7 +244,7 @@ cot_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 
 
 @(private="file")
-_sinhcosh_f64 :: proc "contextless" (x: f64) -> (sh, ch: f64) {
+_sinhcosh_f64 :: proc(x: f64) -> (sh, ch: f64) {
 	if abs(x) <= 0.5 {
 		return math.sinh(x), math.cosh(x)
 	}
@@ -257,7 +257,7 @@ _sinhcosh_f64 :: proc "contextless" (x: f64) -> (sh, ch: f64) {
 
 // taylor series of cosh(2y) - cos(2x)
 @(private)
-_tan_series_f64 :: proc "contextless" (z: complex128) -> f64 {
+_tan_series_f64 :: proc(z: complex128) -> f64 {
 	MACH_EPSILON :: 1.0 / (1 << 53)
 
 	x := abs(2 * real(z))
@@ -302,7 +302,7 @@ _tan_series_f64 :: proc "contextless" (z: complex128) -> f64 {
 // For very large arguments it uses Payne-Hanek range reduction based on:
 // "ARGUMENT REDUCTION FOR HUGE ARGUMENTS: Good to the Last Bit"
 @(private)
-_reduce_pi_f64 :: proc "contextless" (x: f64) -> f64 #no_bounds_check {
+_reduce_pi_f64 :: proc(x: f64) -> f64 #no_bounds_check {
 	x := x
 
 	// REDUCE_THRESHOLD is the maximum value of x where the reduction using

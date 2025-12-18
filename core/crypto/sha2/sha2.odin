@@ -337,67 +337,67 @@ SHA256_ROUNDS :: 64
 SHA512_ROUNDS :: 80
 
 @(private)
-SHA256_CH :: #force_inline proc "contextless" (x, y, z: u32) -> u32 {
+SHA256_CH :: #force_inline proc(x, y, z: u32) -> u32 {
 	return (x & y) ~ (~x & z)
 }
 
 @(private)
-SHA256_MAJ :: #force_inline proc "contextless" (x, y, z: u32) -> u32 {
+SHA256_MAJ :: #force_inline proc(x, y, z: u32) -> u32 {
 	return (x & y) ~ (x & z) ~ (y & z)
 }
 
 @(private)
-SHA512_CH :: #force_inline proc "contextless" (x, y, z: u64) -> u64 {
+SHA512_CH :: #force_inline proc(x, y, z: u64) -> u64 {
 	return (x & y) ~ (~x & z)
 }
 
 @(private)
-SHA512_MAJ :: #force_inline proc "contextless" (x, y, z: u64) -> u64 {
+SHA512_MAJ :: #force_inline proc(x, y, z: u64) -> u64 {
 	return (x & y) ~ (x & z) ~ (y & z)
 }
 
 @(private)
-SHA256_F1 :: #force_inline proc "contextless" (x: u32) -> u32 {
+SHA256_F1 :: #force_inline proc(x: u32) -> u32 {
 	return bits.rotate_left32(x, 30) ~ bits.rotate_left32(x, 19) ~ bits.rotate_left32(x, 10)
 }
 
 @(private)
-SHA256_F2 :: #force_inline proc "contextless" (x: u32) -> u32 {
+SHA256_F2 :: #force_inline proc(x: u32) -> u32 {
 	return bits.rotate_left32(x, 26) ~ bits.rotate_left32(x, 21) ~ bits.rotate_left32(x, 7)
 }
 
 @(private)
-SHA256_F3 :: #force_inline proc "contextless" (x: u32) -> u32 {
+SHA256_F3 :: #force_inline proc(x: u32) -> u32 {
 	return bits.rotate_left32(x, 25) ~ bits.rotate_left32(x, 14) ~ (x >> 3)
 }
 
 @(private)
-SHA256_F4 :: #force_inline proc "contextless" (x: u32) -> u32 {
+SHA256_F4 :: #force_inline proc(x: u32) -> u32 {
 	return bits.rotate_left32(x, 15) ~ bits.rotate_left32(x, 13) ~ (x >> 10)
 }
 
 @(private)
-SHA512_F1 :: #force_inline proc "contextless" (x: u64) -> u64 {
+SHA512_F1 :: #force_inline proc(x: u64) -> u64 {
 	return bits.rotate_left64(x, 36) ~ bits.rotate_left64(x, 30) ~ bits.rotate_left64(x, 25)
 }
 
 @(private)
-SHA512_F2 :: #force_inline proc "contextless" (x: u64) -> u64 {
+SHA512_F2 :: #force_inline proc(x: u64) -> u64 {
 	return bits.rotate_left64(x, 50) ~ bits.rotate_left64(x, 46) ~ bits.rotate_left64(x, 23)
 }
 
 @(private)
-SHA512_F3 :: #force_inline proc "contextless" (x: u64) -> u64 {
+SHA512_F3 :: #force_inline proc(x: u64) -> u64 {
 	return bits.rotate_left64(x, 63) ~ bits.rotate_left64(x, 56) ~ (x >> 7)
 }
 
 @(private)
-SHA512_F4 :: #force_inline proc "contextless" (x: u64) -> u64 {
+SHA512_F4 :: #force_inline proc(x: u64) -> u64 {
 	return bits.rotate_left64(x, 45) ~ bits.rotate_left64(x, 3) ~ (x >> 6)
 }
 
 @(private)
-sha2_transf :: proc "contextless" (ctx: ^$T, data: []byte) #no_bounds_check {
+sha2_transf :: proc(ctx: ^$T, data: []byte) #no_bounds_check {
 	when T == Context_256 {
 		if is_hardware_accelerated_256() {
 			sha256_transf_hw(ctx, data)

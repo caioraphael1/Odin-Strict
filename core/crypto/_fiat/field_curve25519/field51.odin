@@ -56,7 +56,7 @@ FE_SQRT_M1 := Tight_Field_Element {
 	765476049583133,
 }
 
-_addcarryx_u51 :: #force_inline proc "contextless" (
+_addcarryx_u51 :: #force_inline proc(
 	arg1: fiat.u1,
 	arg2, arg3: u64,
 ) -> (
@@ -71,7 +71,7 @@ _addcarryx_u51 :: #force_inline proc "contextless" (
 	return
 }
 
-_subborrowx_u51 :: #force_inline proc "contextless" (
+_subborrowx_u51 :: #force_inline proc(
 	arg1: fiat.u1,
 	arg2, arg3: u64,
 ) -> (
@@ -86,7 +86,7 @@ _subborrowx_u51 :: #force_inline proc "contextless" (
 	return
 }
 
-fe_carry_mul :: proc "contextless" (out1: ^Tight_Field_Element, arg1, arg2: ^Loose_Field_Element) {
+fe_carry_mul :: proc(out1: ^Tight_Field_Element, arg1, arg2: ^Loose_Field_Element) {
 	x2, x1 := bits.mul_u64(arg1[4], (arg2[4] * 0x13))
 	x4, x3 := bits.mul_u64(arg1[4], (arg2[3] * 0x13))
 	x6, x5 := bits.mul_u64(arg1[4], (arg2[2] * 0x13))
@@ -185,7 +185,7 @@ fe_carry_mul :: proc "contextless" (out1: ^Tight_Field_Element, arg1, arg2: ^Loo
 	out1[4] = x152
 }
 
-fe_carry_square :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^Loose_Field_Element) {
+fe_carry_square :: proc(out1: ^Tight_Field_Element, arg1: ^Loose_Field_Element) {
 	x1 := (arg1[4] * 0x13)
 	x2 := (x1 * 0x2)
 	x3 := (arg1[4] * 0x2)
@@ -262,7 +262,7 @@ fe_carry_square :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^Loose_
 	out1[4] = x100
 }
 
-fe_carry :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^Loose_Field_Element) {
+fe_carry :: proc(out1: ^Tight_Field_Element, arg1: ^Loose_Field_Element) {
 	x1 := arg1[0]
 	x2 := ((x1 >> 51) + arg1[1])
 	x3 := ((x2 >> 51) + arg1[2])
@@ -282,7 +282,7 @@ fe_carry :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^Loose_Field_E
 	out1[4] = x12
 }
 
-fe_add :: proc "contextless" (out1: ^Loose_Field_Element, arg1, arg2: ^Tight_Field_Element) {
+fe_add :: proc(out1: ^Loose_Field_Element, arg1, arg2: ^Tight_Field_Element) {
 	x1 := (arg1[0] + arg2[0])
 	x2 := (arg1[1] + arg2[1])
 	x3 := (arg1[2] + arg2[2])
@@ -295,7 +295,7 @@ fe_add :: proc "contextless" (out1: ^Loose_Field_Element, arg1, arg2: ^Tight_Fie
 	out1[4] = x5
 }
 
-fe_sub :: proc "contextless" (out1: ^Loose_Field_Element, arg1, arg2: ^Tight_Field_Element) {
+fe_sub :: proc(out1: ^Loose_Field_Element, arg1, arg2: ^Tight_Field_Element) {
 	x1 := ((0xfffffffffffda + arg1[0]) - arg2[0])
 	x2 := ((0xffffffffffffe + arg1[1]) - arg2[1])
 	x3 := ((0xffffffffffffe + arg1[2]) - arg2[2])
@@ -308,7 +308,7 @@ fe_sub :: proc "contextless" (out1: ^Loose_Field_Element, arg1, arg2: ^Tight_Fie
 	out1[4] = x5
 }
 
-fe_opp :: proc "contextless" (out1: ^Loose_Field_Element, arg1: ^Tight_Field_Element) {
+fe_opp :: proc(out1: ^Loose_Field_Element, arg1: ^Tight_Field_Element) {
 	x1 := (0xfffffffffffda - arg1[0])
 	x2 := (0xffffffffffffe - arg1[1])
 	x3 := (0xffffffffffffe - arg1[2])
@@ -322,7 +322,7 @@ fe_opp :: proc "contextless" (out1: ^Loose_Field_Element, arg1: ^Tight_Field_Ele
 }
 
 @(optimization_mode = "none")
-fe_cond_assign :: #force_no_inline proc "contextless" (
+fe_cond_assign :: #force_no_inline proc(
 	out1, arg1: ^Tight_Field_Element,
 	arg2: int,
 ) {
@@ -338,7 +338,7 @@ fe_cond_assign :: #force_no_inline proc "contextless" (
 	out1[4] = x5
 }
 
-fe_to_bytes :: proc "contextless" (out1: ^[32]byte, arg1: ^Tight_Field_Element) {
+fe_to_bytes :: proc(out1: ^[32]byte, arg1: ^Tight_Field_Element) {
 	x1, x2 := _subborrowx_u51(0x0, arg1[0], 0x7ffffffffffed)
 	x3, x4 := _subborrowx_u51(x2, arg1[1], 0x7ffffffffffff)
 	x5, x6 := _subborrowx_u51(x4, arg1[2], 0x7ffffffffffff)
@@ -454,7 +454,7 @@ fe_to_bytes :: proc "contextless" (out1: ^[32]byte, arg1: ^Tight_Field_Element) 
 	out1[31] = x91
 }
 
-_fe_from_bytes :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^[32]byte) {
+_fe_from_bytes :: proc(out1: ^Tight_Field_Element, arg1: ^[32]byte) {
 	x1 := (u64(arg1[31]) << 44)
 	x2 := (u64(arg1[30]) << 36)
 	x3 := (u64(arg1[29]) << 28)
@@ -533,7 +533,7 @@ _fe_from_bytes :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^[32]byt
 	out1[4] = x71
 }
 
-fe_relax :: proc "contextless" (out1: ^Loose_Field_Element, arg1: ^Tight_Field_Element) {
+fe_relax :: proc(out1: ^Loose_Field_Element, arg1: ^Tight_Field_Element) {
 	x1 := arg1[0]
 	x2 := arg1[1]
 	x3 := arg1[2]
@@ -546,7 +546,7 @@ fe_relax :: proc "contextless" (out1: ^Loose_Field_Element, arg1: ^Tight_Field_E
 	out1[4] = x5
 }
 
-fe_carry_scmul_121666 :: proc "contextless" (
+fe_carry_scmul_121666 :: proc(
 	out1: ^Tight_Field_Element,
 	arg1: ^Loose_Field_Element,
 ) {

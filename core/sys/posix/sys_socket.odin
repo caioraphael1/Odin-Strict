@@ -435,18 +435,18 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 	SCM_RIGHTS :: 0x01
 
 	@(private)
-	__ALIGN32 :: #force_inline proc "contextless" (p: uintptr) -> uintptr {
+	__ALIGN32 :: #force_inline proc(p: uintptr) -> uintptr {
 		__ALIGNBYTES32 :: size_of(c.uint32_t) - 1
 		return (p + __ALIGNBYTES32) &~ __ALIGNBYTES32
 	}
 
 	// Returns a pointer to the data array.
-	CMSG_DATA :: #force_inline proc "contextless" (cmsg: ^cmsghdr) -> [^]c.uchar {
+	CMSG_DATA :: #force_inline proc(cmsg: ^cmsghdr) -> [^]c.uchar {
 		return ([^]c.uchar)(uintptr(cmsg) + __ALIGN32(size_of(cmsghdr)))
 	}
 
 	// Returns a pointer to the next cmsghdr or nil.
-	CMSG_NXTHDR :: #force_inline proc "contextless" (mhdr: ^msghdr, cmsg: ^cmsghdr) -> ^cmsghdr {
+	CMSG_NXTHDR :: #force_inline proc(mhdr: ^msghdr, cmsg: ^cmsghdr) -> ^cmsghdr {
 		if cmsg == nil {
 			return CMSG_FIRSTHDR(mhdr)
 		}
@@ -460,7 +460,7 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 	}
 
 	// Returns a pointer to the first cmsghdr or nil.
-	CMSG_FIRSTHDR :: #force_inline proc "contextless" (mhdr: ^msghdr) -> ^cmsghdr {
+	CMSG_FIRSTHDR :: #force_inline proc(mhdr: ^msghdr) -> ^cmsghdr {
 		if mhdr.msg_controllen >= size_of(cmsghdr) {
 			return (^cmsghdr)(mhdr.msg_control)
 		}

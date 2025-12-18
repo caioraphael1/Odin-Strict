@@ -381,48 +381,48 @@ resize_non_zeroed :: proc(control: ^Allocator, ptr: rawptr, old_size, new_size: 
 */
 
 @(private, require_results, no_sanitize_address)
-block_size :: proc "contextless" (block: ^Block_Header) -> (size: uint) {
+block_size :: proc(block: ^Block_Header) -> (size: uint) {
 	return block.size &~ (BLOCK_HEADER_FREE | BLOCK_HEADER_PREV_FREE)
 }
 
 @(private, no_sanitize_address)
-block_set_size :: proc "contextless" (block: ^Block_Header, size: uint) {
+block_set_size :: proc(block: ^Block_Header, size: uint) {
 	old_size := block.size
 	block.size = size | (old_size & (BLOCK_HEADER_FREE | BLOCK_HEADER_PREV_FREE))
 }
 
 @(private, require_results, no_sanitize_address)
-block_is_last :: proc "contextless" (block: ^Block_Header) -> (is_last: bool) {
+block_is_last :: proc(block: ^Block_Header) -> (is_last: bool) {
 	return block_size(block) == 0
 }
 
 @(private, require_results, no_sanitize_address)
-block_is_free :: proc "contextless" (block: ^Block_Header) -> (is_free: bool) {
+block_is_free :: proc(block: ^Block_Header) -> (is_free: bool) {
 	return (block.size & BLOCK_HEADER_FREE) == BLOCK_HEADER_FREE
 }
 
 @(private, no_sanitize_address)
-block_set_free :: proc "contextless" (block: ^Block_Header) {
+block_set_free :: proc(block: ^Block_Header) {
 	block.size |= BLOCK_HEADER_FREE
 }
 
 @(private, no_sanitize_address)
-block_set_used :: proc "contextless" (block: ^Block_Header) {
+block_set_used :: proc(block: ^Block_Header) {
 	block.size &~= BLOCK_HEADER_FREE
 }
 
 @(private, require_results, no_sanitize_address)
-block_is_prev_free :: proc "contextless" (block: ^Block_Header) -> (is_prev_free: bool) {
+block_is_prev_free :: proc(block: ^Block_Header) -> (is_prev_free: bool) {
 	return (block.size & BLOCK_HEADER_PREV_FREE) == BLOCK_HEADER_PREV_FREE
 }
 
 @(private, no_sanitize_address)
-block_set_prev_free :: proc "contextless" (block: ^Block_Header) {
+block_set_prev_free :: proc(block: ^Block_Header) {
 	block.size |= BLOCK_HEADER_PREV_FREE
 }
 
 @(private, no_sanitize_address)
-block_set_prev_used :: proc "contextless" (block: ^Block_Header) {
+block_set_prev_used :: proc(block: ^Block_Header) {
 	block.size &~= BLOCK_HEADER_PREV_FREE
 }
 

@@ -21,7 +21,7 @@ ctr_blocks_hw :: proc(ctx: ^Context_CTR, dst, src: []byte, nr_blocks: int) #no_b
 		sks[i] = intrinsics.unaligned_load((^x86.__m128i)(&hw_ctx._sk_exp_enc[i]))
 	}
 
-	hw_inc_ctr := #force_inline proc "contextless" (hi, lo: u64) -> (x86.__m128i, u64, u64) {
+	hw_inc_ctr := #force_inline proc(hi, lo: u64) -> (x86.__m128i, u64, u64) {
 		ret := x86.__m128i{
 			i64(intrinsics.byte_swap(hi)),
 			i64(intrinsics.byte_swap(lo)),

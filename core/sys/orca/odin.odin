@@ -8,7 +8,7 @@ create_odin_logger :: proc(lowest := runtime.Logger_Level.Debug, ident := "") ->
 	return runtime.Logger{odin_logger_proc, nil, lowest, {}}
 }
 
-log_typed :: proc "contextless" (level: log_level, msg: cstring, loc := #caller_location) {
+log_typed :: proc(level: log_level, msg: cstring, loc := #caller_location) {
 	log_ext(
 		level,
 		cstring(raw_data(loc.procedure)),

@@ -5,7 +5,7 @@ import "core:crypto/_aes/hw_intel"
 
 // is_hardware_accelerated returns true iff hardware accelerated AES
 // is supported.
-is_hardware_accelerated :: proc "contextless" () -> bool {
+is_hardware_accelerated :: proc() -> bool {
 	return hw_intel.is_supported()
 }
 

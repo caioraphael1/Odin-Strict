@@ -56,7 +56,7 @@ ShapePushFontFromMemory :: proc "c" (Context: ^shape_context, Memory: []byte, Fo
 }
 
 @(require_results)
-ShapeRun :: proc "contextless" (Context: ^shape_context) -> (Run: run, Ok: b32) {
+ShapeRun :: proc(Context: ^shape_context) -> (Run: run, Ok: b32) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_ShapeRun :: proc(Context: ^shape_context, Run: ^run) -> b32 ---
@@ -104,7 +104,7 @@ foreign lib {
 }
 
 @(require_results)
-ShapeCodepointIteratorNext :: proc "contextless" (It: ^shape_codepoint_iterator) -> (Codepoint: shape_codepoint, CodepointIndex: c.int, Ok: b32) {
+ShapeCodepointIteratorNext :: proc(It: ^shape_codepoint_iterator) -> (Codepoint: shape_codepoint, CodepointIndex: c.int, Ok: b32) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_ShapeCodepointIteratorNext :: proc(It: ^shape_codepoint_iterator, Codepoint: ^shape_codepoint, CodepointIndex: ^c.int) -> b32 ---
@@ -148,7 +148,7 @@ foreign lib {
 }
 
 @(require_results)
-LoadFont :: proc "contextless" (Font: ^font, State: ^load_font_state, FontData: []byte, FontIndex: c.int) -> (ScratchSize, OutputSize: c.int, Err: load_font_error) {
+LoadFont :: proc(Font: ^font, State: ^load_font_state, FontData: []byte, FontIndex: c.int) -> (ScratchSize, OutputSize: c.int, Err: load_font_error) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_LoadFont :: proc(Font: ^font, State: ^load_font_state, FontData: rawptr, FontDataSize: c.int, FontIndex: c.int, ScratchSize_: ^c.int, OutputSize_: ^c.int) -> load_font_error ---
@@ -177,7 +177,7 @@ FontFromMemory :: proc "c" (FileData: []byte, FontIndex: c.int, Allocator: alloc
 
 
 @(require_results)
-ShapeDirect :: proc "contextless" (Config: ^shape_config, Storage: ^glyph_storage, RunDirection: direction, Allocator: allocator_function, AllocatorData: rawptr) -> (Output: glyph_iterator, Err: shape_error) {
+ShapeDirect :: proc(Config: ^shape_config, Storage: ^glyph_storage, RunDirection: direction, Allocator: allocator_function, AllocatorData: rawptr) -> (Output: glyph_iterator, Err: shape_error) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_ShapeDirect :: proc(Config: ^shape_config, Storage: ^glyph_storage, RunDirection: direction, Allocator: allocator_function, AllocatorData: rawptr, Output: ^glyph_iterator) -> shape_error ---
@@ -187,7 +187,7 @@ ShapeDirect :: proc "contextless" (Config: ^shape_config, Storage: ^glyph_storag
 }
 
 @(require_results)
-ShapeDirectFixedMemory :: proc "contextless" (Config: ^shape_config, Storage: ^glyph_storage, RunDirection: direction, Memory: rawptr, MemorySize: c.int) -> (Output: glyph_iterator, Err: shape_error) {
+ShapeDirectFixedMemory :: proc(Config: ^shape_config, Storage: ^glyph_storage, RunDirection: direction, Memory: rawptr, MemorySize: c.int) -> (Output: glyph_iterator, Err: shape_error) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_ShapeDirectFixedMemory :: proc(Config: ^shape_config, Storage: ^glyph_storage, RunDirection: direction, Memory: rawptr, MemorySize: c.int, Output: ^glyph_iterator) -> shape_error ---
@@ -230,7 +230,7 @@ foreign lib {
 }
 
 @(require_results)
-GlyphIteratorNext :: proc "contextless" (It: ^glyph_iterator) -> (Glyph: ^glyph, Ok: b32) {
+GlyphIteratorNext :: proc(It: ^glyph_iterator) -> (Glyph: ^glyph, Ok: b32) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_GlyphIteratorNext :: proc(It: ^glyph_iterator, Glyph: ^^glyph) -> b32 ---
@@ -251,7 +251,7 @@ foreign lib {
 }
 
 @(require_results)
-Break :: proc "contextless" (State: ^break_state) -> (Break: break_type, Ok: b32) {
+Break :: proc(State: ^break_state) -> (Break: break_type, Ok: b32) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_Break :: proc(State: ^break_state, Break: ^break_type) -> b32 ---
@@ -339,7 +339,7 @@ DecodeUtf8 :: proc "c" (Utf8: string) -> decode {
 // This is a quick guess that stops at the first glyph that has a strong script/direction associated to it.
 // It is convenient, but only works if you are sure your input text is mono-script and mono-direction.
 @(require_results)
-GuessTextProperties :: proc "contextless" (Text: []byte, Format: text_format) -> (Direction: direction, Script: script) {
+GuessTextProperties :: proc(Text: []byte, Format: text_format) -> (Direction: direction, Script: script) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_GuessTextProperties :: proc(Text: rawptr, TextSizeInBytes: c.int, Format: text_format, Direction: ^direction, Script: ^script) ---
@@ -351,7 +351,7 @@ GuessTextProperties :: proc "contextless" (Text: []byte, Format: text_format) ->
 // This is a quick guess that stops at the first glyph that has a strong script/direction associated to it.
 // It is convenient, but only works if you are sure your input text is mono-script and mono-direction.
 @(require_results)
-GuessTextPropertiesUtf32 :: proc "contextless" (Utf32: []rune) -> (Direction: direction, Script: script) {
+GuessTextPropertiesUtf32 :: proc(Utf32: []rune) -> (Direction: direction, Script: script) {
 	@(default_calling_convention="c", require_results)
 	foreign lib {
 		kbts_GuessTextPropertiesUtf32 :: proc(Utf32: [^]rune, Utf32Count: c.int, Direction: ^direction, Script: ^script) ---
@@ -363,7 +363,7 @@ GuessTextPropertiesUtf32 :: proc "contextless" (Utf32: []rune) -> (Direction: di
 // This is a quick guess that stops at the first glyph that has a strong script/direction associated to it.
 // It is convenient, but only works if you are sure your input text is mono-script and mono-direction._results)
 @(require_results)
-GuessTextPropertiesUtf8 :: proc "contextless" (Utf8: string) -> (Direction: direction, Script: script) {
+GuessTextPropertiesUtf8 :: proc(Utf8: string) -> (Direction: direction, Script: script) {
 	@(default_calling_convention="c",  require_results)
 	foreign lib {
 		kbts_GuessTextPropertiesUtf8 :: proc(Utf8: cstring, Utf8Length: c.int, Direction: ^direction, Script: ^script) ---
@@ -376,7 +376,7 @@ GuessTextPropertiesUtf8 :: proc "contextless" (Utf8: string) -> (Direction: dire
 
 
 @(require_results)
-AllocatorFromOdinAllocator :: proc "contextless" (allocator: ^runtime.Allocator) -> (Allocator: allocator_function, AllocatorData: rawptr) {
+AllocatorFromOdinAllocator :: proc(allocator: ^runtime.Allocator) -> (Allocator: allocator_function, AllocatorData: rawptr) {
 	allocator_function :: proc "c" (Data: rawptr, Op: ^allocator_op) {
 		if Data == nil {
 			return

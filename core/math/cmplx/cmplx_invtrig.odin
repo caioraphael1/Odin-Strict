@@ -60,23 +60,23 @@ atanh :: proc{
 }
 
 
-acos_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+acos_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(acos_complex64(complex64(x)))
 }
-acos_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+acos_complex64 :: proc(x: complex64) -> complex64 {
 	w := asin(x)
 	return complex(math.PI/2 - real(w), -imag(w))
 }
-acos_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+acos_complex128 :: proc(x: complex128) -> complex128 {
 	w := asin(x)
 	return complex(math.PI/2 - real(w), -imag(w))
 }
 
 
-acosh_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+acosh_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(acosh_complex64(complex64(x)))
 }
-acosh_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+acosh_complex64 :: proc(x: complex64) -> complex64 {
 	if x == 0 {
 		return complex(0, math.copy_sign(math.PI/2, imag(x)))
 	}
@@ -86,7 +86,7 @@ acosh_complex64 :: proc "contextless" (x: complex64) -> complex64 {
 	}
 	return complex(imag(w), -real(w))
 }
-acosh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+acosh_complex128 :: proc(x: complex128) -> complex128 {
 	if x == 0 {
 		return complex(0, math.copy_sign(math.PI/2, imag(x)))
 	}
@@ -97,13 +97,13 @@ acosh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(imag(w), -real(w))
 }
 
-asin_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+asin_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(asin_complex128(complex128(x)))
 }
-asin_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+asin_complex64 :: proc(x: complex64) -> complex64 {
 	return complex64(asin_complex128(complex128(x)))
 }
-asin_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+asin_complex128 :: proc(x: complex128) -> complex128 {
 	switch re, im := real(x), imag(x); {
 	case im == 0 && abs(re) <= 1:
 		return complex(math.asin(re), im)
@@ -138,13 +138,13 @@ asin_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(imag(w), -real(w)) // -i * w
 }
 
-asinh_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+asinh_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(asinh_complex128(complex128(x)))
 }
-asinh_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+asinh_complex64 :: proc(x: complex64) -> complex64 {
 	return complex64(asinh_complex128(complex128(x)))
 }
-asinh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+asinh_complex128 :: proc(x: complex128) -> complex128 {
 	switch re, im := real(x), imag(x); {
 	case im == 0 && abs(re) <= 1:
 		return complex(math.asinh(re), im)
@@ -177,13 +177,13 @@ asinh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 }
 
 
-atan_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+atan_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(atan_complex128(complex128(x)))
 }
-atan_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+atan_complex64 :: proc(x: complex64) -> complex64 {
 	return complex64(atan_complex128(complex128(x)))
 }
-atan_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+atan_complex128 :: proc(x: complex128) -> complex128 {
 	// Complex circular arc tangent
 	//
 	// DESCRIPTION:
@@ -248,15 +248,15 @@ atan_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(w, 0.25*math.ln(c))
 }
 
-atanh_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+atanh_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(atanh_complex64(complex64(x)))
 }
-atanh_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+atanh_complex64 :: proc(x: complex64) -> complex64 {
 	z := complex(-imag(x), real(x)) // z = i * x
 	z = atan(z)
 	return complex(imag(z), -real(z)) // z = -i * z
 }
-atanh_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+atanh_complex128 :: proc(x: complex128) -> complex128 {
 	z := complex(-imag(x), real(x)) // z = i * x
 	z = atan(z)
 	return complex(imag(z), -real(z)) // z = -i * z

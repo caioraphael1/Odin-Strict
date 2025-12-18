@@ -30,7 +30,7 @@ fini_args :: proc(allocator: runtime.Allocator) {
 /*
 Exit the current process.
 */
-exit :: proc "contextless" (code: int) -> ! {
+exit :: proc(code: int) -> ! {
 	runtime.exit(code)
 }
 

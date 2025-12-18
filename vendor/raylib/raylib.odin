@@ -1766,7 +1766,7 @@ MemFreeCstring :: proc "c" (s: cstring) {
 }
 
 
-MemAllocator :: proc "contextless" () -> mem.Allocator {
+MemAllocator :: proc() -> mem.Allocator {
 	return mem.Allocator{MemAllocatorProc, nil}
 }
 

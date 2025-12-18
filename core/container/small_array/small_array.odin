@@ -34,7 +34,7 @@ Returns the amount of items in the small-array.
 **Returns**
 - the amount of items in the array
 */
-len :: proc "contextless" (a: $A/Small_Array) -> int {
+len :: proc(a: $A/Small_Array) -> int {
 	return a.len
 }
 
@@ -46,7 +46,7 @@ Returns the capacity of the small-array.
 
 **Returns** the capacity
 */
-cap :: proc "contextless" (a: $A/Small_Array) -> int {
+cap :: proc(a: $A/Small_Array) -> int {
 	return builtin.len(a.data)
 }
 
@@ -59,7 +59,7 @@ Returns how many more items the small-array could fit.
 **Returns**
 - the number of unused slots
 */
-space :: proc "contextless" (a: $A/Small_Array) -> int {
+space :: proc(a: $A/Small_Array) -> int {
 	return builtin.len(a.data) - a.len
 }
 
@@ -95,7 +95,7 @@ Output:
 	1
 	2
 */
-slice :: proc "contextless" (a: ^$A/Small_Array($N, $T)) -> []T {
+slice :: proc(a: ^$A/Small_Array($N, $T)) -> []T {
 	return a.data[:a.len]
 }
 
@@ -120,7 +120,7 @@ This will result in:
 **Returns**
 - the element at the specified position
 */
-get :: proc "contextless" (a: $A/Small_Array($N, $T), index: int) -> T {
+get :: proc(a: $A/Small_Array($N, $T), index: int) -> T {
 	return a.data[index]
 }
 
@@ -145,7 +145,7 @@ This will result in:
 **Returns**
 - the pointer to the element at the specified position
 */
-get_ptr :: proc "contextless" (a: ^$A/Small_Array($N, $T), index: int) -> ^T {
+get_ptr :: proc(a: ^$A/Small_Array($N, $T), index: int) -> ^T {
 	return &a.data[index]
 }
 
@@ -179,7 +179,7 @@ Output:
 	x
 
 */
-get_safe :: proc "contextless" (a: $A/Small_Array($N, $T), index: int) -> (T, bool) #no_bounds_check {
+get_safe :: proc(a: $A/Small_Array($N, $T), index: int) -> (T, bool) #no_bounds_check {
 	if index < 0 || index >= a.len {
 		return {}, false
 	}
@@ -197,7 +197,7 @@ Get a pointer to the item at the specified position.
 - the pointer to the element at the specified position
 - true if element exists, false otherwise
 */
-get_ptr_safe :: proc "contextless" (a: ^$A/Small_Array($N, $T), index: int) -> (^T, bool) #no_bounds_check {
+get_ptr_safe :: proc(a: ^$A/Small_Array($N, $T), index: int) -> (^T, bool) #no_bounds_check {
 	if index < 0 || index >= a.len {
 		return {}, false
 	}
@@ -253,7 +253,7 @@ Output:
 	[Z, B, X, Y, Z]
 
 */
-set :: proc "contextless" (a: ^$A/Small_Array($N, $T), index: int, item: T) {
+set :: proc(a: ^$A/Small_Array($N, $T), index: int, item: T) {
 	a.data[index] = item
 }
 
@@ -295,7 +295,7 @@ Output:
 	[1]
 	[1, 0, 0, 0, 0]
 */
-resize :: proc "contextless" (a: ^$A/Small_Array($N, $T), length: int) {
+resize :: proc(a: ^$A/Small_Array($N, $T), length: int) {
 	prev_len := a.len
 	a.len = min(length, builtin.len(a.data))
 	if prev_len < a.len {
@@ -339,7 +339,7 @@ Output:
 	[1]
 	[1, 2, 0, 0, 0]
 */
-non_zero_resize :: proc "contextless" (a: ^$A/Small_Array, length: int) {
+non_zero_resize :: proc(a: ^$A/Small_Array, length: int) {
 	a.len = min(length, builtin.len(a.data))
 }
 
@@ -372,7 +372,7 @@ Output:
 
 	[1, 2]
 */
-push_back :: proc "contextless" (a: ^$A/Small_Array($N, $T), item: T) -> bool {
+push_back :: proc(a: ^$A/Small_Array($N, $T), item: T) -> bool {
 	if a.len < cap(a^) {
 		a.data[a.len] = item
 		a.len += 1
@@ -414,7 +414,7 @@ Output:
 
 	[1, 2]
 */
-push_front :: proc "contextless" (a: ^$A/Small_Array($N, $T), item: T) -> bool {
+push_front :: proc(a: ^$A/Small_Array($N, $T), item: T) -> bool {
 	if a.len < cap(a^) {
 		a.len += 1
 		data := slice(a)
@@ -528,7 +528,7 @@ Example:
 		assert(!ok, "there was NO element in the array")
 	}
 */
-pop_back_safe :: proc "contextless" (a: ^$A/Small_Array($N, $T)) -> (item: T, ok: bool) {
+pop_back_safe :: proc(a: ^$A/Small_Array($N, $T)) -> (item: T, ok: bool) {
 	if N > 0 && a.len > 0 {
 		item = a.data[a.len-1]
 		a.len -= 1
@@ -566,7 +566,7 @@ Example:
 		assert(!ok, "there was NO element in the array")
 	}
 */
-pop_front_safe :: proc "contextless" (a: ^$A/Small_Array($N, $T)) -> (item: T, ok: bool) {
+pop_front_safe :: proc(a: ^$A/Small_Array($N, $T)) -> (item: T, ok: bool) {
 	if N > 0 && a.len > 0 {
 		item = a.data[0]
 		s := slice(a)
@@ -641,7 +641,7 @@ Output:
 	BEFORE: [0, 1, 2, 3]
 	AFTER : [0, 2, 3]
 */
-ordered_remove :: proc "contextless" (a: ^$A/Small_Array($N, $T), index: int, loc := #caller_location) #no_bounds_check {
+ordered_remove :: proc(a: ^$A/Small_Array($N, $T), index: int, loc := #caller_location) #no_bounds_check {
 	runtime.bounds_check_error_loc(loc, index, a.len)
 	if index+1 < a.len {
 		copy(a.data[index:], a.data[index+1:])
@@ -675,7 +675,7 @@ Output:
 	BEFORE: [0, 1, 2, 3]
 	AFTER : [0, 3, 2]
 */
-unordered_remove :: proc "contextless" (a: ^$A/Small_Array($N, $T), index: int, loc := #caller_location) #no_bounds_check {
+unordered_remove :: proc(a: ^$A/Small_Array($N, $T), index: int, loc := #caller_location) #no_bounds_check {
 	runtime.bounds_check_error_loc(loc, index, a.len)
 	n := a.len-1
 	if index != n {
@@ -710,7 +710,7 @@ Output:
 	AFTER : []
 
 */
-clear :: proc "contextless" (a: ^$A/Small_Array($N, $T)) {
+clear :: proc(a: ^$A/Small_Array($N, $T)) {
 	resize(a, 0)
 }
 
@@ -741,7 +741,7 @@ Output:
 
 	[0, 1, 2, 3, 4]
 */
-push_back_elems :: proc "contextless" (a: ^$A/Small_Array($N, $T), items: ..T) -> bool {
+push_back_elems :: proc(a: ^$A/Small_Array($N, $T), items: ..T) -> bool {
 	if a.len + builtin.len(items) <= cap(a^) {
 		n := copy(a.data[a.len:], items[:])
 		a.len += n
@@ -780,7 +780,7 @@ Output:
 
 	[A, B, C, D]
 */
-inject_at :: proc "contextless" (a: ^$A/Small_Array($N, $T), item: T, index: int) -> bool #no_bounds_check {
+inject_at :: proc(a: ^$A/Small_Array($N, $T), item: T, index: int) -> bool #no_bounds_check {
 	if a.len < cap(a^) && index >= 0 && index <= len(a^) {
 		a.len += 1
 		for i := a.len - 1; i >= index + 1; i -= 1 {

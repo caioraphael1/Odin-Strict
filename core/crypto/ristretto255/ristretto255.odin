@@ -70,7 +70,7 @@ Group_Element :: struct {
 }
 
 // ge_clear clears ge to the uninitialized state.
-ge_clear :: proc "contextless" (ge: ^Group_Element) {
+ge_clear :: proc(ge: ^Group_Element) {
 	mem.zero_explicit(ge, size_of(Group_Element))
 }
 
@@ -83,13 +83,13 @@ ge_set :: proc(ge, a: ^Group_Element) {
 }
 
 // ge_identity sets ge to the identity (neutral) element.
-ge_identity :: proc "contextless" (ge: ^Group_Element) {
+ge_identity :: proc(ge: ^Group_Element) {
 	grp.ge_identity(&ge._p)
 	ge._is_initialized = true
 }
 
 // ge_generator sets ge to the group generator.
-ge_generator :: proc "contextless" (ge: ^Group_Element) {
+ge_generator :: proc(ge: ^Group_Element) {
 	grp.ge_generator(&ge._p)
 	ge._is_initialized = true
 }
@@ -97,7 +97,7 @@ ge_generator :: proc "contextless" (ge: ^Group_Element) {
 // ge_set_bytes sets ge to the result of decoding b as a ristretto255
 // group element, and returns true on success.
 @(require_results)
-ge_set_bytes :: proc "contextless" (ge: ^Group_Element, b: []byte) -> bool {
+ge_set_bytes :: proc(ge: ^Group_Element, b: []byte) -> bool {
 	// 1.  Interpret the string as an unsigned integer s in little-endian
 	//     representation.  If the length of the string is not 32 bytes or
 	//     if the resulting value is >= p, decoding fails.
@@ -333,7 +333,7 @@ ge_scalarmult :: proc(ge, A: ^Group_Element, sc: ^Scalar) {
 }
 
 // ge_scalarmult_generator sets `ge = G * sc`
-ge_scalarmult_generator :: proc "contextless" (ge: ^Group_Element, sc: ^Scalar) {
+ge_scalarmult_generator :: proc(ge: ^Group_Element, sc: ^Scalar) {
 	grp.ge_scalarmult_basepoint(&ge._p, sc)
 	ge._is_initialized = true
 }
@@ -412,7 +412,7 @@ ge_is_identity :: proc(ge: ^Group_Element) -> int {
 }
 
 @(private)
-ge_map :: proc "contextless" (ge: ^Group_Element, b: []byte) {
+ge_map :: proc(ge: ^Group_Element, b: []byte) {
 	b_ := (^[32]byte)(raw_data(b))
 
 	// The MAP function is defined on 32-byte strings as:

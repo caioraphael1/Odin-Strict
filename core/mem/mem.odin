@@ -66,7 +66,7 @@ This procedure copies value specified by the `value` parameter into each of the
 
 This procedure returns the pointer to `data`.
 */
-set :: proc "contextless" (data: rawptr, value: byte, len: int) -> rawptr {
+set :: proc(data: rawptr, value: byte, len: int) -> rawptr {
 	return runtime.memset(data, i32(value), len)
 }
 
@@ -78,7 +78,7 @@ starting at address `data`.
 
 This procedure returns the pointer to `data`.
 */
-zero :: proc "contextless" (data: rawptr, len: int) -> rawptr {
+zero :: proc(data: rawptr, len: int) -> rawptr {
 	intrinsics.mem_zero(data, len)
 	return data
 }
@@ -96,7 +96,7 @@ compiler under certain circumstances, `zero_explicit()` procedure can not be
 optimized away or reordered with other memory access operations, and the
 compiler assumes volatile semantics of the memory.
 */
-zero_explicit :: proc "contextless" (data: rawptr, len: int) -> rawptr {
+zero_explicit :: proc(data: rawptr, len: int) -> rawptr {
 	// This routine tries to avoid the compiler optimizing away the call,
 	// so that it is always executed.  It is intended to provide
 	// equivalent semantics to those provided by the C11 Annex K 3.7.4.1
@@ -112,7 +112,7 @@ Zero-fill the memory of an object.
 This procedure sets each byte of the object pointed to by the pointer `item`
 to zero, and returns the pointer to `item`.
 */
-zero_item :: proc "contextless" (item: $P/^$T) -> P {
+zero_item :: proc(item: $P/^$T) -> P {
 	intrinsics.mem_zero(item, size_of(T))
 	return item
 }
@@ -123,7 +123,7 @@ Zero-fill the memory of the slice.
 This procedure sets each byte of the slice pointed to by the slice `data`
 to zero, and returns the slice `data`.
 */
-zero_slice :: proc "contextless" (data: $T/[]$E) -> T {
+zero_slice :: proc(data: $T/[]$E) -> T {
 	zero(raw_data(data), size_of(E)*len(data))
 	return data
 }
@@ -135,7 +135,7 @@ This procedure copies `len` bytes of data, from the memory range pointed to by
 the `src` pointer into the memory range pointed to by the `dst` pointer, and
 returns the `dst` pointer.
 */
-copy :: proc "contextless" (dst, src: rawptr, len: int) -> rawptr {
+copy :: proc(dst, src: rawptr, len: int) -> rawptr {
 	intrinsics.mem_copy(dst, src, len)
 	return dst
 }
@@ -152,7 +152,7 @@ that memory ranges specified by the parameters to this procedure are not
 overlapping. If the memory ranges specified by `dst` and `src` pointers overlap,
 the behavior of this function may be unpredictable.
 */
-copy_non_overlapping :: proc "contextless" (dst, src: rawptr, len: int) -> rawptr {
+copy_non_overlapping :: proc(dst, src: rawptr, len: int) -> rawptr {
 	intrinsics.mem_copy_non_overlapping(dst, src, len)
 	return dst
 }
@@ -182,7 +182,7 @@ The comparison is performed as follows:
 	- Otherwise `0` is returned.
 */
 @(require_results)
-compare :: proc "contextless" (a, b: []byte) -> int {
+compare :: proc(a, b: []byte) -> int {
 	res := compare_byte_ptrs(raw_data(a), raw_data(b), min(len(a), len(b)))
 	if res == 0 && len(a) != len(b) {
 		return len(a) <= len(b) ? -1 : +1
@@ -214,7 +214,7 @@ The comparison is performed as follows:
 2. If all the bytes in the range are equal, this procedure returns `0`.
 */
 @(require_results)
-compare_byte_ptrs :: proc "contextless" (a, b: ^byte, n: int) -> int #no_bounds_check {
+compare_byte_ptrs :: proc(a, b: ^byte, n: int) -> int #no_bounds_check {
 	return runtime.memory_compare(a, b, n)
 }
 
@@ -240,7 +240,7 @@ The comparison is performed as follows:
 2. If all the bytes in the range are equal, this procedure returns `0`.
 */
 @(require_results)
-compare_ptrs :: proc "contextless" (a, b: rawptr, n: int) -> int {
+compare_ptrs :: proc(a, b: rawptr, n: int) -> int {
 	return compare_byte_ptrs((^byte)(a), (^byte)(b), n)
 }
 
@@ -251,7 +251,7 @@ This procedure checks whether the memory ranges occupied by objects `a` and
 `b` are equal. See `compare_byte_ptrs()` for how this comparison is done.
 */
 @(require_results)
-simple_equal :: proc "contextless" (a, b: $T) -> bool where intrinsics.type_is_simple_compare(T) {
+simple_equal :: proc(a, b: $T) -> bool where intrinsics.type_is_simple_compare(T) {
 	a, b := a, b
 	return compare_byte_ptrs((^byte)(&a), (^byte)(&b), size_of(T)) == 0
 }
@@ -357,7 +357,7 @@ This procedure creates a slice, that points to `len` amount of objects located
 at an address, specified by `ptr`.
 */
 @(require_results)
-slice_ptr :: proc "contextless" (ptr: ^$T, len: int) -> []T {
+slice_ptr :: proc(ptr: ^$T, len: int) -> []T {
 	return ([^]T)(ptr)[:len]
 }
 
@@ -368,7 +368,7 @@ This procedure creates a byte slice, that points to `len` amount of bytes
 located at an address specified by `data`.
 */
 @(require_results)
-byte_slice :: #force_inline proc "contextless" (data: rawptr, #any_int len: int) -> []byte {
+byte_slice :: #force_inline proc(data: rawptr, #any_int len: int) -> []byte {
 	return ([^]u8)(data)[:max(len, 0)]
 }
 
@@ -379,7 +379,7 @@ This procedure creates a byte slice, pointing to `len` objects, starting from
 the address specified by `ptr`.
 */
 @(require_results)
-ptr_to_bytes :: proc "contextless" (ptr: ^$T, len := 1) -> []byte {
+ptr_to_bytes :: proc(ptr: ^$T, len := 1) -> []byte {
 	return transmute([]byte)Raw_Slice{ptr, len*size_of(T)}
 }
 
@@ -390,7 +390,7 @@ This procedure returns the slice, pointing to the contents of the specified
 value of the `any` type.
 */
 @(require_results)
-any_to_bytes :: proc "contextless" (val: any) -> []byte {
+any_to_bytes :: proc(val: any) -> []byte {
 	ti := type_info_of(val.id)
 	size := ti != nil ? ti.size : 0
 	return transmute([]byte)Raw_Slice{val.data, size}
@@ -403,7 +403,7 @@ This procedure returns a slice, that points to the same bytes as the slice,
 specified by `slice` and returns the resulting byte slice.
 */
 @(require_results)
-slice_to_bytes :: proc "contextless" (slice: $E/[]$T) -> []byte {
+slice_to_bytes :: proc(slice: $E/[]$T) -> []byte {
 	s := transmute(Raw_Slice)slice
 	s.len *= size_of(T)
 	return transmute([]byte)s
@@ -419,7 +419,7 @@ of the resulting slice, such that the resulting slice points to the correct
 amount of objects to cover the memory region pointed to by `slice`.
 */
 @(require_results)
-slice_data_cast :: proc "contextless" ($T: typeid/[]$A, slice: $S/[]$B) -> T {
+slice_data_cast :: proc($T: typeid/[]$A, slice: $S/[]$B) -> T {
 	when size_of(A) == 0 || size_of(B) == 0 {
 		return nil
 	} else {
@@ -436,7 +436,7 @@ This procedure returns the pointer to the start of the memory region pointed to
 by slice `slice` and the length of the slice.
 */
 @(require_results)
-slice_to_components :: proc "contextless" (slice: $E/[]$T) -> (data: ^T, len: int) {
+slice_to_components :: proc(slice: $E/[]$T) -> (data: ^T, len: int) {
 	s := transmute(Raw_Slice)slice
 	return (^T)(s.data), s.len
 }
@@ -449,7 +449,7 @@ buffer for the dynamic array. The resulting dynamic array can not grow beyond
 the size of the specified slice.
 */
 @(require_results)
-buffer_from_slice :: proc "contextless" (backing: $T/[]$E) -> [dynamic]E {
+buffer_from_slice :: proc(backing: $T/[]$E) -> [dynamic]E {
 	return transmute([dynamic]E)Raw_Dynamic_Array{
 		data      = raw_data(backing),
 		len       = 0,
@@ -468,7 +468,7 @@ This procedure checks whether a given pointer-sized unsigned integer contains
 a power-of-two value.
 */
 @(require_results)
-is_power_of_two :: proc "contextless" (x: uintptr) -> bool {
+is_power_of_two :: proc(x: uintptr) -> bool {
 	if x <= 0 {
 		return false
 	}
@@ -483,7 +483,7 @@ by `align`, and returns `true` if the pointer is aligned, and false otherwise.
 
 The specified alignment must be a power of 2.
 */
-is_aligned :: proc "contextless" (x: rawptr, align: int) -> bool {
+is_aligned :: proc(x: rawptr, align: int) -> bool {
 	p := uintptr(x)
 	return (p & (uintptr(align) - 1)) == 0
 }
@@ -610,7 +610,7 @@ This procedure copies the object of type `T` pointed to by the pointer `ptr`
 into a new stack-allocated value and returns that value.
 */
 @(require_results)
-reinterpret_copy :: proc "contextless" ($T: typeid, ptr: rawptr) -> (value: T) {
+reinterpret_copy :: proc($T: typeid, ptr: rawptr) -> (value: T) {
 	copy(&value, ptr, size_of(T))
 	return
 }
@@ -628,7 +628,7 @@ Fixed_Byte_Buffer :: distinct [dynamic]byte
 Create a fixed byte buffer from a slice.
 */
 @(require_results)
-make_fixed_byte_buffer :: proc "contextless" (backing: []byte) -> Fixed_Byte_Buffer {
+make_fixed_byte_buffer :: proc(backing: []byte) -> Fixed_Byte_Buffer {
 	s := transmute(Raw_Slice)backing
 	d: Raw_Dynamic_Array
 	d.data = s.data
@@ -648,7 +648,7 @@ This procedure is equivalent to `align_forward`, but it does not require the
 alignment to be a power of two.
 */
 @(require_results)
-align_formula :: proc "contextless" (size, align: int) -> int {
+align_formula :: proc(size, align: int) -> int {
 	result := size + align-1
 	return result - result%align
 }
@@ -676,7 +676,7 @@ alignment for `DATA`. The return value of the function is the padding between
 `ptr` and `aligned_ptr` that will be able to fit the header.
 */
 @(require_results)
-calc_padding_with_header :: proc "contextless" (ptr: uintptr, align: uintptr, header_size: int) -> int {
+calc_padding_with_header :: proc(ptr: uintptr, align: uintptr, header_size: int) -> int {
 	p, a := ptr, align
 	modulo := p & (a-1)
 	padding := uintptr(0)

@@ -23,7 +23,7 @@ _BASE_POINT: [56]byte = {
 }
 
 @(private)
-_scalar_bit :: #force_inline proc "contextless" (s: ^[56]byte, i: int) -> u8 {
+_scalar_bit :: #force_inline proc(s: ^[56]byte, i: int) -> u8 {
 	if i < 0 {
 		return 0
 	}
@@ -31,7 +31,7 @@ _scalar_bit :: #force_inline proc "contextless" (s: ^[56]byte, i: int) -> u8 {
 }
 
 @(private)
-_scalarmult :: proc "contextless" (out, scalar, point: ^[56]byte) {
+_scalarmult :: proc(out, scalar, point: ^[56]byte) {
 	// Montgomery pseudo-multiplication, using the RFC 7748 formula.
 	t1, t2: field.Loose_Field_Element = ---, ---
 

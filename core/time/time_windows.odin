@@ -5,7 +5,7 @@ import win32 "core:sys/windows"
 
 _IS_SUPPORTED :: true
 
-_now :: proc "contextless" () -> Time {
+_now :: proc() -> Time {
 	file_time: win32.FILETIME
 
 	ns: i64
@@ -19,12 +19,12 @@ _now :: proc "contextless" () -> Time {
 	return unix(0, ns)
 }
 
-_sleep :: proc "contextless" (d: Duration) {
+_sleep :: proc(d: Duration) {
 	win32.Sleep(win32.DWORD(d/Millisecond))
 }
 
-_tick_now :: proc "contextless" () -> Tick {
-	mul_div_u64 :: proc "contextless" (val, num, den: i64) -> i64 {
+_tick_now :: proc() -> Tick {
+	mul_div_u64 :: proc(val, num, den: i64) -> i64 {
 		q := val / den
 		r := val % den
 		return q * num + r * num / den
@@ -42,6 +42,6 @@ _tick_now :: proc "contextless" () -> Tick {
 	return Tick{_nsec = _nsec}
 }
 
-_yield :: proc "contextless" () {
+_yield :: proc() {
 	win32.SwitchToThread()
 }

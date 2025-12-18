@@ -8,7 +8,7 @@ import "core:time"
 // NOTE: because `core:sync` is in the dependency chain of a lot of the core packages (mostly through `core:mem`)
 // without actually calling into it much, I opted for a runtime panic instead of a compile error here.
 
-_futex_wait :: proc "contextless" (f: ^Futex, expected: u32) -> bool {
+_futex_wait :: proc(f: ^Futex, expected: u32) -> bool {
 	when !intrinsics.has_target_feature("atomics") {
 		panic("usage of `core:sync` requires the `-target-feature:\"atomics\"` or a `-microarch` that supports it")
 	} else {
@@ -17,7 +17,7 @@ _futex_wait :: proc "contextless" (f: ^Futex, expected: u32) -> bool {
 	}
 }
 
-_futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, duration: time.Duration) -> bool {
+_futex_wait_with_timeout :: proc(f: ^Futex, expected: u32, duration: time.Duration) -> bool {
 	when !intrinsics.has_target_feature("atomics") {
 		panic("usage of `core:sync` requires the `-target-feature:\"atomics\"` or a `-microarch` that supports it")
 	} else {
@@ -26,7 +26,7 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, durati
 	}
 }
 
-_futex_signal :: proc "contextless" (f: ^Futex) {
+_futex_signal :: proc(f: ^Futex) {
 	when !intrinsics.has_target_feature("atomics") {
 		panic("usage of `core:sync` requires the `-target-feature:\"atomics\"` or a `-microarch` that supports it")
 	} else {
@@ -34,7 +34,7 @@ _futex_signal :: proc "contextless" (f: ^Futex) {
 	}
 }
 
-_futex_broadcast :: proc "contextless" (f: ^Futex) {
+_futex_broadcast :: proc(f: ^Futex) {
 	when !intrinsics.has_target_feature("atomics") {
 		panic("usage of `core:sync` requires the `-target-feature:\"atomics\"` or a `-microarch` that supports it")
 	} else {

@@ -35,7 +35,7 @@ package aes_ct64
 // function such as AEGIS and Deoxys-II.  This should ONLY be done when
 // implementing something other than AES itself.
 
-sub_bytes :: proc "contextless" (q: ^[8]u64) {
+sub_bytes :: proc(q: ^[8]u64) {
 	// This S-box implementation is a straightforward translation of
 	// the circuit described by Boyar and Peralta in "A new
 	// combinational logic minimization technique with applications
@@ -186,7 +186,7 @@ sub_bytes :: proc "contextless" (q: ^[8]u64) {
 	q[0] = s7
 }
 
-orthogonalize :: proc "contextless" (q: ^[8]u64) {
+orthogonalize :: proc(q: ^[8]u64) {
 	CL2 :: 0x5555555555555555
 	CH2 :: 0xAAAAAAAAAAAAAAAA
 	q[0], q[1] = (q[0] & CL2) | ((q[1] & CL2) << 1), ((q[0] & CH2) >> 1) | (q[1] & CH2)
@@ -210,7 +210,7 @@ orthogonalize :: proc "contextless" (q: ^[8]u64) {
 }
 
 @(require_results)
-interleave_in :: proc "contextless" (w0, w1, w2, w3: u32) -> (q0, q1: u64) #no_bounds_check {
+interleave_in :: proc(w0, w1, w2, w3: u32) -> (q0, q1: u64) #no_bounds_check {
 	x0, x1, x2, x3 := u64(w0), u64(w1), u64(w2), u64(w3)
 	x0 |= (x0 << 16)
 	x1 |= (x1 << 16)
@@ -234,7 +234,7 @@ interleave_in :: proc "contextless" (w0, w1, w2, w3: u32) -> (q0, q1: u64) #no_b
 }
 
 @(require_results)
-interleave_out :: proc "contextless" (q0, q1: u64) -> (w0, w1, w2, w3: u32) {
+interleave_out :: proc(q0, q1: u64) -> (w0, w1, w2, w3: u32) {
 	x0 := q0 & 0x00FF00FF00FF00FF
 	x1 := q1 & 0x00FF00FF00FF00FF
 	x2 := (q0 >> 8) & 0x00FF00FF00FF00FF
@@ -255,6 +255,6 @@ interleave_out :: proc "contextless" (q0, q1: u64) -> (w0, w1, w2, w3: u32) {
 }
 
 @(private)
-rotr32 :: #force_inline proc "contextless" (x: u64) -> u64 {
+rotr32 :: #force_inline proc(x: u64) -> u64 {
 	return (x << 32) | (x >> 32)
 }

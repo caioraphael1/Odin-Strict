@@ -31,6 +31,6 @@ foreign system {
 	__error :: proc() -> ^i32 ---
 }
 
-errno :: #force_inline proc "contextless" () -> i32 {
+errno :: #force_inline proc() -> i32 {
 	return __error()^
 }

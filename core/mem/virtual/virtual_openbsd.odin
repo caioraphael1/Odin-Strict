@@ -2,7 +2,7 @@ package mem_virtual
 
 import "core:sys/posix"
 
-_reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
+_reserve :: proc(size: uint) -> (data: []byte, err: Allocator_Error) {
 	result := posix.mmap(nil, size, {}, {.ANONYMOUS, .PRIVATE})
 	if result == posix.MAP_FAILED {
 		assert(posix.errno() == .ENOMEM)
@@ -12,7 +12,7 @@ _reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Err
 	return ([^]byte)(uintptr(result))[:size], nil
 }
 
-_decommit :: proc "contextless" (data: rawptr, size: uint) {
+_decommit :: proc(data: rawptr, size: uint) {
 	MADV_FREE :: 6
 
 	posix.mprotect(data, size, {})

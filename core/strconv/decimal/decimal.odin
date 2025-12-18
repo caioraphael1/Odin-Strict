@@ -72,7 +72,7 @@ set :: proc(d: ^Decimal, s: string) -> (ok: bool) {
 		d.decimal_point = d.count
 	}
 
-	lower :: #force_inline proc "contextless" (ch: byte) -> byte { return ('a' - 'A') | ch }
+	lower :: #force_inline proc(ch: byte) -> byte { return ('a' - 'A') | ch }
 
 	if i < len(s) && lower(s[i]) == 'e' {
 		i += 1
@@ -350,7 +350,7 @@ WARNING: asserts `k < 61`
 - k: The number of places to shift the decimal to the left
 */
 shift_left :: proc(a: ^Decimal, k: uint) #no_bounds_check {
-	prefix_less :: #force_inline proc "contextless" (b: []byte, s: string) -> bool #no_bounds_check {
+	prefix_less :: #force_inline proc(b: []byte, s: string) -> bool #no_bounds_check {
 		for i in 0..<len(s) {
 			if i >= len(b) {
 				return true

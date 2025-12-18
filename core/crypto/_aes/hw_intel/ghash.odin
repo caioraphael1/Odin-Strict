@@ -60,7 +60,7 @@ GHASH_STRIDE_BYTES_HW :: GHASH_STRIDE_HW * _aes.GHASH_BLOCK_SIZE
 _BYTESWAP_INDEX: x86.__m128i : { 0x08090a0b0c0d0e0f, 0x0001020304050607 }
 
 @(private = "file", require_results, enable_target_feature = "sse2,ssse3")
-byteswap :: #force_inline proc "contextless" (x: x86.__m128i) -> x86.__m128i {
+byteswap :: #force_inline proc(x: x86.__m128i) -> x86.__m128i {
 	return x86._mm_shuffle_epi8(x, _BYTESWAP_INDEX)
 }
 
@@ -68,14 +68,14 @@ byteswap :: #force_inline proc "contextless" (x: x86.__m128i) -> x86.__m128i {
 // halves of kw (into the right half of kx; left half is unspecified),
 // and return kx.
 @(private = "file", require_results, enable_target_feature = "sse2")
-bk :: #force_inline proc "contextless" (kw: x86.__m128i) -> x86.__m128i {
+bk :: #force_inline proc(kw: x86.__m128i) -> x86.__m128i {
 	return x86._mm_xor_si128(kw, x86._mm_shuffle_epi32(kw, 0x0e))
 }
 
 // Combine two 64-bit values (k0:k1) into a 128-bit (kw) value and
 // the XOR of the two values (kx), and return (kw, kx).
 @(private = "file", enable_target_feature = "sse2")
-pbk :: #force_inline proc "contextless" (k0, k1: x86.__m128i) -> (x86.__m128i, x86.__m128i) {
+pbk :: #force_inline proc(k0, k1: x86.__m128i) -> (x86.__m128i, x86.__m128i) {
 	kw := x86._mm_unpacklo_epi64(k1, k0)
 	kx := x86._mm_xor_si128(k0, k1)
 	return kw, kx
@@ -83,7 +83,7 @@ pbk :: #force_inline proc "contextless" (k0, k1: x86.__m128i) -> (x86.__m128i, x
 
 // Left-shift by 1 bit a 256-bit value (in four 64-bit words).
 @(private = "file", require_results, enable_target_feature = "sse2")
-sl_256 :: #force_inline proc "contextless" (x0, x1, x2, x3: x86.__m128i) -> (x86.__m128i, x86.__m128i, x86.__m128i, x86.__m128i) {
+sl_256 :: #force_inline proc(x0, x1, x2, x3: x86.__m128i) -> (x86.__m128i, x86.__m128i, x86.__m128i, x86.__m128i) {
 	x0, x1, x2, x3 := x0, x1, x2, x3
 
 	x0 = x86._mm_or_si128(x86._mm_slli_epi64(x0, 1), x86._mm_srli_epi64(x1, 63))
@@ -96,7 +96,7 @@ sl_256 :: #force_inline proc "contextless" (x0, x1, x2, x3: x86.__m128i) -> (x86
 
 // Perform reduction in GF(2^128).
 @(private = "file", require_results, enable_target_feature = "sse2")
-reduce_f128 :: #force_inline proc "contextless" (x0, x1, x2, x3: x86.__m128i) -> (x86.__m128i, x86.__m128i) {
+reduce_f128 :: #force_inline proc(x0, x1, x2, x3: x86.__m128i) -> (x86.__m128i, x86.__m128i) {
 	x0, x1, x2 := x0, x1, x2
 
 	x1 = x86._mm_xor_si128(
@@ -137,7 +137,7 @@ reduce_f128 :: #force_inline proc "contextless" (x0, x1, x2, x3: x86.__m128i) ->
 
 // Square value kw in GF(2^128) into (dw,dx).
 @(private = "file", require_results, enable_target_feature = "sse2,pclmul")
-square_f128 :: #force_inline proc "contextless" (kw: x86.__m128i) -> (x86.__m128i, x86.__m128i) {
+square_f128 :: #force_inline proc(kw: x86.__m128i) -> (x86.__m128i, x86.__m128i) {
 	z1 := x86._mm_clmulepi64_si128(kw, kw, 0x11)
 	z3 := x86._mm_clmulepi64_si128(kw, kw, 0x00)
 	z0 := x86._mm_shuffle_epi32(z1, 0x0E)
@@ -153,7 +153,7 @@ square_f128 :: #force_inline proc "contextless" (kw: x86.__m128i) -> (x86.__m128
 // Note: `dst` is both an input and an output, to support easy implementation
 // of GCM.
 @(enable_target_feature = "sse2,ssse3,pclmul")
-ghash :: proc "contextless" (dst, key, data: []byte) #no_bounds_check {
+ghash :: proc(dst, key, data: []byte) #no_bounds_check {
 	if len(dst) != _aes.GHASH_BLOCK_SIZE || len(key) != _aes.GHASH_BLOCK_SIZE {
 		panic("aes/ghash: invalid dst or key size")
 	}

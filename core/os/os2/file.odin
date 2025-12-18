@@ -125,7 +125,7 @@ perm :: proc{
 	`perm_number` converts an integer value `perm` to the bit set `Permissions`
 */
 @(require_results)
-perm_number :: proc "contextless" (perm: int) -> Permissions {
+perm_number :: proc(perm: int) -> Permissions {
 	return transmute(Permissions)u32(perm & 0o777)
 }
 

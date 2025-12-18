@@ -19,11 +19,11 @@ _TWO_336 := Montgomery_Domain_Field_Element {
 	0x3d217f5be65cb5c,
 }
 
-fe_clear :: proc "contextless" (arg1: ^Montgomery_Domain_Field_Element) {
+fe_clear :: proc(arg1: ^Montgomery_Domain_Field_Element) {
 	mem.zero_explicit(arg1, size_of(Montgomery_Domain_Field_Element))
 }
 
-fe_from_bytes :: proc "contextless" (
+fe_from_bytes :: proc(
 	out1: ^Montgomery_Domain_Field_Element,
 	arg1: ^[32]byte,
 	unsafe_assume_canonical := false,
@@ -52,7 +52,7 @@ fe_from_bytes :: proc "contextless" (
 	return true
 }
 
-fe_from_bytes_rfc8032 :: proc "contextless" (
+fe_from_bytes_rfc8032 :: proc(
 	out1: ^Montgomery_Domain_Field_Element,
 	arg1: ^[32]byte,
 ) {
@@ -69,7 +69,7 @@ fe_from_bytes_rfc8032 :: proc "contextless" (
 	mem.zero_explicit(&tmp, size_of(tmp))
 }
 
-fe_from_bytes_wide :: proc "contextless" (
+fe_from_bytes_wide :: proc(
 	out1: ^Montgomery_Domain_Field_Element,
 	arg1: ^[64]byte,
 ) {
@@ -92,7 +92,7 @@ fe_from_bytes_wide :: proc "contextless" (
 }
 
 @(private)
-_fe_from_bytes_short :: proc "contextless" (out1: ^Montgomery_Domain_Field_Element, arg1: []byte) {
+_fe_from_bytes_short :: proc(out1: ^Montgomery_Domain_Field_Element, arg1: []byte) {
 	// INVARIANT: len(arg1) < 32.
 	ensure(len(arg1) < 32, "edwards25519: oversized short scalar")
 
@@ -103,7 +103,7 @@ _fe_from_bytes_short :: proc "contextless" (out1: ^Montgomery_Domain_Field_Eleme
 	mem.zero_explicit(&tmp, size_of(tmp))
 }
 
-fe_to_bytes :: proc "contextless" (out1: []byte, arg1: ^Montgomery_Domain_Field_Element) {
+fe_to_bytes :: proc(out1: []byte, arg1: ^Montgomery_Domain_Field_Element) {
 	ensure(len(out1) == 32, "edwards25519: oversized scalar output buffer")
 
 	tmp: Non_Montgomery_Domain_Field_Element
@@ -117,7 +117,7 @@ fe_to_bytes :: proc "contextless" (out1: []byte, arg1: ^Montgomery_Domain_Field_
 	mem.zero_explicit(&tmp, size_of(tmp))
 }
 
-fe_equal :: proc "contextless" (arg1, arg2: ^Montgomery_Domain_Field_Element) -> int {
+fe_equal :: proc(arg1, arg2: ^Montgomery_Domain_Field_Element) -> int {
 	tmp: Montgomery_Domain_Field_Element
 	fe_sub(&tmp, arg1, arg2)
 
@@ -130,14 +130,14 @@ fe_equal :: proc "contextless" (arg1, arg2: ^Montgomery_Domain_Field_Element) ->
 	return int(borrow)
 }
 
-fe_zero :: proc "contextless" (out1: ^Montgomery_Domain_Field_Element) {
+fe_zero :: proc(out1: ^Montgomery_Domain_Field_Element) {
 	out1[0] = 0
 	out1[1] = 0
 	out1[2] = 0
 	out1[3] = 0
 }
 
-fe_set :: proc "contextless" (out1, arg1: ^Montgomery_Domain_Field_Element) {
+fe_set :: proc(out1, arg1: ^Montgomery_Domain_Field_Element) {
 	x1 := arg1[0]
 	x2 := arg1[1]
 	x3 := arg1[2]

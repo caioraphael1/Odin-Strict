@@ -64,7 +64,7 @@ _ROT_16: simd.u32x4 : {16, 16, 16, 16}
 
 when ODIN_ENDIAN == .Big {
 	@(private = "file")
-	_increment_counter :: #force_inline proc "contextless" (ctx: ^_chacha20.Context) -> simd.u32x4 {
+	_increment_counter :: #force_inline proc(ctx: ^_chacha20.Context) -> simd.u32x4 {
 		// In the Big Endian case, the low and high portions in the vector
 		// are flipped, so the 64-bit addition can't be done with a simple
 		// vector add.
@@ -80,7 +80,7 @@ when ODIN_ENDIAN == .Big {
 	// Convert the endian-ness of the components of a u32x4 vector, for
 	// the purposes of output.
 	@(private = "file")
-	_byteswap_u32x4 :: #force_inline proc "contextless" (v: simd.u32x4) -> simd.u32x4 {
+	_byteswap_u32x4 :: #force_inline proc(v: simd.u32x4) -> simd.u32x4 {
 		return(
 			transmute(simd.u32x4)simd.shuffle(
 				transmute(simd.u8x16)v,
@@ -95,7 +95,7 @@ when ODIN_ENDIAN == .Big {
 }
 
 @(private = "file")
-_dq_round_simd128 :: #force_inline proc "contextless" (
+_dq_round_simd128 :: #force_inline proc(
 	v0, v1, v2, v3: simd.u32x4,
 ) -> (
 	simd.u32x4,
@@ -159,7 +159,7 @@ _dq_round_simd128 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_add_state_simd128 :: #force_inline proc "contextless" (
+_add_state_simd128 :: #force_inline proc(
 	v0, v1, v2, v3, s0, s1, s2, s3: simd.u32x4,
 ) -> (
 	simd.u32x4,
@@ -185,7 +185,7 @@ _add_state_simd128 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_xor_simd128 :: #force_inline proc "contextless" (
+_xor_simd128 :: #force_inline proc(
 	src: [^]simd.u32x4,
 	v0, v1, v2, v3: simd.u32x4,
 ) -> (
@@ -205,7 +205,7 @@ _xor_simd128 :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-_store_simd128 :: #force_inline proc "contextless" (
+_store_simd128 :: #force_inline proc(
 	dst: [^]simd.u32x4,
 	v0, v1, v2, v3: simd.u32x4,
 ) {
@@ -217,7 +217,7 @@ _store_simd128 :: #force_inline proc "contextless" (
 
 // is_performant returns true iff the target and current host both support
 // "enough" 128-bit SIMD to make this implementation performant.
-is_performant :: proc "contextless" () -> bool {
+is_performant :: proc() -> bool {
 	when ODIN_ARCH == .arm64 || ODIN_ARCH == .arm32 || ODIN_ARCH == .amd64 || ODIN_ARCH == .i386 || ODIN_ARCH == .riscv64 {
 		when ODIN_ARCH == .arm64 || ODIN_ARCH == .arm32 {
 			req_features :: info.CPU_Features{.asimd}
@@ -480,7 +480,7 @@ stream_blocks :: proc(ctx: ^_chacha20.Context, dst, src: []byte, nr_blocks: int)
 }
 
 @(enable_target_feature = TARGET_SIMD_FEATURES)
-hchacha20 :: proc "contextless" (dst, key, iv: []byte) {
+hchacha20 :: proc(dst, key, iv: []byte) {
 	v0 := simd.u32x4{_chacha20.SIGMA_0, _chacha20.SIGMA_1, _chacha20.SIGMA_2, _chacha20.SIGMA_3}
 	v1 := intrinsics.unaligned_load((^simd.u32x4)(&key[0]))
 	v2 := intrinsics.unaligned_load((^simd.u32x4)(&key[16]))

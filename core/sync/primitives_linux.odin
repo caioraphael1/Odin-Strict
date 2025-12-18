@@ -4,6 +4,6 @@ package sync
 
 import "core:sys/linux"
 
-_current_thread_id :: proc "contextless" () -> int {
+_current_thread_id :: proc() -> int {
 	return cast(int) linux.gettid()
 }

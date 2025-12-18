@@ -42,7 +42,7 @@ ELL :: [4]u64{0x5812631a5cf5d3ed, 0x14def9dea2f79cd6, 0x0, 0x1000000000000000}
 Montgomery_Domain_Field_Element :: distinct [4]u64
 Non_Montgomery_Domain_Field_Element :: distinct [4]u64
 
-fe_mul :: proc "contextless" (out1, arg1, arg2: ^Montgomery_Domain_Field_Element) {
+fe_mul :: proc(out1, arg1, arg2: ^Montgomery_Domain_Field_Element) {
 	x1 := arg1[1]
 	x2 := arg1[2]
 	x3 := arg1[3]
@@ -156,7 +156,7 @@ fe_mul :: proc "contextless" (out1, arg1, arg2: ^Montgomery_Domain_Field_Element
 	out1[3] = x195
 }
 
-fe_square :: proc "contextless" (out1, arg1: ^Montgomery_Domain_Field_Element) {
+fe_square :: proc(out1, arg1: ^Montgomery_Domain_Field_Element) {
 	x1 := arg1[1]
 	x2 := arg1[2]
 	x3 := arg1[3]
@@ -270,7 +270,7 @@ fe_square :: proc "contextless" (out1, arg1: ^Montgomery_Domain_Field_Element) {
 	out1[3] = x195
 }
 
-fe_add :: proc "contextless" (out1, arg1, arg2: ^Montgomery_Domain_Field_Element) {
+fe_add :: proc(out1, arg1, arg2: ^Montgomery_Domain_Field_Element) {
 	x1, x2 := bits.add_u64(arg1[0], arg2[0], u64(0x0))
 	x3, x4 := bits.add_u64(arg1[1], arg2[1], u64(fiat.u1(x2)))
 	x5, x6 := bits.add_u64(arg1[2], arg2[2], u64(fiat.u1(x4)))
@@ -290,7 +290,7 @@ fe_add :: proc "contextless" (out1, arg1, arg2: ^Montgomery_Domain_Field_Element
 	out1[3] = x22
 }
 
-fe_sub :: proc "contextless" (out1, arg1, arg2: ^Montgomery_Domain_Field_Element) {
+fe_sub :: proc(out1, arg1, arg2: ^Montgomery_Domain_Field_Element) {
 	x1, x2 := bits.sub_u64(arg1[0], arg2[0], u64(0x0))
 	x3, x4 := bits.sub_u64(arg1[1], arg2[1], u64(fiat.u1(x2)))
 	x5, x6 := bits.sub_u64(arg1[2], arg2[2], u64(fiat.u1(x4)))
@@ -306,7 +306,7 @@ fe_sub :: proc "contextless" (out1, arg1, arg2: ^Montgomery_Domain_Field_Element
 	out1[3] = x16
 }
 
-fe_opp :: proc "contextless" (out1, arg1: ^Montgomery_Domain_Field_Element) {
+fe_opp :: proc(out1, arg1: ^Montgomery_Domain_Field_Element) {
 	x1, x2 := bits.sub_u64(u64(0x0), arg1[0], u64(0x0))
 	x3, x4 := bits.sub_u64(u64(0x0), arg1[1], u64(fiat.u1(x2)))
 	x5, x6 := bits.sub_u64(u64(0x0), arg1[2], u64(fiat.u1(x4)))
@@ -322,19 +322,19 @@ fe_opp :: proc "contextless" (out1, arg1: ^Montgomery_Domain_Field_Element) {
 	out1[3] = x16
 }
 
-fe_one :: proc "contextless" (out1: ^Montgomery_Domain_Field_Element) {
+fe_one :: proc(out1: ^Montgomery_Domain_Field_Element) {
 	out1[0] = 0xd6ec31748d98951d
 	out1[1] = 0xc6ef5bf4737dcf70
 	out1[2] = 0xfffffffffffffffe
 	out1[3] = 0xfffffffffffffff
 }
 
-fe_non_zero :: proc "contextless" (arg1: ^Montgomery_Domain_Field_Element) -> u64 {
+fe_non_zero :: proc(arg1: ^Montgomery_Domain_Field_Element) -> u64 {
 	return arg1[0] | (arg1[1] | (arg1[2] | arg1[3]))
 }
 
 @(optimization_mode = "none")
-fe_cond_assign :: #force_no_inline proc "contextless" (
+fe_cond_assign :: #force_no_inline proc(
 	out1, arg1: ^Montgomery_Domain_Field_Element,
 	arg2: int,
 ) {
@@ -348,7 +348,7 @@ fe_cond_assign :: #force_no_inline proc "contextless" (
 	out1[3] = x4
 }
 
-fe_from_montgomery :: proc "contextless" (
+fe_from_montgomery :: proc(
 	out1: ^Non_Montgomery_Domain_Field_Element,
 	arg1: ^Montgomery_Domain_Field_Element,
 ) {
@@ -422,7 +422,7 @@ fe_from_montgomery :: proc "contextless" (
 	out1[3] = x98
 }
 
-fe_to_montgomery :: proc "contextless" (
+fe_to_montgomery :: proc(
 	out1: ^Montgomery_Domain_Field_Element,
 	arg1: ^Non_Montgomery_Domain_Field_Element,
 ) {

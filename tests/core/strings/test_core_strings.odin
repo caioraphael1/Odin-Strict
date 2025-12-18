@@ -222,7 +222,7 @@ test_builder_to_cstring :: proc(t: ^testing.T) {
 
 @test
 test_prefix_length :: proc(t: ^testing.T) {
-	prefix_length :: proc "contextless" (a, b: string) -> (n: int) {
+	prefix_length :: proc(a, b: string) -> (n: int) {
 		_len := min(len(a), len(b))
 
 		// Scan for matches including partial codepoints.

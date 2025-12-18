@@ -19,13 +19,13 @@ Wait_Queue :: struct {
 	list: Wait_Node,
 }
 @(private="file")
-waitq_lock :: proc "contextless" (waitq: ^Wait_Queue) {
+waitq_lock :: proc(waitq: ^Wait_Queue) {
 	for cast(bool)atomic_exchange_explicit(&waitq.lock, atomic_flag(true), .Acquire) {
 		cpu_relax() // spin...
 	}
 }
 @(private="file")
-waitq_unlock :: proc "contextless" (waitq: ^Wait_Queue) {
+waitq_unlock :: proc(waitq: ^Wait_Queue) {
 	atomic_store_explicit(&waitq.lock, atomic_flag(false), .Release)
 }
 
@@ -45,12 +45,12 @@ g_waitq_init :: proc() {
 }
 
 @(private="file")
-get_waitq :: #force_inline proc "contextless" (f: ^Futex) -> ^Wait_Queue {
+get_waitq :: #force_inline proc(f: ^Futex) -> ^Wait_Queue {
 	_ = f
 	return &g_waitq
 }
 
-_futex_wait :: proc "contextless" (f: ^Futex, expect: u32) -> (ok: bool) {
+_futex_wait :: proc(f: ^Futex, expect: u32) -> (ok: bool) {
 	waitq := get_waitq(f)
 	waitq_lock(waitq)
 	defer waitq_unlock(waitq)
@@ -89,7 +89,7 @@ _futex_wait :: proc "contextless" (f: ^Futex, expect: u32) -> (ok: bool) {
 	return
 }
 
-_futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expect: u32, duration: time.Duration) -> (ok: bool) {
+_futex_wait_with_timeout :: proc(f: ^Futex, expect: u32, duration: time.Duration) -> (ok: bool) {
 	if duration <= 0 {
 		return false
 	}
@@ -136,7 +136,7 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expect: u32, duration
 	return
 }
 
-_futex_signal :: proc "contextless" (f: ^Futex) {
+_futex_signal :: proc(f: ^Futex) {
 	waitq := get_waitq(f)
 	waitq_lock(waitq)
 	defer waitq_unlock(waitq)
@@ -150,7 +150,7 @@ _futex_signal :: proc "contextless" (f: ^Futex) {
 	}
 }
 
-_futex_broadcast :: proc "contextless" (f: ^Futex) {
+_futex_broadcast :: proc(f: ^Futex) {
 	waitq := get_waitq(f)
 	waitq_lock(waitq)
 	defer waitq_unlock(waitq)

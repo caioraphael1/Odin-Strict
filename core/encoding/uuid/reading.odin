@@ -13,7 +13,7 @@ Returns:
 - id: The converted identifier, or `nil` if there is an error.
 - error: A description of the error, or `nil` if successful.
 */
-read :: proc "contextless" (str: string) -> (id: Identifier, error: Read_Error) #no_bounds_check {
+read :: proc(str: string) -> (id: Identifier, error: Read_Error) #no_bounds_check {
 	// Only exact-length strings are acceptable.
 	if len(str) != EXPECTED_LENGTH {
 		return {}, .Invalid_Length
@@ -24,7 +24,7 @@ read :: proc "contextless" (str: string) -> (id: Identifier, error: Read_Error) 
 		return {}, .Invalid_Separator
 	}
 
-	read_nibble :: proc "contextless" (nibble: u8) -> u8 {
+	read_nibble :: proc(nibble: u8) -> u8 {
 		switch nibble {
 		case '0' ..= '9':
 			return nibble - '0'
@@ -71,7 +71,7 @@ Inputs:
 Returns:
 - number: The version number.
 */
-version :: proc "contextless" (id: Identifier) -> (number: int) #no_bounds_check {
+version :: proc(id: Identifier) -> (number: int) #no_bounds_check {
 	return cast(int)(id[VERSION_BYTE_INDEX] & 0xF0 >> 4)
 }
 
@@ -84,7 +84,7 @@ Inputs:
 Returns:
 - variant: The variant type.
 */
-variant :: proc "contextless" (id: Identifier) -> (variant: Variant_Type) #no_bounds_check {
+variant :: proc(id: Identifier) -> (variant: Variant_Type) #no_bounds_check {
 	switch {
 	case id[VARIANT_BYTE_INDEX] & 0x80 == 0:
 		return .Reserved_Apollo_NCS
@@ -108,7 +108,7 @@ Inputs:
 Returns:
 - clock_seq: The 14-bit clock sequence field.
 */
-clock_seq :: proc "contextless" (id: Identifier) -> (clock_seq: u16) {
+clock_seq :: proc(id: Identifier) -> (clock_seq: u16) {
 	return cast(u16)id[9] | cast(u16)id[8] & 0x3F << 8
 }
 
@@ -121,7 +121,7 @@ Inputs:
 Returns:
 - node: The 48-bit spatially unique identifier.
 */
-node :: proc "contextless" (id: Identifier) -> (node: [6]u8) {
+node :: proc(id: Identifier) -> (node: [6]u8) {
 	mutable_id := id
 	runtime.mem_copy_non_overlapping(&node, &mutable_id[10], 6)
 	return
@@ -136,7 +136,7 @@ Inputs:
 Returns:
 - timestamp: The timestamp, in 100-nanosecond intervals since 1582-10-15.
 */
-raw_time_v1 :: proc "contextless" (id: Identifier) -> (timestamp: u64) {
+raw_time_v1 :: proc(id: Identifier) -> (timestamp: u64) {
 	timestamp_octets: [8]u8
 
 	timestamp_octets[0] = id[0]
@@ -162,7 +162,7 @@ Inputs:
 Returns:
 - timestamp: The timestamp of the UUID.
 */
-time_v1 :: proc "contextless" (id: Identifier) -> (timestamp: time.Time) {
+time_v1 :: proc(id: Identifier) -> (timestamp: time.Time) {
 	return time.from_nanoseconds(cast(i64)(raw_time_v1(id) - HNS_INTERVALS_BETWEEN_GREG_AND_UNIX) * 100)
 }
 
@@ -175,7 +175,7 @@ Inputs:
 Returns:
 - timestamp: The timestamp, in 100-nanosecond intervals since 1582-10-15.
 */
-raw_time_v6 :: proc "contextless" (id: Identifier) -> (timestamp: u64) {
+raw_time_v6 :: proc(id: Identifier) -> (timestamp: u64) {
 	temporary := transmute(u128be)id
 
 	timestamp |= cast(u64)(temporary & 0xFFFFFFFF_FFFF0000_00000000_00000000 >> 68)
@@ -193,7 +193,7 @@ Inputs:
 Returns:
 - timestamp: The timestamp, in 100-nanosecond intervals since 1582-10-15.
 */
-time_v6 :: proc "contextless" (id: Identifier) -> (timestamp: time.Time) {
+time_v6 :: proc(id: Identifier) -> (timestamp: time.Time) {
 	return time.from_nanoseconds(cast(i64)(raw_time_v6(id) - HNS_INTERVALS_BETWEEN_GREG_AND_UNIX) * 100)
 }
 
@@ -206,7 +206,7 @@ Inputs:
 Returns:
 - timestamp: The timestamp, in milliseconds since the UNIX epoch.
 */
-raw_time_v7 :: proc "contextless" (id: Identifier) -> (timestamp: u64) {
+raw_time_v7 :: proc(id: Identifier) -> (timestamp: u64) {
 	time_bits := transmute(u128be)id & VERSION_7_TIME_MASK
 	return cast(u64)(time_bits >> VERSION_7_TIME_SHIFT)
 }
@@ -220,7 +220,7 @@ Inputs:
 Returns:
 - timestamp: The timestamp, in milliseconds since the UNIX epoch.
 */
-time_v7 :: proc "contextless" (id: Identifier) -> (timestamp: time.Time) {
+time_v7 :: proc(id: Identifier) -> (timestamp: time.Time) {
 	return time.from_nanoseconds(cast(i64)raw_time_v7(id) * 1e6)
 }
 
@@ -236,7 +236,7 @@ Inputs:
 Returns:
 - counter: The 12-bit counter value.
 */
-counter_v7 :: proc "contextless" (id: Identifier) -> (counter: u16) {
+counter_v7 :: proc(id: Identifier) -> (counter: u16) {
 	counter_bits := transmute(u128be)id & VERSION_7_COUNTER_MASK
 	return cast(u16)(counter_bits >> VERSION_7_COUNTER_SHIFT)
 }

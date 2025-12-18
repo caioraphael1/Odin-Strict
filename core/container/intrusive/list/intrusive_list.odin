@@ -30,7 +30,7 @@ Inserts a new element at the front of the list with O(1) time complexity.
 - list: The container list
 - node: The node member of the user-defined element structure
 */
-push_front :: proc "contextless" (list: ^List, node: ^Node) {
+push_front :: proc(list: ^List, node: ^Node) {
 	if list.head != nil {
 		list.head.prev = node
 		node.prev, node.next = nil, list.head
@@ -47,7 +47,7 @@ Inserts a new element at the back of the list with O(1) time complexity.
 - list: The container list
 - node: The node member of the user-defined element structure
 */
-push_back :: proc "contextless" (list: ^List, node: ^Node) {
+push_back :: proc(list: ^List, node: ^Node) {
 	if list.tail != nil {
 		list.tail.next = node
 		node.prev, node.next = list.tail, nil
@@ -65,7 +65,7 @@ Removes an element from a list with O(1) time complexity.
 - list: The container list
 - node: The node member of the user-defined element structure to be removed
 */
-remove :: proc "contextless" (list: ^List, node: ^Node) {
+remove :: proc(list: ^List, node: ^Node) {
 	if node != nil {
 		if node.next != nil {
 			node.next.prev = node.prev
@@ -115,7 +115,7 @@ Removes from the given list all elements that satisfy a condition with O(N) time
 - list: The container list
 - to_erase: The _contextless_ condition procedure. It should return `true` if a node should be removed, `false` otherwise
 */
-remove_by_proc_contextless :: proc(list: ^List, to_erase: proc "contextless" (^Node) -> bool) {
+remove_by_proc_contextless :: proc(list: ^List, to_erase: proc(^Node) -> bool) {
 	for node := list.head; node != nil; {
 		next := node.next
 		if to_erase(node) {
@@ -144,7 +144,7 @@ Checks whether the given list does not contain any element.
 
 **Returns** `true` if `list` is empty, `false` otherwise
 */
-is_empty :: proc "contextless" (list: ^List) -> bool {
+is_empty :: proc(list: ^List) -> bool {
 	return list.head == nil
 }
 
@@ -156,7 +156,7 @@ Removes and returns the element at the front of the list with O(1) time complexi
 
 **Returns** The node member of the user-defined element structure, or `nil` if the list is empty
 */
-pop_front :: proc "contextless" (list: ^List) -> ^Node {
+pop_front :: proc(list: ^List) -> ^Node {
 	link := list.head
 	if link == nil {
 		return nil
@@ -184,7 +184,7 @@ Removes and returns the element at the back of the list with O(1) time complexit
 
 **Returns** The node member of the user-defined element structure, or `nil` if the list is empty
 */
-pop_back :: proc "contextless" (list: ^List) -> ^Node {
+pop_back :: proc(list: ^List) -> ^Node {
 	link := list.tail
 	if link == nil {
 		return nil
@@ -222,7 +222,7 @@ Creates an iterator pointing at the head of the given list. For an example, see 
 **Returns** An iterator pointing at the head of `list`
 
 */
-iterator_head :: proc "contextless" (list: List, $T: typeid, $field_name: string) -> Iterator(T)
+iterator_head :: proc(list: List, $T: typeid, $field_name: string) -> Iterator(T)
 	where intrinsics.type_has_field(T, field_name),
 	      intrinsics.type_field_type(T, field_name) == Node {
 	return {list.head, offset_of_by_string(T, field_name)}
@@ -238,7 +238,7 @@ Creates an iterator pointing at the tail of the given list. For an example, see 
 **Returns** An iterator pointing at the tail of `list`
 
 */
-iterator_tail :: proc "contextless" (list: List, $T: typeid, $field_name: string) -> Iterator(T)
+iterator_tail :: proc(list: List, $T: typeid, $field_name: string) -> Iterator(T)
 	where intrinsics.type_has_field(T, field_name),
 	      intrinsics.type_field_type(T, field_name) == Node {
 	return {list.tail, offset_of_by_string(T, field_name)}
@@ -254,7 +254,7 @@ Creates an iterator pointing at the specified node of a list.
 **Returns** An iterator pointing at `node`
 
 */
-iterator_from_node :: proc "contextless" (node: ^Node, $T: typeid, $field_name: string) -> Iterator(T)
+iterator_from_node :: proc(node: ^Node, $T: typeid, $field_name: string) -> Iterator(T)
 	where intrinsics.type_has_field(T, field_name),
 	      intrinsics.type_field_type(T, field_name) == Node {
 	return {node, offset_of_by_string(T, field_name)}
@@ -301,7 +301,7 @@ Output:
 	2
 
 */
-iterate_next :: proc "contextless" (it: ^Iterator($T)) -> (ptr: ^T, ok: bool) {
+iterate_next :: proc(it: ^Iterator($T)) -> (ptr: ^T, ok: bool) {
 	node := it.curr
 	if node == nil {
 		return nil, false
@@ -351,7 +351,7 @@ Output:
 	1
 
 */
-iterate_prev :: proc "contextless" (it: ^Iterator($T)) -> (ptr: ^T, ok: bool) {
+iterate_prev :: proc(it: ^Iterator($T)) -> (ptr: ^T, ok: bool) {
 	node := it.curr
 	if node == nil {
 		return nil, false

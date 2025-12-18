@@ -132,11 +132,11 @@ query :: proc(s: Stream) -> (set: Stream_Mode_Set) {
 	return
 }
 
-query_utility :: #force_inline proc "contextless" (set: Stream_Mode_Set) -> (n: i64, err: Error) {
+query_utility :: #force_inline proc(set: Stream_Mode_Set) -> (n: i64, err: Error) {
 	return transmute(i64)set, nil
 }
 
-_i64_err :: #force_inline proc "contextless" (n: int, err: Error) -> (i64, Error) {
+_i64_err :: #force_inline proc(n: int, err: Error) -> (i64, Error) {
 	return i64(n), err
 }
 

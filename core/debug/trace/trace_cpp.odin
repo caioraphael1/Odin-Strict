@@ -93,7 +93,7 @@ _destroy :: proc(ctx: ^Context) -> bool {
 }
 
 @(private="package")
-_frames :: proc "contextless" (ctx: ^Context, skip: uint, frames_buffer: []Frame) -> (frames: []Frame) {
+_frames :: proc(ctx: ^Context, skip: uint, frames_buffer: []Frame) -> (frames: []Frame) {
 	Backtrace_Context :: struct {
 		ctx:         ^Context,
 		frames:      []Frame,

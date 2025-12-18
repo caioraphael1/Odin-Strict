@@ -216,7 +216,7 @@ I3DL2_PRESET_PLATE           := REVERB_I3DL2_PARAMETERS{100.0, -1000, -200,0.0, 
 
 // ReverbConvertI3DL2ToNative: Utility function to map from I3DL2 to native parameters
 
-ReverbConvertI3DL2ToNative :: proc "contextless" (pI3DL2: ^REVERB_I3DL2_PARAMETERS, pNative: ^REVERB_PARAMETERS, sevenDotOneReverb: b32 = true) {
+ReverbConvertI3DL2ToNative :: proc(pI3DL2: ^REVERB_I3DL2_PARAMETERS, pNative: ^REVERB_PARAMETERS, sevenDotOneReverb: b32 = true) {
 	reflectionsDelay: f32
 	reverbDelay:      f32
 

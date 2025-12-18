@@ -27,7 +27,7 @@ import "core:encoding/endian"
 import "core:mem"
 
 @(private, require_results)
-sub_word :: proc "contextless" (x: u32) -> u32 {
+sub_word :: proc(x: u32) -> u32 {
 	q := [8]u64{u64(x), 0, 0, 0, 0, 0, 0, 0}
 
 	orthogonalize(&q)
@@ -41,7 +41,7 @@ sub_word :: proc "contextless" (x: u32) -> u32 {
 }
 
 @(private, require_results)
-keysched :: proc "contextless" (comp_skey: []u64, key: []byte) -> int {
+keysched :: proc(comp_skey: []u64, key: []byte) -> int {
 	num_rounds, key_len := 0, len(key)
 	switch key_len {
 	case _aes.KEY_SIZE_128:
@@ -104,7 +104,7 @@ keysched :: proc "contextless" (comp_skey: []u64, key: []byte) -> int {
 }
 
 @(private)
-skey_expand :: proc "contextless" (skey, comp_skey: []u64, num_rounds: int) {
+skey_expand :: proc(skey, comp_skey: []u64, num_rounds: int) {
 	n := (num_rounds + 1) << 1
 	for u, v := 0, 0; u < n; u, v = u + 1, v + 4 {
 		x0 := comp_skey[u]

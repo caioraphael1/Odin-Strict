@@ -340,7 +340,7 @@ Inputs:
 Returns:
 - index: The index of the byte `c`, or -1 if it was not found.
 */
-index_byte :: proc "contextless" (s: []byte, c: byte) -> (index: int) #no_bounds_check {
+index_byte :: proc(s: []byte, c: byte) -> (index: int) #no_bounds_check {
 	i, l := 0, len(s)
 
 	// Guard against small strings.  On modern systems, it is ALWAYS
@@ -475,7 +475,7 @@ Inputs:
 Returns:
 - index: The index of the byte `c`, or -1 if it was not found.
 */
-last_index_byte :: proc "contextless" (s: []byte, c: byte) -> int #no_bounds_check {
+last_index_byte :: proc(s: []byte, c: byte) -> int #no_bounds_check {
 	i := len(s)
 
 	// Guard against small strings.  On modern systems, it is ALWAYS
@@ -1454,7 +1454,7 @@ fields_proc :: proc(s: []byte, f: proc(rune) -> bool, allocator: mem.Allocator) 
 
 // alias returns true iff a and b have a non-zero length, and any part of
 // a overlaps with b.
-alias :: proc "contextless" (a, b: []byte) -> bool {
+alias :: proc(a, b: []byte) -> bool {
 	a_len, b_len := len(a), len(b)
 	if a_len == 0 || b_len == 0 {
 		return false
@@ -1470,7 +1470,7 @@ alias :: proc "contextless" (a, b: []byte) -> bool {
 // the base pointer of a and b are NOT equal, and any part of a overlaps
 // with b (ie: `alias(a, b)` with an exception that returns false for
 // `a == b`, `b = a[:len(a)-69]` and similar conditions).
-alias_inexactly :: proc "contextless" (a, b: []byte) -> bool {
+alias_inexactly :: proc(a, b: []byte) -> bool {
 	if raw_data(a) == raw_data(b) {
 		return false
 	}

@@ -13,7 +13,7 @@ PCG_Random_State :: struct {
 
 pcg_random_generator_proc :: proc(data: rawptr, mode: runtime.Random_Generator_Mode, p: []byte) {
 	@(require_results)
-	read_u64 :: proc "contextless" (r: ^PCG_Random_State) -> u64 {
+	read_u64 :: proc(r: ^PCG_Random_State) -> u64 {
 		old_state := r.state
 		r.state = old_state * 6364136223846793005 + (r.inc|1)
 		xor_shifted := (((old_state >> 59) + 5) ~ old_state) * 12605985483714917081
@@ -24,7 +24,7 @@ pcg_random_generator_proc :: proc(data: rawptr, mode: runtime.Random_Generator_M
 	@(thread_local)
 	global_rand_seed: PCG_Random_State
 
-	init :: proc "contextless" (r: ^PCG_Random_State, seed: u64) {
+	init :: proc(r: ^PCG_Random_State, seed: u64) {
 		seed := seed
 		if seed == 0 {
 			seed = u64(intrinsics.read_cycle_counter())
@@ -99,7 +99,7 @@ Returns:
 - A `Generator` instance.
 */
 @(require_results)
-pcg_random_generator :: proc "contextless" (state: ^PCG_Random_State = nil) -> Generator {
+pcg_random_generator :: proc(state: ^PCG_Random_State = nil) -> Generator {
 	return {
 		procedure = pcg_random_generator_proc,
 		data = state,

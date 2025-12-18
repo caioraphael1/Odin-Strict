@@ -26,7 +26,7 @@ import "core:crypto/_aes"
 import "core:encoding/endian"
 
 @(private = "file")
-bmul64 :: proc "contextless" (x, y: u64) -> u64 {
+bmul64 :: proc(x, y: u64) -> u64 {
 	x0 := x & 0x1111111111111111
 	x1 := x & 0x2222222222222222
 	x2 := x & 0x4444444444444444
@@ -47,7 +47,7 @@ bmul64 :: proc "contextless" (x, y: u64) -> u64 {
 }
 
 @(private = "file")
-rev64 :: proc "contextless" (x: u64) -> u64 {
+rev64 :: proc(x: u64) -> u64 {
 	x := x
 	x = ((x & 0x5555555555555555) << 1) | ((x >> 1) & 0x5555555555555555)
 	x = ((x & 0x3333333333333333) << 2) | ((x >> 2) & 0x3333333333333333)
@@ -62,7 +62,7 @@ rev64 :: proc "contextless" (x: u64) -> u64 {
 //
 // Note: `dst` is both an input and an output, to support easy implementation
 // of GCM.
-ghash :: proc "contextless" (dst, key, data: []byte) {
+ghash :: proc(dst, key, data: []byte) {
 	ensure(len(dst) == _aes.GHASH_BLOCK_SIZE)
 	ensure(len(key) == _aes.GHASH_BLOCK_SIZE)
 

@@ -22,7 +22,7 @@
 
 package aes_ct64
 
-add_round_key :: proc "contextless" (q: ^[8]u64, sk: []u64) #no_bounds_check {
+add_round_key :: proc(q: ^[8]u64, sk: []u64) #no_bounds_check {
 	ensure(len(sk) >= 8, "aes/ct64: invalid round key size")
 
 	q[0] ~= sk[0]
@@ -35,7 +35,7 @@ add_round_key :: proc "contextless" (q: ^[8]u64, sk: []u64) #no_bounds_check {
 	q[7] ~= sk[7]
 }
 
-shift_rows :: proc "contextless" (q: ^[8]u64) {
+shift_rows :: proc(q: ^[8]u64) {
 	for x, i in q {
 		q[i] =
 			(x & 0x000000000000FFFF) |
@@ -48,7 +48,7 @@ shift_rows :: proc "contextless" (q: ^[8]u64) {
 	}
 }
 
-mix_columns :: proc "contextless" (q: ^[8]u64) {
+mix_columns :: proc(q: ^[8]u64) {
 	q0 := q[0]
 	q1 := q[1]
 	q2 := q[2]
@@ -77,7 +77,7 @@ mix_columns :: proc "contextless" (q: ^[8]u64) {
 }
 
 @(private)
-_encrypt :: proc "contextless" (q: ^[8]u64, skey: []u64, num_rounds: int) {
+_encrypt :: proc(q: ^[8]u64, skey: []u64, num_rounds: int) {
 	add_round_key(q, skey)
 	for u in 1 ..< num_rounds {
 		sub_bytes(q)

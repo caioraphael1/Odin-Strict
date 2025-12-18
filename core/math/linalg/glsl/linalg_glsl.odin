@@ -1905,12 +1905,12 @@ inverse :: proc{
 }
 
 @(require_results)
-hermitian_adjoint :: proc "contextless" (m: $M/matrix[$N, N]$T) -> M where intrinsics.type_is_complex(T), N >= 1 {
+hermitian_adjoint :: proc(m: $M/matrix[$N, N]$T) -> M where intrinsics.type_is_complex(T), N >= 1 {
 	return conj(transpose(m))
 }
 
 @(require_results)
-trace :: proc "contextless" (m: $M/matrix[$N, N]$T) -> (trace: T) {
+trace :: proc(m: $M/matrix[$N, N]$T) -> (trace: T) {
 	for i in 0..<N {
 		trace += m[i, i]
 	}
@@ -1918,7 +1918,7 @@ trace :: proc "contextless" (m: $M/matrix[$N, N]$T) -> (trace: T) {
 }
 
 @(require_results)
-matrix_minor :: proc "contextless" (m: $M/matrix[$N, N]$T, #any_int row, column: int) -> (minor: T) where N > 1 {
+matrix_minor :: proc(m: $M/matrix[$N, N]$T, #any_int row, column: int) -> (minor: T) where N > 1 {
 	K :: int(N-1)
 	cut_down: matrix[K, K]T
 	for col_idx in 0..<K {
@@ -1934,23 +1934,23 @@ matrix_minor :: proc "contextless" (m: $M/matrix[$N, N]$T, #any_int row, column:
 
 
 @(require_results)
-determinant_matrix1x1 :: proc "contextless" (m: $M/matrix[1, 1]$T) -> (det: T) {
+determinant_matrix1x1 :: proc(m: $M/matrix[1, 1]$T) -> (det: T) {
 	return m[0, 0]
 }
 
 @(require_results)
-determinant_matrix2x2 :: proc "contextless" (m: $M/matrix[2, 2]$T) -> (det: T) {
+determinant_matrix2x2 :: proc(m: $M/matrix[2, 2]$T) -> (det: T) {
 	return m[0, 0]*m[1, 1] - m[0, 1]*m[1, 0]
 }
 @(require_results)
-determinant_matrix3x3 :: proc "contextless" (m: $M/matrix[3, 3]$T) -> (det: T) {
+determinant_matrix3x3 :: proc(m: $M/matrix[3, 3]$T) -> (det: T) {
 	a := +m[0, 0] * (m[1, 1] * m[2, 2] - m[1, 2] * m[2, 1])
 	b := -m[0, 1] * (m[1, 0] * m[2, 2] - m[1, 2] * m[2, 0])
 	c := +m[0, 2] * (m[1, 0] * m[2, 1] - m[1, 1] * m[2, 0])
 	return a + b + c
 }
 @(require_results)
-determinant_matrix4x4 :: proc "contextless" (m: $M/matrix[4, 4]$T) -> (det: T) {
+determinant_matrix4x4 :: proc(m: $M/matrix[4, 4]$T) -> (det: T) {
 	c := cofactor(m)
 	#no_bounds_check for i in 0..<4 {
 		det += m[0, i] * c[0, i]
@@ -1962,13 +1962,13 @@ determinant_matrix4x4 :: proc "contextless" (m: $M/matrix[4, 4]$T) -> (det: T) {
 
 
 @(require_results)
-adjugate_matrix1x1 :: proc "contextless" (x: $M/matrix[1, 1]$T) -> (y: M) {
+adjugate_matrix1x1 :: proc(x: $M/matrix[1, 1]$T) -> (y: M) {
 	y = x
 	return
 }
 
 @(require_results)
-adjugate_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: M) {
+adjugate_matrix2x2 :: proc(x: $M/matrix[2, 2]$T) -> (y: M) {
 	y[0, 0] = +x[1, 1]
 	y[0, 1] = -x[0, 1]
 	y[1, 0] = -x[1, 0]
@@ -1977,7 +1977,7 @@ adjugate_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: M) {
 }
 
 @(require_results)
-adjugate_matrix3x3 :: proc "contextless" (m: $M/matrix[3, 3]$T) -> (y: M) {
+adjugate_matrix3x3 :: proc(m: $M/matrix[3, 3]$T) -> (y: M) {
 	y[0, 0] = +(m[1, 1] * m[2, 2] - m[2, 1] * m[1, 2])
 	y[1, 0] = -(m[1, 0] * m[2, 2] - m[2, 0] * m[1, 2])
 	y[2, 0] = +(m[1, 0] * m[2, 1] - m[2, 0] * m[1, 1])
@@ -1991,7 +1991,7 @@ adjugate_matrix3x3 :: proc "contextless" (m: $M/matrix[3, 3]$T) -> (y: M) {
 }
 
 @(require_results)
-adjugate_matrix4x4 :: proc "contextless" (x: $M/matrix[4, 4]$T) -> (y: M) {
+adjugate_matrix4x4 :: proc(x: $M/matrix[4, 4]$T) -> (y: M) {
 	for i in 0..<4 {
 		for j in 0..<4 {
 			sign: T = 1 if (i + j) % 2 == 0 else -1
@@ -2003,13 +2003,13 @@ adjugate_matrix4x4 :: proc "contextless" (x: $M/matrix[4, 4]$T) -> (y: M) {
 
 
 @(require_results)
-cofactor_matrix1x1 :: proc "contextless" (x: $M/matrix[1, 1]$T) -> (y: M) {
+cofactor_matrix1x1 :: proc(x: $M/matrix[1, 1]$T) -> (y: M) {
 	y = x
 	return
 }
 
 @(require_results)
-cofactor_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: M) {
+cofactor_matrix2x2 :: proc(x: $M/matrix[2, 2]$T) -> (y: M) {
 	y[0, 0] = +x[1, 1]
 	y[0, 1] = -x[1, 0]
 	y[1, 0] = -x[0, 1]
@@ -2018,7 +2018,7 @@ cofactor_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: M) {
 }
 
 @(require_results)
-cofactor_matrix3x3 :: proc "contextless" (m: $M/matrix[3, 3]$T) -> (y: M) {
+cofactor_matrix3x3 :: proc(m: $M/matrix[3, 3]$T) -> (y: M) {
 	y[0, 0] = +(m[1, 1] * m[2, 2] - m[2, 1] * m[1, 2])
 	y[0, 1] = -(m[1, 0] * m[2, 2] - m[2, 0] * m[1, 2])
 	y[0, 2] = +(m[1, 0] * m[2, 1] - m[2, 0] * m[1, 1])
@@ -2033,7 +2033,7 @@ cofactor_matrix3x3 :: proc "contextless" (m: $M/matrix[3, 3]$T) -> (y: M) {
 
 
 @(require_results)
-cofactor_matrix4x4 :: proc "contextless" (x: $M/matrix[4, 4]$T) -> (y: M) {
+cofactor_matrix4x4 :: proc(x: $M/matrix[4, 4]$T) -> (y: M) {
 	for i in 0..<4 {
 		for j in 0..<4 {
 			sign: T = 1 if (i + j) % 2 == 0 else -1
@@ -2044,13 +2044,13 @@ cofactor_matrix4x4 :: proc "contextless" (x: $M/matrix[4, 4]$T) -> (y: M) {
 }
 
 @(require_results)
-inverse_transpose_matrix1x1 :: proc "contextless" (x: $M/matrix[1, 1]$T) -> (y: M) {
+inverse_transpose_matrix1x1 :: proc(x: $M/matrix[1, 1]$T) -> (y: M) {
 	y[0, 0] = 1/x[0, 0]
 	return
 }
 
 @(require_results)
-inverse_transpose_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: M) {
+inverse_transpose_matrix2x2 :: proc(x: $M/matrix[2, 2]$T) -> (y: M) {
 	d := x[0, 0]*x[1, 1] - x[0, 1]*x[1, 0]
 	when intrinsics.type_is_integer(T) {
 		y[0, 0] = +x[1, 1] / d
@@ -2068,7 +2068,7 @@ inverse_transpose_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: 
 }
 
 @(require_results)
-inverse_transpose_matrix3x3 :: proc "contextless" (x: $M/matrix[3, 3]$T) -> (y: M) #no_bounds_check {
+inverse_transpose_matrix3x3 :: proc(x: $M/matrix[3, 3]$T) -> (y: M) #no_bounds_check {
 	c := cofactor(x)
 	d := determinant(x)
 	when intrinsics.type_is_integer(T) {
@@ -2089,7 +2089,7 @@ inverse_transpose_matrix3x3 :: proc "contextless" (x: $M/matrix[3, 3]$T) -> (y: 
 }
 
 @(require_results)
-inverse_transpose_matrix4x4 :: proc "contextless" (x: $M/matrix[4, 4]$T) -> (y: M) #no_bounds_check {
+inverse_transpose_matrix4x4 :: proc(x: $M/matrix[4, 4]$T) -> (y: M) #no_bounds_check {
 	c := cofactor(x)
 	d: T
 	for i in 0..<4 {
@@ -2113,13 +2113,13 @@ inverse_transpose_matrix4x4 :: proc "contextless" (x: $M/matrix[4, 4]$T) -> (y: 
 }
 
 @(require_results)
-inverse_matrix1x1 :: proc "contextless" (x: $M/matrix[1, 1]$T) -> (y: M) {
+inverse_matrix1x1 :: proc(x: $M/matrix[1, 1]$T) -> (y: M) {
 	y[0, 0] = 1/x[0, 0]
 	return
 }
 
 @(require_results)
-inverse_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: M) {
+inverse_matrix2x2 :: proc(x: $M/matrix[2, 2]$T) -> (y: M) {
 	d := x[0, 0]*x[1, 1] - x[0, 1]*x[1, 0]
 	when intrinsics.type_is_integer(T) {
 		y[0, 0] = +x[1, 1] / d
@@ -2137,7 +2137,7 @@ inverse_matrix2x2 :: proc "contextless" (x: $M/matrix[2, 2]$T) -> (y: M) {
 }
 
 @(require_results)
-inverse_matrix3x3 :: proc "contextless" (x: $M/matrix[3, 3]$T) -> (y: M) #no_bounds_check {
+inverse_matrix3x3 :: proc(x: $M/matrix[3, 3]$T) -> (y: M) #no_bounds_check {
 	c := cofactor(x)
 	d := determinant(x)
 	when intrinsics.type_is_integer(T) {
@@ -2158,7 +2158,7 @@ inverse_matrix3x3 :: proc "contextless" (x: $M/matrix[3, 3]$T) -> (y: M) #no_bou
 }
 
 @(require_results)
-inverse_matrix4x4 :: proc "contextless" (x: $M/matrix[4, 4]$T) -> (y: M) #no_bounds_check {
+inverse_matrix4x4 :: proc(x: $M/matrix[4, 4]$T) -> (y: M) #no_bounds_check {
 	c := cofactor(x)
 	d: T
 	for i in 0..<4 {

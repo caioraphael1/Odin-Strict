@@ -15,7 +15,7 @@ _ :: runtime
 	Turn a pointer and a length into a slice.
 */
 @(require_results)
-from_ptr :: proc "contextless" (ptr: ^$T, count: int) -> []T {
+from_ptr :: proc(ptr: ^$T, count: int) -> []T {
 	return ([^]T)(ptr)[:count]
 }
 
@@ -23,7 +23,7 @@ from_ptr :: proc "contextless" (ptr: ^$T, count: int) -> []T {
 	Turn a pointer and a length into a byte slice.
 */
 @(require_results)
-bytes_from_ptr :: proc "contextless" (ptr: rawptr, byte_count: int) -> []byte {
+bytes_from_ptr :: proc(ptr: rawptr, byte_count: int) -> []byte {
 	return ([^]byte)(ptr)[:byte_count]
 }
 
@@ -33,7 +33,7 @@ bytes_from_ptr :: proc "contextless" (ptr: rawptr, byte_count: int) -> []byte {
 	See `slice.reinterpret` to go the other way.
 */
 @(require_results)
-to_bytes :: proc "contextless" (s: []$T) -> []byte {
+to_bytes :: proc(s: []$T) -> []byte {
 	return ([^]byte)(raw_data(s))[:len(s) * size_of(T)]
 }
 
@@ -41,7 +41,7 @@ to_bytes :: proc "contextless" (s: []$T) -> []byte {
 	Turns a byte slice into a type.
 */
 @(require_results)
-to_type :: proc "contextless" (buf: []u8, $T: typeid) -> (T, bool) #optional_ok {
+to_type :: proc(buf: []u8, $T: typeid) -> (T, bool) #optional_ok {
 	if len(buf) < size_of(T) {
 		return {}, false
 	}
@@ -86,7 +86,7 @@ Output:
 
 */
 @(require_results)
-reinterpret :: proc "contextless" ($T: typeid/[]$U, s: []$V) -> []U {
+reinterpret :: proc($T: typeid/[]$U, s: []$V) -> []U {
 	when size_of(U) == 0 || size_of(V) == 0 {
 		return nil
 	} else {
@@ -105,7 +105,7 @@ swap :: proc(array: $T/[]$E, a, b: int) {
 	}
 }
 
-swap_between :: proc "contextless" (a, b: $T/[]$E) #no_bounds_check {
+swap_between :: proc(a, b: $T/[]$E) #no_bounds_check {
 	n := builtin.min(len(a), len(b))
 	if n >= 0 {
 		ptr_swap_overlapping(&a[0], &b[0], size_of(E)*n)
@@ -122,7 +122,7 @@ reverse :: proc(array: $T/[]$E) {
 
 
 @(require_results)
-contains :: proc "contextless" (array: $T/[]$E, value: E) -> bool where intrinsics.type_is_comparable(E) {
+contains :: proc(array: $T/[]$E, value: E) -> bool where intrinsics.type_is_comparable(E) {
 	_, found := linear_search(array, value)
 	return found
 }
@@ -156,7 +156,7 @@ Example:
 	assert(index == 1 && found == true)
 */
 @(require_results)
-linear_search :: proc "contextless" (array: $A/[]$T, key: T) -> (index: int, found: bool)
+linear_search :: proc(array: $A/[]$T, key: T) -> (index: int, found: bool)
 	where intrinsics.type_is_comparable(T) {
 	for x, i in array {
 		if x == key {
@@ -219,7 +219,7 @@ Example:
 	assert(index == 1 && found == true)
 */
 @(require_results)
-linear_search_reverse :: proc "contextless" (array: $A/[]$T, key: T) -> (index: int, found: bool)
+linear_search_reverse :: proc(array: $A/[]$T, key: T) -> (index: int, found: bool)
 	where intrinsics.type_is_comparable(T) {
 	#reverse for x, i in array {
 		if x == key {
@@ -327,7 +327,7 @@ binary_search_by :: proc(array: $A/[]$T, key: $K, f: proc(T, K) -> Ordering) -> 
 }
 
 @(require_results)
-equal :: proc "contextless" (a, b: $T/[]$E) -> bool where intrinsics.type_is_comparable(E) #no_bounds_check {
+equal :: proc(a, b: $T/[]$E) -> bool where intrinsics.type_is_comparable(E) #no_bounds_check {
 	if len(a) != len(b) {
 		return false
 	}
@@ -355,7 +355,7 @@ equal :: proc "contextless" (a, b: $T/[]$E) -> bool where intrinsics.type_is_com
 }
 
 @(require_results)
-simple_equal :: proc "contextless" (a, b: $T/[]$E) -> bool where intrinsics.type_is_simple_compare(E) {
+simple_equal :: proc(a, b: $T/[]$E) -> bool where intrinsics.type_is_simple_compare(E) {
 	if len(a) != len(b) {
 		return false
 	}
@@ -370,7 +370,7 @@ simple_equal :: proc "contextless" (a, b: $T/[]$E) -> bool where intrinsics.type
 	slice.prefix_length([]u8{1, 2, 3, 4}, []u8{2, 3, 4}) -> 0
 */
 @(require_results)
-prefix_length :: proc "contextless" (a, b: $T/[]$E) -> (n: int) where intrinsics.type_is_comparable(E) {
+prefix_length :: proc(a, b: $T/[]$E) -> (n: int) where intrinsics.type_is_comparable(E) {
 	_len := builtin.min(len(a), len(b))
 
 	#no_bounds_check for n < _len && a[n] == b[n] {
@@ -380,7 +380,7 @@ prefix_length :: proc "contextless" (a, b: $T/[]$E) -> (n: int) where intrinsics
 }
 
 @(require_results)
-has_prefix :: proc "contextless" (array: $T/[]$E, needle: T) -> bool where intrinsics.type_is_comparable(E) {
+has_prefix :: proc(array: $T/[]$E, needle: T) -> bool where intrinsics.type_is_comparable(E) {
 	n := len(needle)
 	if len(array) >= n {
 		return equal(array[:n], needle)
@@ -398,7 +398,7 @@ has_prefix :: proc "contextless" (array: $T/[]$E, needle: T) -> bool where intri
 	slice.suffix_length([]u8{3, 4, 5}, []u8{3, 5}) -> 1
 */
 @(require_results)
-suffix_length :: proc "contextless" (a, b: $T/[]$E) -> (n: int) where intrinsics.type_is_comparable(E) {
+suffix_length :: proc(a, b: $T/[]$E) -> (n: int) where intrinsics.type_is_comparable(E) {
 	len_a, len_b := len(a), len(b)
 	_len := builtin.min(len_a, len_b)
 
@@ -409,7 +409,7 @@ suffix_length :: proc "contextless" (a, b: $T/[]$E) -> (n: int) where intrinsics
 }
 
 @(require_results)
-has_suffix :: proc "contextless" (array: $T/[]$E, needle: T) -> bool where intrinsics.type_is_comparable(E) {
+has_suffix :: proc(array: $T/[]$E, needle: T) -> bool where intrinsics.type_is_comparable(E) {
 	array := array
 	m, n := len(array), len(needle)
 	if m >= n {
@@ -418,13 +418,13 @@ has_suffix :: proc "contextless" (array: $T/[]$E, needle: T) -> bool where intri
 	return false
 }
 
-zero :: proc "contextless" (array: $T/[]$E) #no_bounds_check {
+zero :: proc(array: $T/[]$E) #no_bounds_check {
 	if len(array) > 0 {
 		intrinsics.mem_zero(raw_data(array), size_of(E)*len(array))
 	}
 }
 
-fill :: proc "contextless" (array: $T/[]$E, value: E) #no_bounds_check {
+fill :: proc(array: $T/[]$E, value: E) #no_bounds_check {
 	if len(array) <= 0 {
 		return
 	}
@@ -434,7 +434,7 @@ fill :: proc "contextless" (array: $T/[]$E, value: E) #no_bounds_check {
 	}
 }
 
-rotate_left :: proc "contextless" (array: $T/[]$E, mid: int) {
+rotate_left :: proc(array: $T/[]$E, mid: int) {
 	n := len(array)
 	m := mid %% n
 	k := n - m
@@ -443,7 +443,7 @@ rotate_left :: proc "contextless" (array: $T/[]$E, mid: int) {
 	p := cast(^E)raw_data(array)
 	ptr_rotate(m, ptr_add(p, m), k)
 }
-rotate_right :: proc "contextless" (array: $T/[]$E, k: int) {
+rotate_right :: proc(array: $T/[]$E, k: int) {
 	rotate_left(array, -k)
 }
 
@@ -503,17 +503,17 @@ into_dynamic :: proc(a: $T/[]$E) -> [dynamic]E {
 
 
 @(require_results)
-length :: proc "contextless" (a: $T/[]$E) -> int {
+length :: proc(a: $T/[]$E) -> int {
 	return len(a)
 }
 @(require_results)
-is_empty :: proc "contextless" (a: $T/[]$E) -> bool {
+is_empty :: proc(a: $T/[]$E) -> bool {
 	return len(a) == 0
 }
 
 // Gets the byte size of the backing data
 @(require_results)
-size :: proc "contextless" (a: $T/[]$E) -> int {
+size :: proc(a: $T/[]$E) -> int {
 	return len(a) * size_of(E)
 }
 
@@ -561,7 +561,7 @@ last_ptr :: proc(array: $T/[]$E) -> ^E {
 }
 
 @(require_results)
-get :: proc "contextless" (array: $T/[]$E, index: int) -> (value: E, ok: bool) {
+get :: proc(array: $T/[]$E, index: int) -> (value: E, ok: bool) {
 	#bounds_check if uint(index) < len(array) {
 		value = array[index]
 		ok = true
@@ -569,7 +569,7 @@ get :: proc "contextless" (array: $T/[]$E, index: int) -> (value: E, ok: bool) {
 	return
 }
 @(require_results)
-get_ptr :: proc "contextless" (array: $T/[]$E, index: int) -> (value: ^E, ok: bool) {
+get_ptr :: proc(array: $T/[]$E, index: int) -> (value: ^E, ok: bool) {
 	#no_bounds_check if uint(index) < len(array) {
 		value = &array[index]
 		ok = true
@@ -578,7 +578,7 @@ get_ptr :: proc "contextless" (array: $T/[]$E, index: int) -> (value: ^E, ok: bo
 }
 
 @(require_results)
-as_ptr :: proc "contextless" (array: $T/[]$E) -> [^]E {
+as_ptr :: proc(array: $T/[]$E) -> [^]E {
 	return raw_data(array)
 }
 
@@ -673,7 +673,7 @@ repeat :: proc(s: $S/[]$U, count: int, allocator: runtime.Allocator) -> (b: S, e
 // 'unique' replaces consecutive runs of equal elements with a single copy.
 // The procedures modifies the slice in-place and returns the modified slice.
 @(require_results)
-unique :: proc "contextless" (s: $S/[]$T) -> S where intrinsics.type_is_comparable(T) #no_bounds_check {
+unique :: proc(s: $S/[]$T) -> S where intrinsics.type_is_comparable(T) #no_bounds_check {
 	if len(s) < 2 {
 		return s
 	}
@@ -712,7 +712,7 @@ unique_proc :: proc(s: $S/[]$T, eq: proc(T, T) -> bool) -> S #no_bounds_check {
 
 
 @(require_results)
-min :: proc "contextless" (s: $S/[]$T) -> (res: T, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
+min :: proc(s: $S/[]$T) -> (res: T, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
 	if len(s) != 0 {
 		res = s[0]
 		ok = true
@@ -723,7 +723,7 @@ min :: proc "contextless" (s: $S/[]$T) -> (res: T, ok: bool) where intrinsics.ty
 	return
 }
 @(require_results)
-max :: proc "contextless" (s: $S/[]$T) -> (res: T, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
+max :: proc(s: $S/[]$T) -> (res: T, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
 	if len(s) != 0 {
 		res = s[0]
 		ok = true
@@ -735,7 +735,7 @@ max :: proc "contextless" (s: $S/[]$T) -> (res: T, ok: bool) where intrinsics.ty
 }
 
 @(require_results)
-min_max :: proc "contextless" (s: $S/[]$T) -> (min, max: T, ok: bool) where intrinsics.type_is_ordered(T) {
+min_max :: proc(s: $S/[]$T) -> (min, max: T, ok: bool) where intrinsics.type_is_ordered(T) {
 	if len(s) != 0 {
 		min, max = s[0], s[0]
 		ok = true
@@ -749,7 +749,7 @@ min_max :: proc "contextless" (s: $S/[]$T) -> (min, max: T, ok: bool) where intr
 
 // Find the index of the (first) minimum element in a slice.
 @(require_results)
-min_index :: proc "contextless" (s: $S/[]$T) -> (min_index: int, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
+min_index :: proc(s: $S/[]$T) -> (min_index: int, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
 	if len(s) == 0 {
 		return -1, false
 	}
@@ -766,7 +766,7 @@ min_index :: proc "contextless" (s: $S/[]$T) -> (min_index: int, ok: bool) where
 
 // Find the index of the (first) maximum element in a slice.
 @(require_results)
-max_index :: proc "contextless" (s: $S/[]$T) -> (max_index: int, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
+max_index :: proc(s: $S/[]$T) -> (max_index: int, ok: bool) where intrinsics.type_is_ordered(T) #optional_ok {
 	if len(s) == 0 {
 		return -1, false
 	}
@@ -782,7 +782,7 @@ max_index :: proc "contextless" (s: $S/[]$T) -> (max_index: int, ok: bool) where
 }
 
 @(require_results)
-any_of :: proc "contextless" (s: $S/[]$T, value: T) -> bool where intrinsics.type_is_comparable(T) {
+any_of :: proc(s: $S/[]$T, value: T) -> bool where intrinsics.type_is_comparable(T) {
 	for v in s {
 		if v == value {
 			return true
@@ -792,7 +792,7 @@ any_of :: proc "contextless" (s: $S/[]$T, value: T) -> bool where intrinsics.typ
 }
 
 @(require_results)
-none_of :: proc "contextless" (s: $S/[]$T, value: T) -> bool where intrinsics.type_is_comparable(T) {
+none_of :: proc(s: $S/[]$T, value: T) -> bool where intrinsics.type_is_comparable(T) {
 	for v in s {
 		if v == value {
 			return false
@@ -802,7 +802,7 @@ none_of :: proc "contextless" (s: $S/[]$T, value: T) -> bool where intrinsics.ty
 }
 
 @(require_results)
-all_of :: proc "contextless" (s: $S/[]$T, value: T) -> bool where intrinsics.type_is_comparable(T) {
+all_of :: proc(s: $S/[]$T, value: T) -> bool where intrinsics.type_is_comparable(T) {
 	if len(s) == 0 {
 		return false
 	}
@@ -850,7 +850,7 @@ all_of_proc :: proc(s: $S/[]$T, f: proc(T) -> bool) -> bool {
 
 
 @(require_results)
-count :: proc "contextless" (s: $S/[]$T, value: T) -> (n: int) where intrinsics.type_is_comparable(T) {
+count :: proc(s: $S/[]$T, value: T) -> (n: int) where intrinsics.type_is_comparable(T) {
 	for v in s {
 		if v == value {
 			n += 1
@@ -871,7 +871,7 @@ count_proc :: proc(s: $S/[]$T, f: proc(T) -> bool) -> (n: int) {
 
 
 @(require_results)
-dot_product :: proc "contextless" (a, b: $S/[]$T) -> (r: T, ok: bool)
+dot_product :: proc(a, b: $S/[]$T) -> (r: T, ok: bool)
 	where intrinsics.type_is_numeric(T) {
 	if len(a) != len(b) {
 		return
@@ -885,7 +885,7 @@ dot_product :: proc "contextless" (a, b: $S/[]$T) -> (r: T, ok: bool)
 
 // Convert a pointer to an enumerated array to a slice of the element type
 @(require_results)
-enumerated_array :: proc "contextless" (ptr: ^$T) -> []intrinsics.type_elem_type(T)
+enumerated_array :: proc(ptr: ^$T) -> []intrinsics.type_elem_type(T)
 	where intrinsics.type_is_enumerated_array(T) {
 	return ([^]intrinsics.type_elem_type(T))(ptr)[:len(T)]
 }
@@ -894,7 +894,7 @@ enumerated_array :: proc "contextless" (ptr: ^$T) -> []intrinsics.type_elem_type
 // e.g.:
 //    bs := slice.enum_slice_to_bitset(my_flag_slice, rl.ConfigFlags)
 @(require_results)
-enum_slice_to_bitset :: proc "contextless" (enums: []$E, $T: typeid/bit_set[E]) -> (bits: T) where intrinsics.type_is_enum(E), intrinsics.type_bit_set_elem_type(T) == E {
+enum_slice_to_bitset :: proc(enums: []$E, $T: typeid/bit_set[E]) -> (bits: T) where intrinsics.type_is_enum(E), intrinsics.type_bit_set_elem_type(T) == E {
 	for v in enums {
 		bits += {v}
 	}

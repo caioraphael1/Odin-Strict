@@ -2637,7 +2637,7 @@ fma :: intrinsics.fused_mul_add
 Convert pointer to SIMD vector to an array pointer.
 */
 @(require_results)
-to_array_ptr :: #force_inline proc "contextless" (v: ^#simd[$LANES]$E) -> ^[LANES]E {
+to_array_ptr :: #force_inline proc(v: ^#simd[$LANES]$E) -> ^[LANES]E {
 	return (^[LANES]E)(v)
 }
 
@@ -2645,7 +2645,7 @@ to_array_ptr :: #force_inline proc "contextless" (v: ^#simd[$LANES]$E) -> ^[LANE
 Convert SIMD vector to an array.
 */
 @(require_results)
-to_array :: #force_inline proc "contextless" (v: #simd[$LANES]$E) -> [LANES]E {
+to_array :: #force_inline proc(v: #simd[$LANES]$E) -> [LANES]E {
 	return transmute([LANES]E)(v)
 }
 
@@ -2653,7 +2653,7 @@ to_array :: #force_inline proc "contextless" (v: #simd[$LANES]$E) -> [LANES]E {
 Convert array to SIMD vector.
 */
 @(require_results)
-from_array :: #force_inline proc "contextless" (v: $A/[$LANES]$E) -> #simd[LANES]E {
+from_array :: #force_inline proc(v: $A/[$LANES]$E) -> #simd[LANES]E {
 	return transmute(#simd[LANES]E)v
 }
 
@@ -2694,7 +2694,7 @@ Example:
 	   +------+------+------+------+
 */
 @(require_results)
-bit_not :: #force_inline proc "contextless" (v: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_integer(E) {
+bit_not :: #force_inline proc(v: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_integer(E) {
 	return bit_xor(v, T(~E(0)))
 }
 
@@ -2702,7 +2702,7 @@ bit_not :: #force_inline proc "contextless" (v: $T/#simd[$LANES]$E) -> T where i
 Copy the signs from lanes of one SIMD vector into another SIMD vector.
 */
 @(require_results)
-copysign :: #force_inline proc "contextless" (v, sign: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_float(E) {
+copysign :: #force_inline proc(v, sign: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_float(E) {
 	neg_zero := to_bits(T(-0.0))
 	sign_bit := to_bits(sign) & neg_zero
 	magnitude := to_bits(v) &~ neg_zero
@@ -2718,7 +2718,7 @@ input vector. If the lane of the input vector has NaN, then the result vector
 will contain this NaN value as-is.
 */
 @(require_results)
-signum :: #force_inline proc "contextless" (v: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_float(E) {
+signum :: #force_inline proc(v: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_float(E) {
 	is_nan := lanes_ne(v, v)
 	return select(is_nan, v, copysign(T(1), v))
 }
@@ -2753,7 +2753,7 @@ Example:
 	   +------+------+------+------+
 */
 @(require_results)
-recip :: #force_inline proc "contextless" (v: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_float(E) {
+recip :: #force_inline proc(v: $T/#simd[$LANES]$E) -> T where intrinsics.type_is_float(E) {
 	return T(1) / v
 }
 

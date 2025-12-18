@@ -423,7 +423,7 @@ remove_custom_event_listener :: proc(id: string, name: string, user_data: rawptr
 	return _remove_event_listener(id, name, user_data, callback, use_capture)
 }
 
-get_gamepad_state :: proc "contextless" (index: int, s: ^Gamepad_State) -> bool {
+get_gamepad_state :: proc(index: int, s: ^Gamepad_State) -> bool {
 	@(default_calling_convention="contextless")
 	foreign dom_lib {
 		@(link_name="get_gamepad_state")

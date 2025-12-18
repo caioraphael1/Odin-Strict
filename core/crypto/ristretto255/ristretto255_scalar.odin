@@ -13,17 +13,17 @@ WIDE_SCALAR_SIZE :: 64
 Scalar :: grp.Scalar
 
 // sc_clear clears sc to the uninitialized state.
-sc_clear :: proc "contextless" (sc: ^Scalar) {
+sc_clear :: proc(sc: ^Scalar) {
 	grp.sc_clear(sc)
 }
 
 // sc_set sets `sc = a`.
-sc_set :: proc "contextless" (sc, a: ^Scalar) {
+sc_set :: proc(sc, a: ^Scalar) {
 	grp.sc_set(sc, a)
 }
 
 // sc_set_u64 sets `sc = i`.
-sc_set_u64 :: proc "contextless" (sc: ^Scalar, i: u64) {
+sc_set_u64 :: proc(sc: ^Scalar, i: u64) {
 	grp.sc_set_u64(sc, i)
 }
 
@@ -56,27 +56,27 @@ sc_bytes :: proc(sc: ^Scalar, dst: []byte) {
 }
 
 // sc_add sets `sc = a + b`.
-sc_add :: proc "contextless" (sc, a, b: ^Scalar) {
+sc_add :: proc(sc, a, b: ^Scalar) {
 	grp.sc_add(sc, a, b)
 }
 
 // sc_sub sets `sc = a - b`.
-sc_sub :: proc "contextless" (sc, a, b: ^Scalar) {
+sc_sub :: proc(sc, a, b: ^Scalar) {
 	grp.sc_sub(sc, a, b)
 }
 
 // sc_negate sets `sc = -a`.
-sc_negate :: proc "contextless" (sc, a: ^Scalar) {
+sc_negate :: proc(sc, a: ^Scalar) {
 	grp.sc_negate(sc, a)
 }
 
 // sc_mul sets `sc = a * b`.
-sc_mul :: proc "contextless" (sc, a, b: ^Scalar) {
+sc_mul :: proc(sc, a, b: ^Scalar) {
 	grp.sc_mul(sc, a, b)
 }
 
 // sc_square sets `sc = a^2`.
-sc_square :: proc "contextless" (sc, a: ^Scalar) {
+sc_square :: proc(sc, a: ^Scalar) {
 	grp.sc_square(sc, a)
 }
 

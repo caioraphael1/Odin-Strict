@@ -117,21 +117,21 @@ Stopwatch :: struct {
 Obtain the current time.
 */
 @(require_results)
-now :: proc "contextless" () -> Time {
+now :: proc() -> Time {
 	return _now()
 }
 
 /*
 Sleep for the specified duration.
 */
-sleep :: proc "contextless" (d: Duration) {
+sleep :: proc(d: Duration) {
 	_sleep(d)
 }
 
 /*
 Start the stopwatch.
 */
-stopwatch_start :: proc "contextless" (stopwatch: ^Stopwatch) {
+stopwatch_start :: proc(stopwatch: ^Stopwatch) {
 	if !stopwatch.running {
 		stopwatch._start_time = tick_now()
 		stopwatch.running = true
@@ -141,7 +141,7 @@ stopwatch_start :: proc "contextless" (stopwatch: ^Stopwatch) {
 /*
 Stop the stopwatch.
 */
-stopwatch_stop :: proc "contextless" (stopwatch: ^Stopwatch) {
+stopwatch_stop :: proc(stopwatch: ^Stopwatch) {
 	if stopwatch.running {
 		stopwatch._accumulation += tick_diff(stopwatch._start_time, tick_now())
 		stopwatch.running = false
@@ -151,7 +151,7 @@ stopwatch_stop :: proc "contextless" (stopwatch: ^Stopwatch) {
 /*
 Reset the stopwatch.
 */
-stopwatch_reset :: proc "contextless" (stopwatch: ^Stopwatch) {
+stopwatch_reset :: proc(stopwatch: ^Stopwatch) {
 	stopwatch._accumulation = {}
 	stopwatch.running = false
 }
@@ -164,7 +164,7 @@ isn't stopped at the time of calling this procedure, the time between the last
 start and the current time is also accounted for.
 */
 @(require_results)
-stopwatch_duration :: proc "contextless" (stopwatch: Stopwatch) -> Duration {
+stopwatch_duration :: proc(stopwatch: Stopwatch) -> Duration {
 	if !stopwatch.running {
 		return stopwatch._accumulation
 	}
@@ -175,7 +175,7 @@ stopwatch_duration :: proc "contextless" (stopwatch: Stopwatch) -> Duration {
 Calculate the duration elapsed between two times.
 */
 @(require_results)
-diff :: proc "contextless" (start, end: Time) -> Duration {
+diff :: proc(start, end: Time) -> Duration {
 	d := end._nsec - start._nsec
 	return Duration(d)
 }
@@ -184,7 +184,7 @@ diff :: proc "contextless" (start, end: Time) -> Duration {
 Calculate the duration elapsed since a specific time.
 */
 @(require_results)
-since :: proc "contextless" (start: Time) -> Duration {
+since :: proc(start: Time) -> Duration {
 	return diff(start, now())
 }
 
@@ -192,7 +192,7 @@ since :: proc "contextless" (start: Time) -> Duration {
 Obtain the number of nanoseconds in a duration.
 */
 @(require_results)
-duration_nanoseconds :: proc "contextless" (d: Duration) -> i64 {
+duration_nanoseconds :: proc(d: Duration) -> i64 {
 	return i64(d)
 }
 
@@ -200,7 +200,7 @@ duration_nanoseconds :: proc "contextless" (d: Duration) -> i64 {
 Obtain the number of microseconds in a duration.
 */
 @(require_results)
-duration_microseconds :: proc "contextless" (d: Duration) -> f64 {
+duration_microseconds :: proc(d: Duration) -> f64 {
 	return duration_seconds(d) * 1e6
 }
 
@@ -208,7 +208,7 @@ duration_microseconds :: proc "contextless" (d: Duration) -> f64 {
 Obtain the number of milliseconds in a duration.
 */
 @(require_results)
-duration_milliseconds :: proc "contextless" (d: Duration) -> f64 {
+duration_milliseconds :: proc(d: Duration) -> f64 {
 	return duration_seconds(d) * 1e3
 }
 
@@ -216,7 +216,7 @@ duration_milliseconds :: proc "contextless" (d: Duration) -> f64 {
 Obtain the number of seconds in a duration.
 */
 @(require_results)
-duration_seconds :: proc "contextless" (d: Duration) -> f64 {
+duration_seconds :: proc(d: Duration) -> f64 {
 	sec := d / Second
 	nsec := d % Second
 	return f64(sec) + f64(nsec)/1e9
@@ -226,7 +226,7 @@ duration_seconds :: proc "contextless" (d: Duration) -> f64 {
 Obtain the number of minutes in a duration.
 */
 @(require_results)
-duration_minutes :: proc "contextless" (d: Duration) -> f64 {
+duration_minutes :: proc(d: Duration) -> f64 {
 	min := d / Minute
 	nsec := d % Minute
 	return f64(min) + f64(nsec)/(60*1e9)
@@ -236,7 +236,7 @@ duration_minutes :: proc "contextless" (d: Duration) -> f64 {
 Obtain the number of hours in a duration.
 */
 @(require_results)
-duration_hours :: proc "contextless" (d: Duration) -> f64 {
+duration_hours :: proc(d: Duration) -> f64 {
 	hour := d / Hour
 	nsec := d % Hour
 	return f64(hour) + f64(nsec)/(60*60*1e9)
@@ -260,8 +260,8 @@ Example:
 	time.duration_round(my_duration, time.Second)
 */
 @(require_results)
-duration_round :: proc "contextless" (d, m: Duration) -> Duration {
-	_less_than_half :: #force_inline proc "contextless" (x, y: Duration) -> bool {
+duration_round :: proc(d, m: Duration) -> Duration {
+	_less_than_half :: #force_inline proc(x, y: Duration) -> bool {
 		return u64(x)+u64(x) < u64(y)
 	}
 
@@ -307,7 +307,7 @@ Example:
 	time.duration_round(my_duration, time.Second)
 */
 @(require_results)
-duration_truncate :: proc "contextless" (d, m: Duration) -> Duration {
+duration_truncate :: proc(d, m: Duration) -> Duration {
 	return d if m <= 0 else d - d%m
 }
 
@@ -315,7 +315,7 @@ duration_truncate :: proc "contextless" (d, m: Duration) -> Duration {
 Parse time into date components.
 */
 @(require_results)
-date :: proc "contextless" (t: Time) -> (year: int, month: Month, day: int) {
+date :: proc(t: Time) -> (year: int, month: Month, day: int) {
 	year, month, day, _ = _abs_date(_time_abs(t), true)
 	return
 }
@@ -324,7 +324,7 @@ date :: proc "contextless" (t: Time) -> (year: int, month: Month, day: int) {
 Obtain the year of the date specified by time.
 */
 @(require_results)
-year :: proc "contextless" (t: Time) -> (year: int) {
+year :: proc(t: Time) -> (year: int) {
 	year, _, _, _ = _date(t, true)
 	return
 }
@@ -333,7 +333,7 @@ year :: proc "contextless" (t: Time) -> (year: int) {
 Obtain the month of the date specified by time.
 */
 @(require_results)
-month :: proc "contextless" (t: Time) -> (month: Month) {
+month :: proc(t: Time) -> (month: Month) {
 	_, month, _, _ = _date(t, true)
 	return
 }
@@ -342,7 +342,7 @@ month :: proc "contextless" (t: Time) -> (month: Month) {
 Obtain the day of the date specified by time.
 */
 @(require_results)
-day :: proc "contextless" (t: Time) -> (day: int) {
+day :: proc(t: Time) -> (day: int) {
 	_, _, day, _ = _date(t, true)
 	return
 }
@@ -351,7 +351,7 @@ day :: proc "contextless" (t: Time) -> (day: int) {
 Obtain the week day of the date specified by time.
 */
 @(require_results)
-weekday :: proc "contextless" (t: Time) -> (weekday: Weekday) {
+weekday :: proc(t: Time) -> (weekday: Weekday) {
 	abs := _time_abs(t)
 	sec := (abs + u64(Weekday.Monday) * SECONDS_PER_DAY) % SECONDS_PER_WEEK
 	return Weekday(int(sec) / SECONDS_PER_DAY)
@@ -371,7 +371,7 @@ precise_clock :: proc { precise_clock_from_time, precise_clock_from_duration, pr
 Obtain the time components from a time.
 */
 @(require_results)
-clock_from_time :: proc "contextless" (t: Time) -> (hour, min, sec: int) {
+clock_from_time :: proc(t: Time) -> (hour, min, sec: int) {
 	hour, min, sec, _ = precise_clock_from_time(t)
 	return
 }
@@ -380,7 +380,7 @@ clock_from_time :: proc "contextless" (t: Time) -> (hour, min, sec: int) {
 Obtain the time components from a time, including nanoseconds.
 */
 @(require_results)
-precise_clock_from_time :: proc "contextless" (t: Time) -> (hour, min, sec, nanos: int) {
+precise_clock_from_time :: proc(t: Time) -> (hour, min, sec, nanos: int) {
 	// Time in nanoseconds since 1-1-1970 00:00
 	_sec, _nanos := t._nsec / 1e9, t._nsec % 1e9
 	_sec += INTERNAL_TO_ABSOLUTE
@@ -397,7 +397,7 @@ precise_clock_from_time :: proc "contextless" (t: Time) -> (hour, min, sec, nano
 Obtain the time components from a duration.
 */
 @(require_results)
-clock_from_duration :: proc "contextless" (d: Duration) -> (hour, min, sec: int) {
+clock_from_duration :: proc(d: Duration) -> (hour, min, sec: int) {
 	return clock_from_seconds(u64(d/1e9))
 }
 
@@ -405,7 +405,7 @@ clock_from_duration :: proc "contextless" (d: Duration) -> (hour, min, sec: int)
 Obtain the time components from a duration, including nanoseconds.
 */
 @(require_results)
-precise_clock_from_duration :: proc "contextless" (d: Duration) -> (hour, min, sec, nanos: int) {
+precise_clock_from_duration :: proc(d: Duration) -> (hour, min, sec, nanos: int) {
 	return precise_clock_from_time({_nsec=i64(d)})
 }
 
@@ -413,7 +413,7 @@ precise_clock_from_duration :: proc "contextless" (d: Duration) -> (hour, min, s
 Obtain the time components from a stopwatch's total.
 */
 @(require_results)
-clock_from_stopwatch :: proc "contextless" (s: Stopwatch) -> (hour, min, sec: int) {
+clock_from_stopwatch :: proc(s: Stopwatch) -> (hour, min, sec: int) {
 	return clock_from_duration(stopwatch_duration(s))
 }
 
@@ -421,7 +421,7 @@ clock_from_stopwatch :: proc "contextless" (s: Stopwatch) -> (hour, min, sec: in
 Obtain the time components from a stopwatch's total, including nanoseconds
 */
 @(require_results)
-precise_clock_from_stopwatch :: proc "contextless" (s: Stopwatch) -> (hour, min, sec, nanos: int) {
+precise_clock_from_stopwatch :: proc(s: Stopwatch) -> (hour, min, sec, nanos: int) {
 	return precise_clock_from_duration(stopwatch_duration(s))
 }
 
@@ -429,7 +429,7 @@ precise_clock_from_stopwatch :: proc "contextless" (s: Stopwatch) -> (hour, min,
 Obtain the time components from the number of seconds.
 */
 @(require_results)
-clock_from_seconds :: proc "contextless" (in_sec: u64) -> (hour, min, sec: int) {
+clock_from_seconds :: proc(in_sec: u64) -> (hour, min, sec: int) {
 	sec = int(in_sec % SECONDS_PER_DAY)
 	hour = sec / SECONDS_PER_HOUR
 	sec -= hour * SECONDS_PER_HOUR
@@ -752,7 +752,7 @@ to_string_mm_dd_yy :: proc(t: Time, buf: []u8) -> (res: string) #no_bounds_check
 Read the timestamp counter of the CPU.
 */
 @(require_results)
-read_cycle_counter :: proc "contextless" () -> u64 {
+read_cycle_counter :: proc() -> u64 {
 	return u64(intrinsics.read_cycle_counter())
 }
 
@@ -760,7 +760,7 @@ read_cycle_counter :: proc "contextless" () -> u64 {
 Obtain time from unix seconds and unix nanoseconds.
 */
 @(require_results)
-unix :: proc "contextless" (sec: i64, nsec: i64) -> Time {
+unix :: proc(sec: i64, nsec: i64) -> Time {
 	sec, nsec := sec, nsec
 	if nsec < 0 || nsec >= 1e9 {
 		n := nsec / 1e9
@@ -778,7 +778,7 @@ unix :: proc "contextless" (sec: i64, nsec: i64) -> Time {
 Obtain time from unix nanoseconds.
 */
 @(require_results)
-from_nanoseconds :: #force_inline proc "contextless" (nsec: i64) -> Time {
+from_nanoseconds :: #force_inline proc(nsec: i64) -> Time {
 	return Time{nsec}
 }
 
@@ -791,7 +791,7 @@ to_unix_seconds :: time_to_unix
 Obtain the Unix timestamp in seconds from a Time.
 */
 @(require_results)
-time_to_unix :: proc "contextless" (t: Time) -> i64 {
+time_to_unix :: proc(t: Time) -> i64 {
 	return t._nsec/1e9
 }
 
@@ -804,7 +804,7 @@ to_unix_nanoseconds :: time_to_unix_nano
 Obtain the Unix timestamp in nanoseconds from a Time.
 */
 @(require_results)
-time_to_unix_nano :: proc "contextless" (t: Time) -> i64 {
+time_to_unix_nano :: proc(t: Time) -> i64 {
 	return t._nsec
 }
 
@@ -812,7 +812,7 @@ time_to_unix_nano :: proc "contextless" (t: Time) -> i64 {
 Add duration to a time.
 */
 @(require_results)
-time_add :: proc "contextless" (t: Time, d: Duration) -> Time {
+time_add :: proc(t: Time, d: Duration) -> Time {
 	return Time{t._nsec + i64(d)}
 }
 
@@ -831,7 +831,7 @@ call `windows.timeBeginPeriod(1)` to tell Windows to use a more accurate timer
 for your process. Additionally your program should call `windows.timeEndPeriod(1)`
 once you're done with `accurate_sleep`. 
 */
-accurate_sleep :: proc "contextless" (d: Duration) {
+accurate_sleep :: proc(d: Duration) {
 	to_sleep, estimate, mean, m2, count: Duration
 
 	to_sleep = d
@@ -879,18 +879,18 @@ ABSOLUTE_TO_UNIX :: -UNIX_TO_ABSOLUTE
 
 
 @(private, require_results)
-_date :: proc "contextless" (t: Time, full: bool) -> (year: int, month: Month, day: int, yday: int) {
+_date :: proc(t: Time, full: bool) -> (year: int, month: Month, day: int, yday: int) {
 	year, month, day, yday = _abs_date(_time_abs(t), full)
 	return
 }
 
 @(private, require_results)
-_time_abs :: proc "contextless" (t: Time) -> u64 {
+_time_abs :: proc(t: Time) -> u64 {
 	return u64(t._nsec/1e9 + UNIX_TO_ABSOLUTE)
 }
 
 @(private, require_results)
-_abs_date :: proc "contextless" (abs: u64, full: bool) -> (year: int, month: Month, day: int, yday: int) {
+_abs_date :: proc(abs: u64, full: bool) -> (year: int, month: Month, day: int, yday: int) {
 	d := abs / SECONDS_PER_DAY
 
 	// 400 year cycles
@@ -956,7 +956,7 @@ arguments to this procedure. If the datetime components don't represent a valid
 datetime, the function returns `false` in the second argument.
 */
 @(require_results)
-components_to_time :: proc "contextless" (#any_int year, #any_int month, #any_int day, #any_int hour, #any_int minute, #any_int second: i64, #any_int nsec := i64(0)) -> (t: Time, ok: bool) #optional_ok {
+components_to_time :: proc(#any_int year, #any_int month, #any_int day, #any_int hour, #any_int minute, #any_int second: i64, #any_int nsec := i64(0)) -> (t: Time, ok: bool) #optional_ok {
 	this_date, err := dt.components_to_datetime(year, month, day, hour, minute, second, nsec)
 	if err != .None {
 		return
@@ -971,7 +971,7 @@ If the datetime represents a time outside of a valid range, `false` is returned
 as the second return value. See `Time` for the representable range.
 */
 @(require_results)
-compound_to_time :: proc "contextless" (datetime: dt.DateTime) -> (t: Time, ok: bool) {
+compound_to_time :: proc(datetime: dt.DateTime) -> (t: Time, ok: bool) {
 	unix_epoch := dt.DateTime{{1970, 1, 1}, {0, 0, 0, 0}, nil}
 	delta, err := dt.sub(datetime, unix_epoch)
 	if err != .None {
@@ -1000,7 +1000,7 @@ datetime_to_time :: proc{components_to_time, compound_to_time}
 Convert time into datetime.
 */
 @(require_results)
-time_to_datetime :: proc "contextless" (t: Time) -> (dt.DateTime, bool) {
+time_to_datetime :: proc(t: Time) -> (dt.DateTime, bool) {
 	unix_epoch := dt.DateTime{{1970, 1, 1}, {0, 0, 0, 0}, nil}
 
 	datetime, err := dt.add(unix_epoch, dt.Delta{ nanos = t._nsec })
@@ -1019,7 +1019,7 @@ time_to_compound :: time_to_datetime
 Check if a year is a leap year.
 */
 @(require_results)
-is_leap_year :: proc "contextless" (year: int) -> (leap: bool) {
+is_leap_year :: proc(year: int) -> (leap: bool) {
 	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
 }
 

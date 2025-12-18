@@ -623,7 +623,7 @@ push_command :: proc(ctx: ^Context, $Type: typeid, extra_size := 0) -> ^Type {
 	return cmd
 }
 
-next_command :: proc "contextless" (ctx: ^Context, pcmd: ^^Command) -> bool {
+next_command :: proc(ctx: ^Context, pcmd: ^^Command) -> bool {
 	cmd := pcmd^
 	defer pcmd^ = cmd
 	if cmd != nil { 
@@ -631,7 +631,7 @@ next_command :: proc "contextless" (ctx: ^Context, pcmd: ^^Command) -> bool {
 	} else {
 		cmd = (^Command)(&ctx.command_list.items[0])
 	}
-	invalid_command :: #force_inline proc "contextless" (ctx: ^Context) -> ^Command {
+	invalid_command :: #force_inline proc(ctx: ^Context) -> ^Command {
 		return (^Command)(&ctx.command_list.items[ctx.command_list.idx])
 	}
 	for cmd != invalid_command(ctx) {
@@ -644,7 +644,7 @@ next_command :: proc "contextless" (ctx: ^Context, pcmd: ^^Command) -> bool {
 	return false
 }
 
-next_command_iterator :: proc "contextless" (ctx: ^Context, pcm: ^^Command) -> (Command_Variant, bool) {
+next_command_iterator :: proc(ctx: ^Context, pcm: ^^Command) -> (Command_Variant, bool) {
 	if next_command(ctx, pcm) {
 		return pcm^.variant, true
 	}

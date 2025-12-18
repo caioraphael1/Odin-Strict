@@ -340,12 +340,12 @@ Converts a decimal number to its floating-point representation with the given fo
 - overflow: A boolean indicating whether an overflow occurred during conversion
 */
 decimal_to_float_bits :: proc(d: ^decimal.Decimal, info: ^Float_Info) -> (b: u64, overflow: bool) {
-	overflow_end :: proc "contextless" (d: ^decimal.Decimal, info: ^Float_Info) -> (u64, bool) {
+	overflow_end :: proc(d: ^decimal.Decimal, info: ^Float_Info) -> (u64, bool) {
 		mant: u64 = 0
 		exp:  int = 1<<info.expbits - 1 + info.bias
 		return end(d, mant, exp, info, true)
 	}
-	end :: proc "contextless" (d: ^decimal.Decimal, mant: u64, exp: int, info: ^Float_Info, is_overflow: bool) -> (bits: u64, overflow: bool) {
+	end :: proc(d: ^decimal.Decimal, mant: u64, exp: int, info: ^Float_Info, is_overflow: bool) -> (bits: u64, overflow: bool) {
 		bits = mant & (u64(1)<<info.mantbits - 1)
 		bits |= u64((exp-info.bias) & (1<<info.expbits - 1)) << info.mantbits
 		if d.neg {

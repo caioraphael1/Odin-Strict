@@ -32,7 +32,7 @@ chacha8rand_refill_ref :: proc(r: ^Default_Random_State) {
 
 	// At least with LLVM21 force_inline produces identical perf to
 	// manual inlining, yay.
-	quarter_round := #force_inline proc "contextless" (a, b, c, d: u32) -> (u32, u32, u32, u32) {
+	quarter_round := #force_inline proc(a, b, c, d: u32) -> (u32, u32, u32, u32) {
 		a, b, c, d := a, b, c, d
 
 		a += b
@@ -138,7 +138,7 @@ chacha8rand_refill_ref :: proc(r: ^Default_Random_State) {
 // This replicates `rotate_left32` from `core:math/bits`, under the
 // assumption that this will live in `base:runtime`.
 @(require_results, private = "file")
-rotl :: #force_inline proc "contextless" (x: u32, k: int) -> u32 {
+rotl :: #force_inline proc(x: u32, k: int) -> u32 {
 	n :: 32
 	s := uint(k) & (n-1)
 	return x << s | x >> (n-s)

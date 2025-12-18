@@ -3102,7 +3102,7 @@ FILETIME :: struct {
 	dwHighDateTime: DWORD,
 }
 
-FILETIME_as_unix_nanoseconds :: proc "contextless" (ft: FILETIME) -> i64 {
+FILETIME_as_unix_nanoseconds :: proc(ft: FILETIME) -> i64 {
 	t := i64(u64(ft.dwLowDateTime) | u64(ft.dwHighDateTime) << 32)
 	return (t - 116444736000000000) * 100
 }

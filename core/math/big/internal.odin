@@ -2848,12 +2848,12 @@ internal_clear_if_uninitialized_multi :: proc(args: []^Int, allocator: mem.Alloc
 }
 internal_clear_if_uninitialized :: proc {internal_clear_if_uninitialized_single, internal_clear_if_uninitialized_multi, }
 
-internal_error_if_immutable_single :: proc "contextless" (arg: ^Int) -> (err: Error) {
+internal_error_if_immutable_single :: proc(arg: ^Int) -> (err: Error) {
 	if arg != nil && .Immutable in arg.flags { return .Assignment_To_Immutable }
 	return nil
 }
 
-internal_error_if_immutable_multi :: proc "contextless" (args: ..^Int) -> (err: Error) {
+internal_error_if_immutable_multi :: proc(args: ..^Int) -> (err: Error) {
 	for i in args {
 		if i != nil && .Immutable in i.flags { return .Assignment_To_Immutable }
 	}

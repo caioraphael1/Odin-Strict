@@ -9,27 +9,27 @@ package mem_virtual
 
 import os "core:os/os2"
 
-_reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
+_reserve :: proc(size: uint) -> (data: []byte, err: Allocator_Error) {
 	return nil, nil
 }
 
-_commit :: proc "contextless" (data: rawptr, size: uint) -> Allocator_Error {
+_commit :: proc(data: rawptr, size: uint) -> Allocator_Error {
 	return nil
 }
 
-_decommit :: proc "contextless" (data: rawptr, size: uint) {
+_decommit :: proc(data: rawptr, size: uint) {
 }
 
-_release :: proc "contextless" (data: rawptr, size: uint) {
+_release :: proc(data: rawptr, size: uint) {
 }
 
-_protect :: proc "contextless" (data: rawptr, size: uint, flags: Protect_Flags) -> bool {
+_protect :: proc(data: rawptr, size: uint, flags: Protect_Flags) -> bool {
 	return false
 }
 
-_platform_memory_init :: proc "contextless" () {
+_platform_memory_init :: proc() {
 }
 
-_map_file :: proc "contextless" (fd: ^os.File, size: i64, flags: Map_File_Flags) -> (data: []byte, error: Map_File_Error) {
+_map_file :: proc(fd: ^os.File, size: i64, flags: Map_File_Flags) -> (data: []byte, error: Map_File_Error) {
 	return nil, .Map_Failure
 }

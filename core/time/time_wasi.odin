@@ -8,13 +8,13 @@ import "core:sys/wasm/wasi"
 
 _IS_SUPPORTED :: true
 
-_now :: proc "contextless" () -> Time {
+_now :: proc() -> Time {
 	ts, err := wasi.clock_time_get(wasi.CLOCK_REALTIME, 0)
 	assert(err == nil)
 	return Time{_nsec=i64(ts)}
 }
 
-_sleep :: proc "contextless" (d: Duration) {
+_sleep :: proc(d: Duration) {
 	ev: wasi.event_t
 	n, err := wasi.poll_oneoff(
 		&{
@@ -30,12 +30,12 @@ _sleep :: proc "contextless" (d: Duration) {
 	assert(err == nil && n == 1 && ev.error == nil && ev.type == .CLOCK)
 }
 
-_tick_now :: proc "contextless" () -> Tick {
+_tick_now :: proc() -> Tick {
 	ts, err := wasi.clock_time_get(wasi.CLOCK_MONOTONIC, 0)
 	assert(err == nil)
 	return Tick{_nsec=i64(ts)}
 }
 
-_yield :: proc "contextless" () {
+_yield :: proc() {
 	wasi.sched_yield()
 }

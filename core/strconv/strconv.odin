@@ -715,7 +715,7 @@ Converts a byte to lowercase
 - A lowercase byte character.
 */
 @(private)
-lower :: #force_inline proc "contextless" (ch: byte) -> byte { return ('a' - 'A') | ch }
+lower :: #force_inline proc(ch: byte) -> byte { return ('a' - 'A') | ch }
 /*
 Parses a 32-bit floating point number from a string
 
@@ -854,7 +854,7 @@ Output:
 - ok: `false` if a base 10 float could not be found
 */
 parse_f64_prefix :: proc(str: string) -> (value: f64, nr: int, ok: bool) {
-	common_prefix_len_ignore_case :: proc "contextless" (s, prefix: string) -> int {
+	common_prefix_len_ignore_case :: proc(s, prefix: string) -> int {
 		n := len(prefix)
 		if n > len(s) {
 			n = len(s)
@@ -870,7 +870,7 @@ parse_f64_prefix :: proc(str: string) -> (value: f64, nr: int, ok: bool) {
 		}
 		return n
 	}
-	check_special :: proc "contextless" (s: string) -> (f: f64, n: int, ok: bool) {
+	check_special :: proc(s: string) -> (f: f64, n: int, ok: bool) {
 		s := s
 		if len(s) > 0 {
 			sign := 1
@@ -908,7 +908,7 @@ parse_f64_prefix :: proc(str: string) -> (value: f64, nr: int, ok: bool) {
 		}
 		return
 	}
-	parse_components :: proc "contextless" (s: string) -> (mantissa: u64, exp: int, neg, trunc, hex: bool, i: int, ok: bool) {
+	parse_components :: proc(s: string) -> (mantissa: u64, exp: int, neg, trunc, hex: bool, i: int, ok: bool) {
 		if len(s) == 0 {
 			return
 		}
@@ -1037,7 +1037,7 @@ parse_f64_prefix :: proc(str: string) -> (value: f64, nr: int, ok: bool) {
 		return
 	}
 
-	parse_hex :: proc "contextless" (s: string, mantissa: u64, exp: int, neg, trunc: bool) -> (f64, bool) {
+	parse_hex :: proc(s: string, mantissa: u64, exp: int, neg, trunc: bool) -> (f64, bool) {
 		info := &_f64_info
 
 		mantissa, exp := mantissa, exp

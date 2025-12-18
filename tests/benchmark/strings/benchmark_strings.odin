@@ -26,7 +26,7 @@ sizes := [?]int {
 
 // These are the normal, unoptimized algorithms.
 
-plain_prefix_length :: proc "contextless" (a, b: string) -> (n: int) {
+plain_prefix_length :: proc(a, b: string) -> (n: int) {
 	_len := min(len(a), len(b))
 
 	// Scan for matches including partial codepoints.
@@ -50,7 +50,7 @@ plain_prefix_length :: proc "contextless" (a, b: string) -> (n: int) {
 	return
 }
 
-run_trial_size_prefix :: proc(p: proc "contextless" (string, string) -> $R, suffix: string, size: int, idx: int, runs: int, loc := #caller_location) -> (timing: time.Duration) {
+run_trial_size_prefix :: proc(p: proc(string, string) -> $R, suffix: string, size: int, idx: int, runs: int, loc := #caller_location) -> (timing: time.Duration) {
 	left  := make([]u8, size)
 	right := make([]u8, size)
 	defer {

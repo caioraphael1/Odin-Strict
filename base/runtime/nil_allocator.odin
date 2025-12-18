@@ -32,7 +32,7 @@ nil_allocator_proc :: proc(allocator_data: rawptr, mode: Allocator_Mode,
 // This is extremely useful for creating a dynamic array from a buffer which does not nothing
 // on a resize/reserve beyond the originally allocated memory.
 @(require_results)
-nil_allocator :: proc "contextless" () -> Allocator {
+nil_allocator :: proc() -> Allocator {
 	return Allocator{
 		procedure = nil_allocator_proc,
 		data = nil,

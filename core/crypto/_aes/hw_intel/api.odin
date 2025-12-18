@@ -5,7 +5,7 @@ import "core:sys/info"
 
 // is_supported returns true iff hardware accelerated AES
 // is supported.
-is_supported :: proc "contextless" () -> bool {
+is_supported :: proc() -> bool {
 	features, ok := info.cpu.features.?
 	if !ok {
 		return false

@@ -47,12 +47,12 @@ Shutdown_Manner :: enum c.int {
 // Wrappers and unwrappers for system-native types
 
 @(private="file")
-_unwrap_os_socket :: proc "contextless" (sock: Any_Socket) -> linux.Fd {
+_unwrap_os_socket :: proc(sock: Any_Socket) -> linux.Fd {
 	return linux.Fd(any_socket_to_socket(sock))
 }
 
 @(private="file")
-_wrap_os_socket :: proc "contextless" (sock: linux.Fd, protocol: Socket_Protocol) -> Any_Socket {
+_wrap_os_socket :: proc(sock: linux.Fd, protocol: Socket_Protocol) -> Any_Socket {
 	switch protocol {
 	case .TCP:  return TCP_Socket(Socket(sock))
 	case .UDP:  return UDP_Socket(Socket(sock))
@@ -62,7 +62,7 @@ _wrap_os_socket :: proc "contextless" (sock: linux.Fd, protocol: Socket_Protocol
 }
 
 @(private="file")
-_unwrap_os_family :: proc "contextless" (family: Address_Family) -> linux.Address_Family {
+_unwrap_os_family :: proc(family: Address_Family) -> linux.Address_Family {
 	switch family {
 	case .IP4:  return .INET
 	case .IP6:  return .INET6
@@ -72,7 +72,7 @@ _unwrap_os_family :: proc "contextless" (family: Address_Family) -> linux.Addres
 }
 
 @(private="file")
-_unwrap_os_proto_socktype :: proc "contextless" (protocol: Socket_Protocol) -> (linux.Protocol, linux.Socket_Type) {
+_unwrap_os_proto_socktype :: proc(protocol: Socket_Protocol) -> (linux.Protocol, linux.Socket_Type) {
 	switch protocol {
 	case .TCP:  return .TCP, .STREAM
 	case .UDP:  return .UDP, .DGRAM
@@ -82,7 +82,7 @@ _unwrap_os_proto_socktype :: proc "contextless" (protocol: Socket_Protocol) -> (
 }
 
 @(private="file")
-_unwrap_os_addr :: proc "contextless" (endpoint: Endpoint) -> linux.Sock_Addr_Any {
+_unwrap_os_addr :: proc(endpoint: Endpoint) -> linux.Sock_Addr_Any {
 	switch address in endpoint.address {
 	case IP4_Address:
 		return {
@@ -106,7 +106,7 @@ _unwrap_os_addr :: proc "contextless" (endpoint: Endpoint) -> linux.Sock_Addr_An
 }
 
 @(private="file")
-_wrap_os_addr :: proc "contextless" (addr: linux.Sock_Addr_Any) -> Endpoint {
+_wrap_os_addr :: proc(addr: linux.Sock_Addr_Any) -> Endpoint {
 	#partial switch addr.family {
 	case .INET:
 		return {

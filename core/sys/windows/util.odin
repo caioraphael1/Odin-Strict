@@ -626,7 +626,7 @@ run_as_user :: proc(username, password, application, commandline: string, pi: ^P
 	}
 }
 
-ensure_winsock_initialized :: proc "contextless" () {
+ensure_winsock_initialized :: proc() {
 	@static gate := false
 	@static initted := false
 

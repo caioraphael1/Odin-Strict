@@ -102,7 +102,7 @@ GE_BASEPOINT_TABLE := Multiply_Table {
 	},
 }
 
-ge_scalarmult :: proc "contextless" (ge, p: ^Group_Element, sc: ^Scalar) {
+ge_scalarmult :: proc(ge, p: ^Group_Element, sc: ^Scalar) {
 	tmp: field.Non_Montgomery_Domain_Field_Element
 	field.fe_from_montgomery(&tmp, sc)
 
@@ -111,7 +111,7 @@ ge_scalarmult :: proc "contextless" (ge, p: ^Group_Element, sc: ^Scalar) {
 	mem.zero_explicit(&tmp, size_of(tmp))
 }
 
-ge_scalarmult_basepoint :: proc "contextless" (ge: ^Group_Element, sc: ^Scalar) {
+ge_scalarmult_basepoint :: proc(ge: ^Group_Element, sc: ^Scalar) {
 	// Something like the comb method from "Fast and compact elliptic-curve
 	// cryptography" Section 3.3, would be more performant, but more
 	// complex.
@@ -120,14 +120,14 @@ ge_scalarmult_basepoint :: proc "contextless" (ge: ^Group_Element, sc: ^Scalar) 
 	ge_scalarmult(ge, &GE_BASEPOINT, sc)
 }
 
-ge_scalarmult_vartime :: proc "contextless" (ge, p: ^Group_Element, sc: ^Scalar) {
+ge_scalarmult_vartime :: proc(ge, p: ^Group_Element, sc: ^Scalar) {
 	tmp: field.Non_Montgomery_Domain_Field_Element
 	field.fe_from_montgomery(&tmp, sc)
 
 	_ge_scalarmult(ge, p, &tmp, true)
 }
 
-ge_double_scalarmult_basepoint_vartime :: proc "contextless" (
+ge_double_scalarmult_basepoint_vartime :: proc(
 	ge: ^Group_Element,
 	a: ^Scalar,
 	A: ^Group_Element,
@@ -184,7 +184,7 @@ ge_double_scalarmult_basepoint_vartime :: proc "contextless" (
 }
 
 @(private)
-_ge_scalarmult :: proc "contextless" (
+_ge_scalarmult :: proc(
 	ge, p: ^Group_Element,
 	sc: ^field.Non_Montgomery_Domain_Field_Element,
 	unsafe_is_vartime := false,
@@ -237,7 +237,7 @@ _ge_scalarmult :: proc "contextless" (
 Multiply_Table :: [15]Addend_Group_Element // 0 = inf, which is implicit.
 
 @(private)
-mul_tbl_set :: proc "contextless" (
+mul_tbl_set :: proc(
 	tbl: ^Multiply_Table,
 	ge: ^Group_Element,
 	tmp_add: ^Add_Scratch,
@@ -255,7 +255,7 @@ mul_tbl_set :: proc "contextless" (
 }
 
 @(private)
-mul_tbl_add :: proc "contextless" (
+mul_tbl_add :: proc(
 	ge: ^Group_Element,
 	tbl: ^Multiply_Table,
 	idx: u64,

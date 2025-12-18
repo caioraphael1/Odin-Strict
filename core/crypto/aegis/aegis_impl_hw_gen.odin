@@ -9,36 +9,36 @@ State_HW :: struct {}
 
 // is_hardware_accelerated returns true iff hardware accelerated AEGIS
 // is supported.
-is_hardware_accelerated :: proc "contextless" () -> bool {
+is_hardware_accelerated :: proc() -> bool {
 	return false
 }
 
 @(private)
-init_hw :: proc "contextless" (ctx: ^Context, st: ^State_HW, iv: []byte) {
+init_hw :: proc(ctx: ^Context, st: ^State_HW, iv: []byte) {
 	panic(ERR_HW_NOT_SUPPORTED)
 }
 
 @(private)
-absorb_hw :: proc "contextless" (st: ^State_HW, aad: []byte) {
+absorb_hw :: proc(st: ^State_HW, aad: []byte) {
 	panic(ERR_HW_NOT_SUPPORTED)
 }
 
 @(private)
-enc_hw :: proc "contextless" (st: ^State_HW, dst, src: []byte) {
+enc_hw :: proc(st: ^State_HW, dst, src: []byte) {
 	panic(ERR_HW_NOT_SUPPORTED)
 }
 
 @(private)
-dec_hw :: proc "contextless" (st: ^State_HW, dst, src: []byte) {
+dec_hw :: proc(st: ^State_HW, dst, src: []byte) {
 	panic(ERR_HW_NOT_SUPPORTED)
 }
 
 @(private)
-finalize_hw :: proc "contextless" (st: ^State_HW, tag: []byte, ad_len, msg_len: int) {
+finalize_hw :: proc(st: ^State_HW, tag: []byte, ad_len, msg_len: int) {
 	panic(ERR_HW_NOT_SUPPORTED)
 }
 
 @(private)
-reset_state_hw :: proc "contextless" (st: ^State_HW) {
+reset_state_hw :: proc(st: ^State_HW) {
 	panic(ERR_HW_NOT_SUPPORTED)
 }

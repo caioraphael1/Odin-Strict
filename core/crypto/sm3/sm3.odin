@@ -140,7 +140,7 @@ IV := [8]u32 {
 }
 
 @(private)
-block :: proc "contextless" (ctx: ^Context, buf: []byte) {
+block :: proc(ctx: ^Context, buf: []byte) {
 	buf := buf
 
 	w: [68]u32

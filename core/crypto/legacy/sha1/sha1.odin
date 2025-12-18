@@ -139,7 +139,7 @@ reset :: proc(ctx: ^$T) {
 */
 
 @(private)
-transform :: proc "contextless" (ctx: ^Context, data: []byte) {
+transform :: proc(ctx: ^Context, data: []byte) {
 	a, b, c, d, e, i, t: u32
 	m: [80]u32
 

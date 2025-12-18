@@ -43,7 +43,7 @@ Enumerator_allObjects :: proc "c" (self: ^$E/Enumerator($T)) -> (all: ^Array) {
 	return msgSend(type_of(all), self, "allObjects")
 }
 
-Enumerator_iterator :: proc "contextless" (self: ^$E/Enumerator($T)) -> (obj: T, ok: bool) {
+Enumerator_iterator :: proc(self: ^$E/Enumerator($T)) -> (obj: T, ok: bool) {
 	obj = msgSend(T, self, "nextObject")
 	ok = obj != nil
 	return

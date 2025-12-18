@@ -112,7 +112,7 @@ keystream_bytes_ctr :: proc(ctx: ^Context_CTR, dst: []byte) {
 
 // reset_ctr sanitizes the Context_CTR.  The Context_CTR must be
 // re-initialized to be used again.
-reset_ctr :: proc "contextless" (ctx: ^Context_CTR) {
+reset_ctr :: proc(ctx: ^Context_CTR) {
 	reset_impl(&ctx._impl)
 	ctx._off = 0
 	ctx._ctr_hi = 0
@@ -130,7 +130,7 @@ ctr_blocks :: proc(ctx: ^Context_CTR, dst, src: []byte, nr_blocks: int) #no_boun
 	}
 
 	// Portable implementation.
-	ct64_inc_ctr := #force_inline proc "contextless" (dst: []byte, hi, lo: u64) -> (u64, u64) {
+	ct64_inc_ctr := #force_inline proc(dst: []byte, hi, lo: u64) -> (u64, u64) {
 		endian.unchecked_put_u64be(dst[0:], hi)
 		endian.unchecked_put_u64be(dst[8:], lo)
 
@@ -176,7 +176,7 @@ ctr_blocks :: proc(ctx: ^Context_CTR, dst, src: []byte, nr_blocks: int) #no_boun
 }
 
 @(private)
-xor_blocks :: #force_inline proc "contextless" (dst, src: []byte, blocks: [][]byte) {
+xor_blocks :: #force_inline proc(dst, src: []byte, blocks: [][]byte) {
 	// Note: This would be faster `core:simd` was used, however if
 	// performance of this implementation matters to where that
 	// optimization would be worth it, use chacha20poly1305, or a

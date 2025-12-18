@@ -10,6 +10,6 @@ foreign libc {
 	_unix_getthrid :: proc() -> int ---
 }
 
-_current_thread_id :: proc "contextless" () -> int {
+_current_thread_id :: proc() -> int {
 	return _unix_getthrid()
 }

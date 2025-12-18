@@ -22,12 +22,12 @@ State_HW :: struct {
 
 // is_hardware_accelerated returns true iff hardware accelerated AEGIS
 // is supported.
-is_hardware_accelerated :: proc "contextless" () -> bool {
+is_hardware_accelerated :: proc() -> bool {
 	return aes.is_hardware_accelerated()
 }
 
 @(private, enable_target_feature = "sse2,aes")
-init_hw :: proc "contextless" (ctx: ^Context, st: ^State_HW, iv: []byte) {
+init_hw :: proc(ctx: ^Context, st: ^State_HW, iv: []byte) {
 	switch ctx._key_len {
 	case KEY_SIZE_128L:
 		key := intrinsics.unaligned_load((^x86.__m128i)(&ctx._key[0]))
@@ -71,7 +71,7 @@ init_hw :: proc "contextless" (ctx: ^Context, st: ^State_HW, iv: []byte) {
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-update_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, m0, m1: x86.__m128i) {
+update_hw_128l :: #force_inline proc(st: ^State_HW, m0, m1: x86.__m128i) {
 	s0_ := x86._mm_aesenc_si128(st.s7, x86._mm_xor_si128(st.s0, m0))
 	s1_ := x86._mm_aesenc_si128(st.s0, st.s1)
 	s2_ := x86._mm_aesenc_si128(st.s1, st.s2)
@@ -84,7 +84,7 @@ update_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, m0, m1: x86._
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-update_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, m: x86.__m128i) {
+update_hw_256 :: #force_inline proc(st: ^State_HW, m: x86.__m128i) {
 	s0_ := x86._mm_aesenc_si128(st.s5, x86._mm_xor_si128(st.s0, m))
 	s1_ := x86._mm_aesenc_si128(st.s0, st.s1)
 	s2_ := x86._mm_aesenc_si128(st.s1, st.s2)
@@ -95,20 +95,20 @@ update_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, m: x86.__m128i
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-absorb_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, ai: []byte) {
+absorb_hw_128l :: #force_inline proc(st: ^State_HW, ai: []byte) {
 	t0 := intrinsics.unaligned_load((^x86.__m128i)(&ai[0]))
 	t1 := intrinsics.unaligned_load((^x86.__m128i)(&ai[16]))
 	update_hw_128l(st, t0, t1)
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-absorb_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, ai: []byte) {
+absorb_hw_256 :: #force_inline proc(st: ^State_HW, ai: []byte) {
 	m := intrinsics.unaligned_load((^x86.__m128i)(&ai[0]))
 	update_hw_256(st, m)
 }
 
 @(private, enable_target_feature = "sse2,aes")
-absorb_hw :: proc "contextless" (st: ^State_HW, aad: []byte) #no_bounds_check {
+absorb_hw :: proc(st: ^State_HW, aad: []byte) #no_bounds_check {
 	ai, l := aad, len(aad)
 
 	switch st.rate {
@@ -141,7 +141,7 @@ absorb_hw :: proc "contextless" (st: ^State_HW, aad: []byte) #no_bounds_check {
 }
 
 @(private = "file", enable_target_feature = "sse2", require_results)
-z_hw_128l :: #force_inline proc "contextless" (st: ^State_HW) -> (x86.__m128i, x86.__m128i) {
+z_hw_128l :: #force_inline proc(st: ^State_HW) -> (x86.__m128i, x86.__m128i) {
 	z0 := x86._mm_xor_si128(
 		st.s6,
 		x86._mm_xor_si128(
@@ -160,7 +160,7 @@ z_hw_128l :: #force_inline proc "contextless" (st: ^State_HW) -> (x86.__m128i, x
 }
 
 @(private = "file", enable_target_feature = "sse2", require_results)
-z_hw_256 :: #force_inline proc "contextless" (st: ^State_HW) -> x86.__m128i {
+z_hw_256 :: #force_inline proc(st: ^State_HW) -> x86.__m128i {
 	return x86._mm_xor_si128(
 		st.s1,
 		x86._mm_xor_si128(
@@ -174,7 +174,7 @@ z_hw_256 :: #force_inline proc "contextless" (st: ^State_HW) -> x86.__m128i {
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-enc_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, ci, xi: []byte) #no_bounds_check {
+enc_hw_128l :: #force_inline proc(st: ^State_HW, ci, xi: []byte) #no_bounds_check {
 	z0, z1 := z_hw_128l(st)
 
 	t0 := intrinsics.unaligned_load((^x86.__m128i)(&xi[0]))
@@ -188,7 +188,7 @@ enc_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, ci, xi: []byte) 
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-enc_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, ci, xi: []byte) #no_bounds_check {
+enc_hw_256 :: #force_inline proc(st: ^State_HW, ci, xi: []byte) #no_bounds_check {
 	z := z_hw_256(st)
 
 	xi_ := intrinsics.unaligned_load((^x86.__m128i)(raw_data(xi)))
@@ -199,7 +199,7 @@ enc_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, ci, xi: []byte) #
 }
 
 @(private, enable_target_feature = "sse2,aes")
-enc_hw :: proc "contextless" (st: ^State_HW, dst, src: []byte) #no_bounds_check {
+enc_hw :: proc(st: ^State_HW, dst, src: []byte) #no_bounds_check {
 	ci, xi, l := dst, src, len(src)
 
 	switch st.rate {
@@ -234,7 +234,7 @@ enc_hw :: proc "contextless" (st: ^State_HW, dst, src: []byte) #no_bounds_check 
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-dec_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, xi, ci: []byte) #no_bounds_check {
+dec_hw_128l :: #force_inline proc(st: ^State_HW, xi, ci: []byte) #no_bounds_check {
 	z0, z1 := z_hw_128l(st)
 
 	t0 := intrinsics.unaligned_load((^x86.__m128i)(&ci[0]))
@@ -248,7 +248,7 @@ dec_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, xi, ci: []byte) 
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-dec_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, xi, ci: []byte) #no_bounds_check {
+dec_hw_256 :: #force_inline proc(st: ^State_HW, xi, ci: []byte) #no_bounds_check {
 	z := z_hw_256(st)
 
 	ci_ := intrinsics.unaligned_load((^x86.__m128i)(raw_data(ci)))
@@ -259,7 +259,7 @@ dec_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, xi, ci: []byte) #
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-dec_partial_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, xn, cn: []byte) #no_bounds_check {
+dec_partial_hw_128l :: #force_inline proc(st: ^State_HW, xn, cn: []byte) #no_bounds_check {
 	tmp: [_RATE_128L]byte
 	defer mem.zero_explicit(&tmp, size_of(tmp))
 
@@ -284,7 +284,7 @@ dec_partial_hw_128l :: #force_inline proc "contextless" (st: ^State_HW, xn, cn: 
 }
 
 @(private = "file", enable_target_feature = "sse2,aes")
-dec_partial_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, xn, cn: []byte) #no_bounds_check {
+dec_partial_hw_256 :: #force_inline proc(st: ^State_HW, xn, cn: []byte) #no_bounds_check {
 	tmp: [_RATE_256]byte
 	defer mem.zero_explicit(&tmp, size_of(tmp))
 
@@ -305,7 +305,7 @@ dec_partial_hw_256 :: #force_inline proc "contextless" (st: ^State_HW, xn, cn: [
 }
 
 @(private, enable_target_feature = "sse2,aes")
-dec_hw :: proc "contextless" (st: ^State_HW, dst, src: []byte) #no_bounds_check {
+dec_hw :: proc(st: ^State_HW, dst, src: []byte) #no_bounds_check {
 	xi, ci, l := dst, src, len(src)
 
 	switch st.rate {
@@ -337,7 +337,7 @@ dec_hw :: proc "contextless" (st: ^State_HW, dst, src: []byte) #no_bounds_check 
 }
 
 @(private, enable_target_feature = "sse2,aes")
-finalize_hw :: proc "contextless" (st: ^State_HW, tag: []byte, ad_len, msg_len: int) {
+finalize_hw :: proc(st: ^State_HW, tag: []byte, ad_len, msg_len: int) {
 	tmp: [16]byte
 	endian.unchecked_put_u64le(tmp[0:], u64(ad_len) * 8)
 	endian.unchecked_put_u64le(tmp[8:], u64(msg_len) * 8)
@@ -384,6 +384,6 @@ finalize_hw :: proc "contextless" (st: ^State_HW, tag: []byte, ad_len, msg_len: 
 }
 
 @(private)
-reset_state_hw :: proc "contextless" (st: ^State_HW) {
+reset_state_hw :: proc(st: ^State_HW) {
 	mem.zero_explicit(st, size_of(st^))
 }

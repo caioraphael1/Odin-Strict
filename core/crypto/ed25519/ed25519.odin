@@ -88,7 +88,7 @@ private_key_bytes :: proc(priv_key: ^Private_Key, dst: []byte) {
 }
 
 // private_key_clear clears priv_key to the uninitialized state.
-private_key_clear :: proc "contextless" (priv_key: ^Private_Key) {
+private_key_clear :: proc(priv_key: ^Private_Key) {
 	mem.zero_explicit(priv_key, size_of(Private_Key))
 }
 
@@ -150,7 +150,7 @@ sign :: proc(priv_key: ^Private_Key, msg, sig: []byte) {
 
 // public_key_set_bytes decodes a byte-encoded public key, and returns
 // true iff the operation was successful.
-public_key_set_bytes :: proc "contextless" (pub_key: ^Public_Key, b: []byte) -> bool {
+public_key_set_bytes :: proc(pub_key: ^Public_Key, b: []byte) -> bool {
 	if len(b) != PUBLIC_KEY_SIZE {
 		return false
 	}

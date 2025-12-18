@@ -125,7 +125,7 @@ buffer_create :: proc(data: []byte, tid: u32 = 0, pid: u32 = 0) -> (buffer: Buff
 }
 
 @(no_instrumentation)
-buffer_flush :: proc "contextless" (ctx: ^Context, buffer: ^Buffer) #no_bounds_check /* bounds check would segfault instrumentation */ {
+buffer_flush :: proc(ctx: ^Context, buffer: ^Buffer) #no_bounds_check /* bounds check would segfault instrumentation */ {
 	if len(buffer.data) == 0 {
 		return
 	}
@@ -170,7 +170,7 @@ _scoped_buffer_end :: proc(ctx: ^Context, buffer: ^Buffer, _, _: string, _ := #c
 }
 
 @(no_instrumentation)
-_trace_now :: proc "contextless" (ctx: ^Context) -> u64 {
+_trace_now :: proc(ctx: ^Context) -> u64 {
 	if !ctx.precise_time {
 		return u64(tick_now())
 	}
@@ -179,7 +179,7 @@ _trace_now :: proc "contextless" (ctx: ^Context) -> u64 {
 }
 
 @(no_instrumentation)
-_build_stream_header :: proc "contextless" (buffer: []u8, timestamp_scale: f64) -> (header_size: int, ok: bool) #optional_ok {
+_build_stream_header :: proc(buffer: []u8, timestamp_scale: f64) -> (header_size: int, ok: bool) #optional_ok {
 	header_size = size_of(Manual_Stream_Header)
 	if header_size > len(buffer) {
 		return 0, false
@@ -195,7 +195,7 @@ _build_stream_header :: proc "contextless" (buffer: []u8, timestamp_scale: f64) 
 }
 
 @(no_instrumentation)
-_build_begin :: #force_inline proc "contextless" (buffer: []u8, name: string, args: string, ts: u64) -> (event_size: int, ok: bool) #optional_ok #no_bounds_check /* bounds check would segfault instrumentation */ {
+_build_begin :: #force_inline proc(buffer: []u8, name: string, args: string, ts: u64) -> (event_size: int, ok: bool) #optional_ok #no_bounds_check /* bounds check would segfault instrumentation */ {
 	ev := (^Begin_Event)(raw_data(buffer))
 	name_len := min(len(name), 255)
 	args_len := min(len(args), 255)
@@ -217,7 +217,7 @@ _build_begin :: #force_inline proc "contextless" (buffer: []u8, name: string, ar
 }
 
 @(no_instrumentation)
-_build_end :: proc "contextless" (buffer: []u8, ts: u64) -> (event_size: int, ok: bool) #optional_ok {
+_build_end :: proc(buffer: []u8, ts: u64) -> (event_size: int, ok: bool) #optional_ok {
 	ev := (^End_Event)(raw_data(buffer))
 	event_size = size_of(End_Event)
 	if event_size > len(buffer) {
@@ -232,7 +232,7 @@ _build_end :: proc "contextless" (buffer: []u8, ts: u64) -> (event_size: int, ok
 }
 
 @(no_instrumentation)
-_build_name_event :: #force_inline proc "contextless" (buffer: []u8, name: string, type: Manual_Event_Type) -> (event_size: int, ok: bool) #optional_ok #no_bounds_check /* bounds check would segfault instrumentation */ {
+_build_name_event :: #force_inline proc(buffer: []u8, name: string, type: Manual_Event_Type) -> (event_size: int, ok: bool) #optional_ok #no_bounds_check /* bounds check would segfault instrumentation */ {
 	ev := (^Name_Event)(raw_data(buffer))
 	name_len := min(len(name), 255)
 
@@ -253,7 +253,7 @@ _build_name_event :: #force_inline proc "contextless" (buffer: []u8, name: strin
 }
 
 @(no_instrumentation)
-_buffer_begin :: proc "contextless" (ctx: ^Context, buffer: ^Buffer, name: string, args: string = "", location := #caller_location) #no_bounds_check /* bounds check would segfault instrumentation */ {
+_buffer_begin :: proc(ctx: ^Context, buffer: ^Buffer, name: string, args: string = "", location := #caller_location) #no_bounds_check /* bounds check would segfault instrumentation */ {
 	if buffer.head + BEGIN_EVENT_MAX > len(buffer.data) {
 		buffer_flush(ctx, buffer)
 	}
@@ -262,7 +262,7 @@ _buffer_begin :: proc "contextless" (ctx: ^Context, buffer: ^Buffer, name: strin
 }
 
 @(no_instrumentation)
-_buffer_end :: proc "contextless" (ctx: ^Context, buffer: ^Buffer) #no_bounds_check /* bounds check would segfault instrumentation */ {
+_buffer_end :: proc(ctx: ^Context, buffer: ^Buffer) #no_bounds_check /* bounds check would segfault instrumentation */ {
 	ts := _trace_now(ctx)
 
 	if buffer.head + size_of(End_Event) > len(buffer.data) {
@@ -273,7 +273,7 @@ _buffer_end :: proc "contextless" (ctx: ^Context, buffer: ^Buffer) #no_bounds_ch
 }
 
 @(no_instrumentation)
-_buffer_name_thread :: proc "contextless" (ctx: ^Context, buffer: ^Buffer, name: string, location := #caller_location) #no_bounds_check /* bounds check would segfault instrumentation */ {
+_buffer_name_thread :: proc(ctx: ^Context, buffer: ^Buffer, name: string, location := #caller_location) #no_bounds_check /* bounds check would segfault instrumentation */ {
 	if buffer.head + NAME_EVENT_MAX > len(buffer.data) {
 		buffer_flush(ctx, buffer)
 	}
@@ -281,7 +281,7 @@ _buffer_name_thread :: proc "contextless" (ctx: ^Context, buffer: ^Buffer, name:
 }
 
 @(no_instrumentation)
-_buffer_name_process :: proc "contextless" (ctx: ^Context, buffer: ^Buffer, name: string, location := #caller_location) #no_bounds_check /* bounds check would segfault instrumentation */ {
+_buffer_name_process :: proc(ctx: ^Context, buffer: ^Buffer, name: string, location := #caller_location) #no_bounds_check /* bounds check would segfault instrumentation */ {
 	if buffer.head + NAME_EVENT_MAX > len(buffer.data) {
 		buffer_flush(ctx, buffer)
 	}
@@ -289,11 +289,11 @@ _buffer_name_process :: proc "contextless" (ctx: ^Context, buffer: ^Buffer, name
 }
 
 @(no_instrumentation)
-write :: proc "contextless" (fd: os.Handle, buf: []byte) -> (n: int, err: os.Error) {
+write :: proc(fd: os.Handle, buf: []byte) -> (n: int, err: os.Error) {
 	return _write(fd, buf)
 }
 
 @(no_instrumentation)
-tick_now :: proc "contextless" () -> (ns: i64) {
+tick_now :: proc() -> (ns: i64) {
 	return _tick_now()
 }

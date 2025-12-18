@@ -87,7 +87,7 @@ foreign Kernel32 {
 }
 
 @(no_sanitize_address)
-_reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
+_reserve :: proc(size: uint) -> (data: []byte, err: Allocator_Error) {
 	result := VirtualAlloc(nil, size, MEM_RESERVE, PAGE_READWRITE)
 	if result == nil {
 		err = .Out_Of_Memory
@@ -98,7 +98,7 @@ _reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Err
 }
 
 @(no_sanitize_address)
-_commit :: proc "contextless" (data: rawptr, size: uint) -> Allocator_Error {
+_commit :: proc(data: rawptr, size: uint) -> Allocator_Error {
 	result := VirtualAlloc(data, size, MEM_COMMIT, PAGE_READWRITE)
 	if result == nil {
 		switch err := GetLastError(); err {
@@ -114,17 +114,17 @@ _commit :: proc "contextless" (data: rawptr, size: uint) -> Allocator_Error {
 }
 
 @(no_sanitize_address)
-_decommit :: proc "contextless" (data: rawptr, size: uint) {
+_decommit :: proc(data: rawptr, size: uint) {
 	VirtualFree(data, size, MEM_DECOMMIT)
 }
 
 @(no_sanitize_address)
-_release :: proc "contextless" (data: rawptr, size: uint) {
+_release :: proc(data: rawptr, size: uint) {
 	VirtualFree(data, 0, MEM_RELEASE)
 }
 
 @(no_sanitize_address)
-_protect :: proc "contextless" (data: rawptr, size: uint, flags: Protect_Flags) -> bool {
+_protect :: proc(data: rawptr, size: uint, flags: Protect_Flags) -> bool {
 	pflags: u32
 	pflags = PAGE_NOACCESS
 	switch flags {
@@ -148,7 +148,7 @@ _protect :: proc "contextless" (data: rawptr, size: uint, flags: Protect_Flags) 
 
 
 @(no_sanitize_address)
-_platform_memory_init :: proc "contextless" () {
+_platform_memory_init :: proc() {
 	sys_info: SYSTEM_INFO
 	GetSystemInfo(&sys_info)
 	DEFAULT_PAGE_SIZE = max(DEFAULT_PAGE_SIZE, uint(sys_info.dwPageSize))
@@ -159,7 +159,7 @@ _platform_memory_init :: proc "contextless" () {
 
 
 @(no_sanitize_address)
-_map_file :: proc "contextless" (fd: ^os.File, size: i64, flags: Map_File_Flags) -> (data: []byte, error: Map_File_Error) {
+_map_file :: proc(fd: ^os.File, size: i64, flags: Map_File_Flags) -> (data: []byte, error: Map_File_Error) {
 	page_flags: u32
 	if flags == {.Read} {
 		page_flags = PAGE_READONLY

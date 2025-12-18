@@ -308,7 +308,7 @@ Context :: struct {
 }
 
 @(private)
-block :: proc "contextless" (ctx: ^Context, buf: []byte) {
+block :: proc(ctx: ^Context, buf: []byte) {
 	buf := buf
 
 	for len(buf) >= BLOCK_SIZE {
@@ -326,7 +326,7 @@ block :: proc "contextless" (ctx: ^Context, buf: []byte) {
 }
 
 @(private)
-_get_byte :: #force_inline proc "contextless" (byte_num: byte, into: u64) -> byte {
+_get_byte :: #force_inline proc(byte_num: byte, into: u64) -> byte {
 	return byte(into >> (((~byte_num) & (size_of(u64) - 1)) << 3))
 }
 
@@ -345,7 +345,7 @@ _collect_output :: #force_inline proc(dst: []byte, hash: u64) {
 }
 
 @(private)
-_compress :: #force_inline proc "contextless" (ctx: ^Context) {
+_compress :: #force_inline proc(ctx: ^Context) {
 	ctx.v0 += ctx.v1
 	ctx.v1 = bits.rotate_left64(ctx.v1, 13)
 	ctx.v1 ~= ctx.v0

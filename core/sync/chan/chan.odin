@@ -379,7 +379,7 @@ Example:
 	}
 */
 @(require_results)
-as_send :: #force_inline proc "contextless" (c: $C/Chan($T, $D)) -> (s: Chan(T, .Send)) where C.D <= .Both {
+as_send :: #force_inline proc(c: $C/Chan($T, $D)) -> (s: Chan(T, .Send)) where C.D <= .Both {
 	return transmute(type_of(s))c
 }
 
@@ -414,7 +414,7 @@ Example:
 	}
 */
 @(require_results)
-as_recv :: #force_inline proc "contextless" (c: $C/Chan($T, $D)) -> (r: Chan(T, .Recv)) where C.D >= .Both {
+as_recv :: #force_inline proc(c: $C/Chan($T, $D)) -> (r: Chan(T, .Recv)) where C.D >= .Both {
 	return transmute(type_of(r))c
 }
 
@@ -451,7 +451,7 @@ Example:
 		assert(! chan.send(c, 2))
 	}
 */
-send :: proc "contextless" (c: $C/Chan($T, $D), data: T) -> (ok: bool) where C.D <= .Both {
+send :: proc(c: $C/Chan($T, $D), data: T) -> (ok: bool) where C.D <= .Both {
 	data := data
 	ok = send_raw(c, &data)
 	return
@@ -484,7 +484,7 @@ Example:
 	}
 */
 @(require_results)
-try_send :: proc "contextless" (c: $C/Chan($T, $D), data: T) -> (ok: bool) where C.D <= .Both {
+try_send :: proc(c: $C/Chan($T, $D), data: T) -> (ok: bool) where C.D <= .Both {
 	data := data
 	ok = try_send_raw(c, &data)
 	return
@@ -529,7 +529,7 @@ Example:
 	}
 */
 @(require_results)
-recv :: proc "contextless" (c: $C/Chan($T)) -> (data: T, ok: bool) where C.D >= .Both {
+recv :: proc(c: $C/Chan($T)) -> (data: T, ok: bool) where C.D >= .Both {
 	ok = recv_raw(c, &data)
 	return
 }
@@ -559,7 +559,7 @@ Example:
 	}
 */
 @(require_results)
-try_recv :: proc "contextless" (c: $C/Chan($T)) -> (data: T, ok: bool) where C.D >= .Both {
+try_recv :: proc(c: $C/Chan($T)) -> (data: T, ok: bool) where C.D >= .Both {
 	ok = try_recv_raw(c, &data)
 	return
 }
@@ -603,7 +603,7 @@ Example:
 	}
 */
 @(require_results)
-send_raw :: proc "contextless" (c: ^Raw_Chan, msg_in: rawptr) -> (ok: bool) {
+send_raw :: proc(c: ^Raw_Chan, msg_in: rawptr) -> (ok: bool) {
 	if c == nil {
 		return
 	}
@@ -693,7 +693,7 @@ Example:
 	}
 */
 @(require_results)
-recv_raw :: proc "contextless" (c: ^Raw_Chan, msg_out: rawptr) -> (ok: bool) {
+recv_raw :: proc(c: ^Raw_Chan, msg_out: rawptr) -> (ok: bool) {
 	if c == nil {
 		return
 	}
@@ -773,7 +773,7 @@ Example:
 	}
 */
 @(require_results)
-try_send_raw :: proc "contextless" (c: ^Raw_Chan, msg_in: rawptr) -> (ok: bool) {
+try_send_raw :: proc(c: ^Raw_Chan, msg_in: rawptr) -> (ok: bool) {
 	if c == nil {
 		return false
 	}
@@ -836,7 +836,7 @@ Example:
 	}
 */
 @(require_results)
-try_recv_raw :: proc "contextless" (c: ^Raw_Chan, msg_out: rawptr) -> bool {
+try_recv_raw :: proc(c: ^Raw_Chan, msg_out: rawptr) -> bool {
 	if c == nil {
 		return false
 	}
@@ -893,7 +893,7 @@ Example:
 	}
 */
 @(require_results)
-is_buffered :: proc "contextless" (c: ^Raw_Chan) -> bool {
+is_buffered :: proc(c: ^Raw_Chan) -> bool {
 	return c != nil && c.queue != nil
 }
 
@@ -917,7 +917,7 @@ Example:
 	}
 */
 @(require_results)
-is_unbuffered :: proc "contextless" (c: ^Raw_Chan) -> bool {
+is_unbuffered :: proc(c: ^Raw_Chan) -> bool {
 	return c != nil && c.unbuffered_data != nil
 }
 
@@ -953,7 +953,7 @@ Output:
 	1
 */
 @(require_results)
-len :: proc "contextless" (c: ^Raw_Chan) -> int {
+len :: proc(c: ^Raw_Chan) -> int {
 	if c != nil && c.queue != nil {
 		sync.guard(&c.mutex)
 		return c.queue.len
@@ -990,7 +990,7 @@ Output:
 	2
 */
 @(require_results)
-cap :: proc "contextless" (c: ^Raw_Chan) -> int {
+cap :: proc(c: ^Raw_Chan) -> int {
 	if c != nil && c.queue != nil {
 		sync.guard(&c.mutex)
 		return c.queue.cap
@@ -1028,7 +1028,7 @@ Example:
 		assert(!chan.close(c), "was already closed")
 	}
 */
-close :: proc "contextless" (c: ^Raw_Chan) -> bool {
+close :: proc(c: ^Raw_Chan) -> bool {
 	if c == nil {
 		return false
 	}
@@ -1052,7 +1052,7 @@ Returns if the channel is closed or not
 - `true` if the channel is closed, `false` otherwise
 */
 @(require_results)
-is_closed :: proc "contextless" (c: ^Raw_Chan) -> bool {
+is_closed :: proc(c: ^Raw_Chan) -> bool {
 	if c == nil {
 		return true
 	}
@@ -1086,7 +1086,7 @@ Example:
 	}
 */
 @(require_results)
-can_recv :: proc "contextless" (c: ^Raw_Chan) -> bool {
+can_recv :: proc(c: ^Raw_Chan) -> bool {
 	sync.guard(&c.mutex)
 	if is_buffered(c) {
 		return c.queue.len > 0
@@ -1121,7 +1121,7 @@ Example:
 	}
 */
 @(require_results)
-can_send :: proc "contextless" (c: ^Raw_Chan) -> bool {
+can_send :: proc(c: ^Raw_Chan) -> bool {
 	sync.guard(&c.mutex)
 	if is_buffered(c) {
 		return c.queue.len < c.queue.cap
@@ -1314,7 +1314,7 @@ Example:
 	}
 */
 @(private)
-raw_queue_init :: proc "contextless" (q: ^Raw_Queue, data: rawptr, cap: int, size: int) {
+raw_queue_init :: proc(q: ^Raw_Queue, data: rawptr, cap: int, size: int) {
 	q.data = ([^]byte)(data)
 	q.len  = 0
 	q.cap  = cap
@@ -1349,7 +1349,7 @@ Example:
 	}
 */
 @(private, require_results)
-raw_queue_push :: proc "contextless" (q: ^Raw_Queue, data: rawptr) -> bool {
+raw_queue_push :: proc(q: ^Raw_Queue, data: rawptr) -> bool {
 	if q.len == q.cap {
 		return false
 	}
@@ -1396,7 +1396,7 @@ Example:
 	}
 */
 @(private, require_results)
-raw_queue_pop :: proc "contextless" (q: ^Raw_Queue) -> (data: rawptr) {
+raw_queue_pop :: proc(q: ^Raw_Queue) -> (data: rawptr) {
 	if q.len > 0 {
 		data = q.data[q.next*q.size:]
 		q.next += 1

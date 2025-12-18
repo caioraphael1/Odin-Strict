@@ -44,7 +44,7 @@ Context :: struct {
 // WARNING: This ONLY handles ChaCha20.  XChaCha20 sub-key and IV
 // derivation is expected to be handled by the caller, so that the
 // HChaCha call can be suitably accelerated.
-init :: proc "contextless" (ctx: ^Context, key, iv: []byte, is_xchacha: bool) {
+init :: proc(ctx: ^Context, key, iv: []byte, is_xchacha: bool) {
 	ensure(len(key) == KEY_SIZE, "chacha20: invalid key size")
 	ensure(len(iv) == IV_SIZE, "chacha20: invalid key size")
 

@@ -148,11 +148,11 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 	INADDR_ANY       :: 0x00000000
 	INADDR_BROADCAST :: 0xFFFFFFFF
 
-	IN6_IS_ADDR_UNSPECIFIED :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_UNSPECIFIED :: #force_inline proc(a: in6_addr) -> b32 {
 		return a.s6_addr == 0
 	}
 
-	IN6_IS_ADDR_LOOPBACK :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_LOOPBACK :: #force_inline proc(a: in6_addr) -> b32 {
 		a := a
 		return (
 			(^c.uint32_t)(&a.s6_addr[0])^  == 0 &&
@@ -162,19 +162,19 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 		)
 	}
 
-	IN6_IS_ADDR_MULTICAST :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_MULTICAST :: #force_inline proc(a: in6_addr) -> b32 {
 		return a.s6_addr[0] == 0xff
 	}
 
-	IN6_IS_ADDR_LINKLOCAL :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_LINKLOCAL :: #force_inline proc(a: in6_addr) -> b32 {
 		return a.s6_addr[0] == 0xfe && a.s6_addr[1] & 0xc0 == 0x80
 	}
 
-	IN6_IS_ADDR_SITELOCAL :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_SITELOCAL :: #force_inline proc(a: in6_addr) -> b32 {
 		return a.s6_addr[0] == 0xfe && a.s6_addr[1] & 0xc0 == 0xc0
 	}
 
-	IN6_IS_ADDR_V4MAPPED :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_V4MAPPED :: #force_inline proc(a: in6_addr) -> b32 {
 		a := a
 		return (
 			(^c.uint32_t)(&a.s6_addr[0])^ == 0 &&
@@ -183,7 +183,7 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 		)
 	}
 
-	IN6_IS_ADDR_V4COMPAT :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_V4COMPAT :: #force_inline proc(a: in6_addr) -> b32 {
 		a := a
 		return (
 			(^c.uint32_t)(&a.s6_addr[0])^  == 0 &&
@@ -206,7 +206,7 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 	__IPV6_ADDR_SCOPE_GLOBAL    :: 0x0e
 
 	@(private)
-	IPV6_ADDR_MC_FLAGS :: #force_inline proc "contextless" (a: in6_addr) -> c.uint8_t {
+	IPV6_ADDR_MC_FLAGS :: #force_inline proc(a: in6_addr) -> c.uint8_t {
 		return a.s6_addr[1] & 0xf0
 	}
 
@@ -218,18 +218,18 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 	IPV6_ADDR_MC_FLAGS_UNICAST_BASED :: IPV6_ADDR_MC_FLAGS_TRANSIENT | IPV6_ADDR_MC_FLAGS_PREFIX
 
 	@(private)
-	__IPV6_ADDR_MC_SCOPE :: #force_inline proc "contextless" (a: in6_addr) -> c.uint8_t {
+	__IPV6_ADDR_MC_SCOPE :: #force_inline proc(a: in6_addr) -> c.uint8_t {
 		return a.s6_addr[1] & 0x0f
 	}
 
-	IN6_IS_ADDR_MC_NODELOCAL :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_MC_NODELOCAL :: #force_inline proc(a: in6_addr) -> b32 {
 		return (
 			IN6_IS_ADDR_MULTICAST(a) &&
 			(__IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_NODELOCAL) \
 		)
 	}
 
-	IN6_IS_ADDR_MC_LINKLOCAL :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_MC_LINKLOCAL :: #force_inline proc(a: in6_addr) -> b32 {
 		return (
 			IN6_IS_ADDR_MULTICAST(a) &&
 			(IPV6_ADDR_MC_FLAGS(a) != IPV6_ADDR_MC_FLAGS_UNICAST_BASED) &&
@@ -237,21 +237,21 @@ when ODIN_OS == .Darwin || ODIN_OS == .FreeBSD || ODIN_OS == .NetBSD || ODIN_OS 
 		)
 	}
 
-	IN6_IS_ADDR_MC_SITELOCAL :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_MC_SITELOCAL :: #force_inline proc(a: in6_addr) -> b32 {
 		return (
 			IN6_IS_ADDR_MULTICAST(a) &&
 			(__IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_SITELOCAL) \
 		)
 	}
 
-	IN6_IS_ADDR_MC_ORGLOCAL :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_MC_ORGLOCAL :: #force_inline proc(a: in6_addr) -> b32 {
 		return (
 			IN6_IS_ADDR_MULTICAST(a) &&
 			(__IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_ORGLOCAL) \
 		)
 	}
 
-	IN6_IS_ADDR_MC_GLOBAL :: #force_inline proc "contextless" (a: in6_addr) -> b32 {
+	IN6_IS_ADDR_MC_GLOBAL :: #force_inline proc(a: in6_addr) -> b32 {
 		return (
 			IN6_IS_ADDR_MULTICAST(a) &&
 			(__IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_GLOBAL) \

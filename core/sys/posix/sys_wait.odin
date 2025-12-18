@@ -89,37 +89,37 @@ foreign lib {
 }
 
 // If terminated normally.
-WIFEXITED :: #force_inline proc "contextless" (x: c.int) -> bool {
+WIFEXITED :: #force_inline proc(x: c.int) -> bool {
 	return _WIFEXITED(x)
 }
 
 // If WIFEXITED is true, returns the exit status.
-WEXITSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+WEXITSTATUS :: #force_inline proc(x: c.int) -> c.int {
 	return _WEXITSTATUS(x)
 }
 
 // If terminated due to an uncaught signal.
-WIFSIGNALED :: #force_inline proc "contextless" (x: c.int) -> bool {
+WIFSIGNALED :: #force_inline proc(x: c.int) -> bool {
 	return _WIFSIGNALED(x)
 }
 
 // If WIFSIGNALED is true, returns the signal.
-WTERMSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+WTERMSIG :: #force_inline proc(x: c.int) -> Signal {
 	return _WTERMSIG(x)
 }
 
 // If status was returned for a child process that is currently stopped.
-WIFSTOPPED :: #force_inline proc "contextless" (x: c.int) -> bool {
+WIFSTOPPED :: #force_inline proc(x: c.int) -> bool {
 	return _WIFSTOPPED(x)
 }
 
 // If WIFSTOPPED, the signal that caused the child process to stop.
-WSTOPSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+WSTOPSIG :: #force_inline proc(x: c.int) -> Signal {
 	return _WSTOPSIG(x)
 }
 
 // If status was returned for a child process that has continued from a job control stop.
-WIFCONTINUED :: #force_inline proc "contextless" (x: c.int) -> bool {
+WIFCONTINUED :: #force_inline proc(x: c.int) -> bool {
 	return _WIFCONTINUED(x)
 }
 
@@ -172,7 +172,7 @@ when ODIN_OS == .Darwin {
 	_P_PGID :: 2
 
 	@(private)
-	_WSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return x & 0o177
 	}
 
@@ -180,37 +180,37 @@ when ODIN_OS == .Darwin {
 	_WSTOPPED :: 0o177
 
 	@(private)
-	_WIFEXITED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFEXITED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == 0
 	}
 
 	@(private)
-	_WEXITSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WEXITSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return x >> 8
 	}
 
 	@(private)
-	_WIFSIGNALED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSIGNALED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) != _WSTOPPED && _WSTATUS(x) != 0
 	}
 
 	@(private)
-	_WTERMSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WTERMSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(_WSTATUS(x))
 	}
 
 	@(private)
-	_WIFSTOPPED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSTOPPED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == _WSTOPPED && WSTOPSIG(x) != .SIGCONT
 	}
 
 	@(private)
-	_WSTOPSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WSTOPSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(x >> 8)
 	}
 
 	@(private)
-	_WIFCONTINUED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFCONTINUED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == _WSTOPPED && WSTOPSIG(x) == .SIGCONT
 	}
 
@@ -231,7 +231,7 @@ when ODIN_OS == .Darwin {
 	_P_PGID :: 2
 
 	@(private)
-	_WSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return x & 0o177
 	}
 
@@ -239,37 +239,37 @@ when ODIN_OS == .Darwin {
 	_WSTOPPED :: 0o177
 
 	@(private)
-	_WIFEXITED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFEXITED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == 0
 	}
 
 	@(private)
-	_WEXITSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WEXITSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return x >> 8
 	}
 
 	@(private)
-	_WIFSIGNALED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSIGNALED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) != _WSTOPPED && _WSTATUS(x) != 0 && x != c.int(Signal.SIGCONT)
 	}
 
 	@(private)
-	_WTERMSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WTERMSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(_WSTATUS(x))
 	}
 
 	@(private)
-	_WIFSTOPPED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSTOPPED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == _WSTOPPED
 	}
 
 	@(private)
-	_WSTOPSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WSTOPSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(x >> 8)
 	}
 
 	@(private)
-	_WIFCONTINUED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFCONTINUED :: #force_inline proc(x: c.int) -> bool {
 		return x == c.int(Signal.SIGCONT)
 	}
 } else when ODIN_OS == .NetBSD {
@@ -289,7 +289,7 @@ when ODIN_OS == .Darwin {
 	_P_PGID :: 2
 
 	@(private)
-	_WSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return x & 0o177
 	}
 
@@ -297,37 +297,37 @@ when ODIN_OS == .Darwin {
 	_WSTOPPED :: 0o177
 
 	@(private)
-	_WIFEXITED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFEXITED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == 0
 	}
 
 	@(private)
-	_WEXITSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WEXITSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return c.int((c.uint(x) >> 8) & 0xff)
 	}
 
 	@(private)
-	_WIFSIGNALED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSIGNALED :: #force_inline proc(x: c.int) -> bool {
 		return !WIFSTOPPED(x) && !WIFCONTINUED(x) && !WIFEXITED(x)
 	}
 
 	@(private)
-	_WTERMSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WTERMSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(_WSTATUS(x))
 	}
 
 	@(private)
-	_WIFSTOPPED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSTOPPED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == _WSTOPPED && !WIFCONTINUED(x)
 	}
 
 	@(private)
-	_WSTOPSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WSTOPSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(c.int((c.uint(x) >> 8) & 0xff))
 	}
 
 	@(private)
-	_WIFCONTINUED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFCONTINUED :: #force_inline proc(x: c.int) -> bool {
 		return x == 0xffff
 	}
 
@@ -348,7 +348,7 @@ when ODIN_OS == .Darwin {
 	_P_PGID :: 1
 
 	@(private)
-	_WSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return x & 0o177
 	}
 
@@ -358,37 +358,37 @@ when ODIN_OS == .Darwin {
 	_WCONTINUED :: 0o177777
 
 	@(private)
-	_WIFEXITED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFEXITED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) == 0
 	}
 
 	@(private)
-	_WEXITSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WEXITSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return (x >> 8) & 0x000000ff
 	}
 
 	@(private)
-	_WIFSIGNALED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSIGNALED :: #force_inline proc(x: c.int) -> bool {
 		return _WSTATUS(x) != _WSTOPPED && _WSTATUS(x) != 0
 	}
 
 	@(private)
-	_WTERMSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WTERMSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(_WSTATUS(x))
 	}
 
 	@(private)
-	_WIFSTOPPED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSTOPPED :: #force_inline proc(x: c.int) -> bool {
 		return (x & 0xff) == _WSTOPPED
 	}
 
 	@(private)
-	_WSTOPSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WSTOPSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal((x >> 8) & 0xff)
 	}
 
 	@(private)
-	_WIFCONTINUED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFCONTINUED :: #force_inline proc(x: c.int) -> bool {
 		return (x & _WCONTINUED) == _WCONTINUED
 	}
 
@@ -409,37 +409,37 @@ when ODIN_OS == .Darwin {
 	_P_PGID :: 2
 
 	@(private)
-	_WIFEXITED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFEXITED :: #force_inline proc(x: c.int) -> bool {
 		return _WTERMSIG(x) == nil
 	}
 
 	@(private)
-	_WEXITSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WEXITSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return (x & 0xff00) >> 8
 	}
 
 	@(private)
-	_WIFSIGNALED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSIGNALED :: #force_inline proc(x: c.int) -> bool {
 		return (x & 0xffff) - 1 < 0xff
 	}
 
 	@(private)
-	_WTERMSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WTERMSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(x & 0x7f)
 	}
 
 	@(private)
-	_WIFSTOPPED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSTOPPED :: #force_inline proc(x: c.int) -> bool {
 		return ((x & 0xffff) * 0x10001) >> 8 > 0x7f00
 	}
 
 	@(private)
-	_WSTOPSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WSTOPSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal(_WEXITSTATUS(x))
 	}
 
 	@(private)
-	_WIFCONTINUED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFCONTINUED :: #force_inline proc(x: c.int) -> bool {
 		return x == 0xffff
 	}
 
@@ -460,37 +460,37 @@ when ODIN_OS == .Darwin {
 	_P_PGID :: 2
 
 	@(private)
-	_WIFEXITED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFEXITED :: #force_inline proc(x: c.int) -> bool {
 		return (x & ~(c.int)(0xff)) == 0
 	}
 
 	@(private)
-	_WEXITSTATUS :: #force_inline proc "contextless" (x: c.int) -> c.int {
+	_WEXITSTATUS :: #force_inline proc(x: c.int) -> c.int {
 		return x & 0xff
 	}
 
 	@(private)
-	_WIFSIGNALED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSIGNALED :: #force_inline proc(x: c.int) -> bool {
 		return ((x >> 8) & 0xff) != 0
 	}
 
 	@(private)
-	_WTERMSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WTERMSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal((x >> 8) & 0xff)
 	}
 
 	@(private)
-	_WIFSTOPPED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFSTOPPED :: #force_inline proc(x: c.int) -> bool {
 		return ((x >> 16) & 0xff) != 0
 	}
 
 	@(private)
-	_WSTOPSIG :: #force_inline proc "contextless" (x: c.int) -> Signal {
+	_WSTOPSIG :: #force_inline proc(x: c.int) -> Signal {
 		return Signal((x >> 16) & 0xff)
 	}
 
 	@(private)
-	_WIFCONTINUED :: #force_inline proc "contextless" (x: c.int) -> bool {
+	_WIFCONTINUED :: #force_inline proc(x: c.int) -> bool {
 		return (x & 0x20000) != 0
 	}
 

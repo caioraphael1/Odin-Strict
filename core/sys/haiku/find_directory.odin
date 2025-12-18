@@ -157,7 +157,7 @@ path_base_directory :: enum i32 {
 // value that can be used instead of a pointer to a symbol in the program image
 APP_IMAGE_SYMBOL :: rawptr(addr_t(0))
 // pointer to a symbol in the callers image (same as B_CURRENT_IMAGE_SYMBOL)
-current_image_symbol :: proc "contextless" () -> rawptr { return rawptr(current_image_symbol) }
+current_image_symbol :: proc() -> rawptr { return rawptr(current_image_symbol) }
 
 @(default_calling_convention="c")
 foreign libroot {

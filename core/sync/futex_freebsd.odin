@@ -6,7 +6,7 @@ import "core:c"
 import "core:sys/freebsd"
 import "core:time"
 
-_futex_wait :: proc "contextless" (f: ^Futex, expected: u32) -> bool {
+_futex_wait :: proc(f: ^Futex, expected: u32) -> bool {
 	timeout := freebsd.timespec {14400, 0} // 4 hours
 	timeout_size := cast(rawptr)cast(uintptr)size_of(timeout)
 
@@ -27,7 +27,7 @@ _futex_wait :: proc "contextless" (f: ^Futex, expected: u32) -> bool {
 	unreachable()
 }
 
-_futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, duration: time.Duration) -> bool {
+_futex_wait_with_timeout :: proc(f: ^Futex, expected: u32, duration: time.Duration) -> bool {
 	if duration <= 0 {
 		return false
 	}
@@ -47,7 +47,7 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, durati
 	panic("_futex_wait_with_timeout failure")
 }
 
-_futex_signal :: proc "contextless" (f: ^Futex) {
+_futex_signal :: proc(f: ^Futex) {
 	errno := freebsd._umtx_op(f, .WAKE, 1, nil, nil)
 
 	if errno != nil {
@@ -55,7 +55,7 @@ _futex_signal :: proc "contextless" (f: ^Futex) {
 	}
 }
 
-_futex_broadcast :: proc "contextless" (f: ^Futex)  {
+_futex_broadcast :: proc(f: ^Futex)  {
 	errno := freebsd._umtx_op(f, .WAKE, cast(c.ulong)max(i32), nil, nil)
 
 	if errno != nil {

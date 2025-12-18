@@ -220,7 +220,7 @@ stream_blocks :: proc(ctx: ^_chacha20.Context, dst, src: []byte, nr_blocks: int)
 	}
 }
 
-hchacha20 :: proc "contextless" (dst, key, iv: []byte) {
+hchacha20 :: proc(dst, key, iv: []byte) {
 	x0, x1, x2, x3 := _chacha20.SIGMA_0, _chacha20.SIGMA_1, _chacha20.SIGMA_2, _chacha20.SIGMA_3
 	x4 := endian.unchecked_get_u32le(key[0:4])
 	x5 := endian.unchecked_get_u32le(key[4:8])

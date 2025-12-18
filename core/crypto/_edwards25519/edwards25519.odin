@@ -95,11 +95,11 @@ Group_Element :: struct {
 	t: field.Tight_Field_Element,
 }
 
-ge_clear :: proc "contextless" (ge: ^Group_Element) {
+ge_clear :: proc(ge: ^Group_Element) {
 	mem.zero_explicit(ge, size_of(Group_Element))
 }
 
-ge_set :: proc "contextless" (ge, a: ^Group_Element) {
+ge_set :: proc(ge, a: ^Group_Element) {
 	field.fe_set(&ge.x, &a.x)
 	field.fe_set(&ge.y, &a.y)
 	field.fe_set(&ge.z, &a.z)
@@ -107,7 +107,7 @@ ge_set :: proc "contextless" (ge, a: ^Group_Element) {
 }
 
 @(require_results)
-ge_set_bytes :: proc "contextless" (ge: ^Group_Element, b: []byte) -> bool {
+ge_set_bytes :: proc(ge: ^Group_Element, b: []byte) -> bool {
 	ensure(len(b) == 32, "edwards25519: invalid group element size")
 	b_ := (^[32]byte)(raw_data(b))
 
@@ -164,7 +164,7 @@ ge_set_bytes :: proc "contextless" (ge: ^Group_Element, b: []byte) -> bool {
 	return is_canonical == 1
 }
 
-ge_bytes :: proc "contextless" (ge: ^Group_Element, dst: []byte) {
+ge_bytes :: proc(ge: ^Group_Element, dst: []byte) {
 	ensure(len(dst) == 32, "edwards25519: invalid group element size")
 	dst_ := (^[32]byte)(raw_data(dst))
 
@@ -184,14 +184,14 @@ ge_bytes :: proc "contextless" (ge: ^Group_Element, dst: []byte) {
 	field.fe_clear_vec([]^field.Tight_Field_Element{&x, &y, &z_inv})
 }
 
-ge_identity :: proc "contextless" (ge: ^Group_Element) {
+ge_identity :: proc(ge: ^Group_Element) {
 	field.fe_zero(&ge.x)
 	field.fe_one(&ge.y)
 	field.fe_one(&ge.z)
 	field.fe_zero(&ge.t)
 }
 
-ge_generator :: proc "contextless" (ge: ^Group_Element) {
+ge_generator :: proc(ge: ^Group_Element) {
 	ge_set(ge, &GE_BASEPOINT)
 }
 
@@ -204,7 +204,7 @@ Addend_Group_Element :: struct {
 }
 
 @(private)
-ge_addend_set :: proc "contextless" (ge_a: ^Addend_Group_Element, ge: ^Group_Element) {
+ge_addend_set :: proc(ge_a: ^Addend_Group_Element, ge: ^Group_Element) {
 	field.fe_sub(&ge_a.y2_minus_x2, &ge.y, &ge.x)
 	field.fe_add(&ge_a.y2_plus_x2, &ge.y, &ge.x)
 	field.fe_carry_mul(&ge_a.k_times_t2, field.fe_relax_cast(&FE_D2), field.fe_relax_cast(&ge.t))
@@ -212,7 +212,7 @@ ge_addend_set :: proc "contextless" (ge_a: ^Addend_Group_Element, ge: ^Group_Ele
 }
 
 @(private)
-ge_addend_conditional_assign :: proc "contextless" (ge_a, a: ^Addend_Group_Element, ctrl: int) {
+ge_addend_conditional_assign :: proc(ge_a, a: ^Addend_Group_Element, ctrl: int) {
 	field.fe_cond_select(&ge_a.y2_minus_x2, &ge_a.y2_minus_x2, &a.y2_minus_x2, ctrl)
 	field.fe_cond_select(&ge_a.y2_plus_x2, &ge_a.y2_plus_x2, &a.y2_plus_x2, ctrl)
 	field.fe_cond_select(&ge_a.k_times_t2, &ge_a.k_times_t2, &a.k_times_t2, ctrl)
@@ -226,7 +226,7 @@ Add_Scratch :: struct {
 	t0, t2:     field.Loose_Field_Element,
 }
 
-ge_add :: proc "contextless" (ge, a, b: ^Group_Element) {
+ge_add :: proc(ge, a, b: ^Group_Element) {
 	b_: Addend_Group_Element = ---
 	ge_addend_set(&b_, b)
 
@@ -238,7 +238,7 @@ ge_add :: proc "contextless" (ge, a, b: ^Group_Element) {
 }
 
 @(private)
-ge_add_addend :: proc "contextless" (
+ge_add_addend :: proc(
 	ge, a: ^Group_Element,
 	b: ^Addend_Group_Element,
 	scratch: ^Add_Scratch,
@@ -304,7 +304,7 @@ Double_Scratch :: struct {
 	t1:            field.Loose_Field_Element,
 }
 
-ge_double :: proc "contextless" (ge, a: ^Group_Element, scratch: ^Double_Scratch = nil) {
+ge_double :: proc(ge, a: ^Group_Element, scratch: ^Double_Scratch = nil) {
 	// https://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html#doubling-dbl-2008-hwcd
 	//
 	// A = X1^2
@@ -358,14 +358,14 @@ ge_double :: proc "contextless" (ge, a: ^Group_Element, scratch: ^Double_Scratch
 	}
 }
 
-ge_negate :: proc "contextless" (ge, a: ^Group_Element) {
+ge_negate :: proc(ge, a: ^Group_Element) {
 	field.fe_carry_opp(&ge.x, &a.x)
 	field.fe_set(&ge.y, &a.y)
 	field.fe_set(&ge.z, &a.z)
 	field.fe_carry_opp(&ge.t, &a.t)
 }
 
-ge_cond_negate :: proc "contextless" (ge, a: ^Group_Element, ctrl: int) {
+ge_cond_negate :: proc(ge, a: ^Group_Element, ctrl: int) {
 	tmp: Group_Element = ---
 	ge_negate(&tmp, a)
 	ge_cond_assign(ge, &tmp, ctrl)
@@ -373,14 +373,14 @@ ge_cond_negate :: proc "contextless" (ge, a: ^Group_Element, ctrl: int) {
 	ge_clear(&tmp)
 }
 
-ge_cond_assign :: proc "contextless" (ge, a: ^Group_Element, ctrl: int) {
+ge_cond_assign :: proc(ge, a: ^Group_Element, ctrl: int) {
 	field.fe_cond_assign(&ge.x, &a.x, ctrl)
 	field.fe_cond_assign(&ge.y, &a.y, ctrl)
 	field.fe_cond_assign(&ge.z, &a.z, ctrl)
 	field.fe_cond_assign(&ge.t, &a.t, ctrl)
 }
 
-ge_cond_select :: proc "contextless" (ge, a, b: ^Group_Element, ctrl: int) {
+ge_cond_select :: proc(ge, a, b: ^Group_Element, ctrl: int) {
 	field.fe_cond_select(&ge.x, &a.x, &b.x, ctrl)
 	field.fe_cond_select(&ge.y, &a.y, &b.y, ctrl)
 	field.fe_cond_select(&ge.z, &a.z, &b.z, ctrl)
@@ -388,7 +388,7 @@ ge_cond_select :: proc "contextless" (ge, a, b: ^Group_Element, ctrl: int) {
 }
 
 @(require_results)
-ge_equal :: proc "contextless" (a, b: ^Group_Element) -> int {
+ge_equal :: proc(a, b: ^Group_Element) -> int {
 	// (x, y) ?= (x', y') -> (X/Z, Y/Z) ?= (X'/Z', Y'/Z')
 	// X/Z ?= X'/Z', Y/Z ?= Y'/Z' -> X*Z' ?= X'*Z, Y*Z' ?= Y'*Z
 	ax_bz, bx_az, ay_bz, by_az: field.Tight_Field_Element = ---, ---, ---, ---
@@ -405,7 +405,7 @@ ge_equal :: proc "contextless" (a, b: ^Group_Element) -> int {
 }
 
 @(require_results)
-ge_is_small_order :: proc "contextless" (ge: ^Group_Element) -> bool {
+ge_is_small_order :: proc(ge: ^Group_Element) -> bool {
 	tmp: Group_Element = ---
 	ge_double(&tmp, ge)
 	ge_double(&tmp, &tmp)
@@ -414,7 +414,7 @@ ge_is_small_order :: proc "contextless" (ge: ^Group_Element) -> bool {
 }
 
 @(require_results)
-ge_in_prime_order_subgroup_vartime :: proc "contextless" (ge: ^Group_Element) -> bool {
+ge_in_prime_order_subgroup_vartime :: proc(ge: ^Group_Element) -> bool {
 	// This is currently *very* expensive.  The faster method would be
 	// something like (https://eprint.iacr.org/2022/1164.pdf), however
 	// that is a ~50% speedup, and a lot of added complexity for something

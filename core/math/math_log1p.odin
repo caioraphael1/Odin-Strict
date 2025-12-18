@@ -90,17 +90,17 @@ log1p :: proc {
 	log1p_f64le,
 	log1p_f64be,
 }
-@(require_results) log1p_f16   :: proc "contextless" (x: f16)   -> f16   { return f16(log1p_f64(f64(x))) }
-@(require_results) log1p_f32   :: proc "contextless" (x: f32)   -> f32   { return f32(log1p_f64(f64(x))) }
-@(require_results) log1p_f16le :: proc "contextless" (x: f16le) -> f16le { return f16le(log1p_f64(f64(x))) }
-@(require_results) log1p_f16be :: proc "contextless" (x: f16be) -> f16be { return f16be(log1p_f64(f64(x))) }
-@(require_results) log1p_f32le :: proc "contextless" (x: f32le) -> f32le { return f32le(log1p_f64(f64(x))) }
-@(require_results) log1p_f32be :: proc "contextless" (x: f32be) -> f32be { return f32be(log1p_f64(f64(x))) }
-@(require_results) log1p_f64le :: proc "contextless" (x: f64le) -> f64le { return f64le(log1p_f64(f64(x))) }
-@(require_results) log1p_f64be :: proc "contextless" (x: f64be) -> f64be { return f64be(log1p_f64(f64(x))) }
+@(require_results) log1p_f16   :: proc(x: f16)   -> f16   { return f16(log1p_f64(f64(x))) }
+@(require_results) log1p_f32   :: proc(x: f32)   -> f32   { return f32(log1p_f64(f64(x))) }
+@(require_results) log1p_f16le :: proc(x: f16le) -> f16le { return f16le(log1p_f64(f64(x))) }
+@(require_results) log1p_f16be :: proc(x: f16be) -> f16be { return f16be(log1p_f64(f64(x))) }
+@(require_results) log1p_f32le :: proc(x: f32le) -> f32le { return f32le(log1p_f64(f64(x))) }
+@(require_results) log1p_f32be :: proc(x: f32be) -> f32be { return f32be(log1p_f64(f64(x))) }
+@(require_results) log1p_f64le :: proc(x: f64le) -> f64le { return f64le(log1p_f64(f64(x))) }
+@(require_results) log1p_f64be :: proc(x: f64be) -> f64be { return f64be(log1p_f64(f64(x))) }
 
 @(require_results)
-log1p_f64 :: proc "contextless" (x: f64) -> f64 {
+log1p_f64 :: proc(x: f64) -> f64 {
 	SQRT2_M1      :: 0h3fda827999fcef34 // sqrt(2)-1 
 	SQRT2_HALF_M1 :: 0hbfd2bec333018866 // sqrt(2)/2-1
 	SMALL         :: 0h3e20000000000000 // 2**-29

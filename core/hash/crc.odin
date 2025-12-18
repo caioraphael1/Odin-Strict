@@ -9,7 +9,7 @@ package hash
 	which uses 0xffff as the initial value.
 */
 @(optimization_mode="favor_size")
-crc16_ccitt_0x1021 :: proc "contextless" (data: []u8, seed := u16(0)) -> (result: u16) #no_bounds_check {
+crc16_ccitt_0x1021 :: proc(data: []u8, seed := u16(0)) -> (result: u16) #no_bounds_check {
 	result = seed
 	#no_bounds_check for b in data {
 		result = result << 8 ~ _ccitt_0x1021_table[(result >> 8) ~ u16(b)]
@@ -18,7 +18,7 @@ crc16_ccitt_0x1021 :: proc "contextless" (data: []u8, seed := u16(0)) -> (result
 }
 
 @(optimization_mode="favor_size")
-crc64_ecma_182 :: proc "contextless" (data: []byte, seed := u64(0)) -> (result: u64) #no_bounds_check {
+crc64_ecma_182 :: proc(data: []byte, seed := u64(0)) -> (result: u64) #no_bounds_check {
 	result = seed
 	#no_bounds_check for b in data {
 		result = result << 8 ~ _crc64_table_ecma_182[((result>>56) ~ u64(b)) & 0xff]
@@ -32,7 +32,7 @@ crc64_ecma_182 :: proc "contextless" (data: []byte, seed := u64(0)) -> (result: 
 	Based on Mark Adler's v1.4 implementation in C under the ZLIB license.
 */
 @(optimization_mode="favor_size")
-crc64_xz :: proc "contextless" (data: []byte, seed := u64(0)) -> u64 #no_bounds_check {
+crc64_xz :: proc(data: []byte, seed := u64(0)) -> u64 #no_bounds_check {
 	data := data
 	result := ~u64le(seed)
 
@@ -68,7 +68,7 @@ crc64_xz :: proc "contextless" (data: []byte, seed := u64(0)) -> u64 #no_bounds_
 
 // Generator polynomial: x^64 + x^4 + x^3 + x + 1
 @(optimization_mode="favor_size")
-crc64_iso_3306 :: proc "contextless" (data: []byte, seed := u64(0)) -> u64 #no_bounds_check {
+crc64_iso_3306 :: proc(data: []byte, seed := u64(0)) -> u64 #no_bounds_check {
 
 	result := seed
 
@@ -85,7 +85,7 @@ crc64_iso_3306 :: proc "contextless" (data: []byte, seed := u64(0)) -> u64 #no_b
 	return result
 }
 
-crc64_iso_3306_inverse :: proc "contextless" (data: []byte, seed := u64(0)) -> u64 {
+crc64_iso_3306_inverse :: proc(data: []byte, seed := u64(0)) -> u64 {
 	result := #force_inline crc64_iso_3306(data, ~seed)
 	return ~result
 }

@@ -509,7 +509,7 @@ unmarshal_object :: proc(p: ^Parser, v: any, end_token: Token_Kind) -> (err: Unm
 			}
 
 			if field_found {
-				field_test :: #force_inline proc "contextless" (field_used: [^]byte, offset: uintptr) -> bool {
+				field_test :: #force_inline proc(field_used: [^]byte, offset: uintptr) -> bool {
 					prev_set := field_used[offset/8] & byte(offset&7) != 0
 					field_used[offset/8] |= byte(offset&7)
 					return prev_set

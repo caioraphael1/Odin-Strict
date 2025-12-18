@@ -3,25 +3,25 @@ package field_curve25519
 import "core:crypto"
 import "core:mem"
 
-fe_relax_cast :: #force_inline proc "contextless" (
+fe_relax_cast :: #force_inline proc(
 	arg1: ^Tight_Field_Element,
 ) -> ^Loose_Field_Element {
 	return (^Loose_Field_Element)(arg1)
 }
 
-fe_tighten_cast :: #force_inline proc "contextless" (
+fe_tighten_cast :: #force_inline proc(
 	arg1: ^Loose_Field_Element,
 ) -> ^Tight_Field_Element {
 	return (^Tight_Field_Element)(arg1)
 }
 
-fe_clear :: proc "contextless" (
+fe_clear :: proc(
 	arg1: $T,
 ) where T == ^Tight_Field_Element || T == ^Loose_Field_Element {
 	mem.zero_explicit(arg1, size_of(arg1^))
 }
 
-fe_clear_vec :: proc "contextless" (
+fe_clear_vec :: proc(
 	arg1: $T,
 ) where T == []^Tight_Field_Element || T == []^Loose_Field_Element {
 	for fe in arg1 {
@@ -29,7 +29,7 @@ fe_clear_vec :: proc "contextless" (
 	}
 }
 
-fe_from_bytes :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^[32]byte) {
+fe_from_bytes :: proc(out1: ^Tight_Field_Element, arg1: ^[32]byte) {
 	// Ignore the unused bit by copying the input and masking the bit off
 	// prior to deserialization.
 	tmp1: [32]byte = ---
@@ -41,7 +41,7 @@ fe_from_bytes :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^[32]byte
 	mem.zero_explicit(&tmp1, size_of(tmp1))
 }
 
-fe_is_negative :: proc "contextless" (arg1: ^Tight_Field_Element) -> int {
+fe_is_negative :: proc(arg1: ^Tight_Field_Element) -> int {
 	tmp1: [32]byte = ---
 
 	fe_to_bytes(&tmp1, arg1)
@@ -52,7 +52,7 @@ fe_is_negative :: proc "contextless" (arg1: ^Tight_Field_Element) -> int {
 	return int(ret)
 }
 
-fe_equal :: proc "contextless" (arg1, arg2: ^Tight_Field_Element) -> int {
+fe_equal :: proc(arg1, arg2: ^Tight_Field_Element) -> int {
 	tmp1, tmp2: [32]byte = ---, ---
 
 	fe_to_bytes(&tmp1, arg1)
@@ -65,7 +65,7 @@ fe_equal :: proc "contextless" (arg1, arg2: ^Tight_Field_Element) -> int {
 	return ret
 }
 
-fe_equal_bytes :: proc "contextless" (arg1: ^Tight_Field_Element, arg2: ^[32]byte) -> int {
+fe_equal_bytes :: proc(arg1: ^Tight_Field_Element, arg2: ^[32]byte) -> int {
 	tmp1: [32]byte = ---
 
 	fe_to_bytes(&tmp1, arg1)
@@ -77,7 +77,7 @@ fe_equal_bytes :: proc "contextless" (arg1: ^Tight_Field_Element, arg2: ^[32]byt
 	return ret
 }
 
-fe_carry_pow2k :: proc "contextless" (
+fe_carry_pow2k :: proc(
 	out1: ^Tight_Field_Element,
 	arg1: ^Loose_Field_Element,
 	arg2: uint,
@@ -94,26 +94,26 @@ fe_carry_pow2k :: proc "contextless" (
 	}
 }
 
-fe_carry_add :: #force_inline proc "contextless" (out1, arg1, arg2: ^Tight_Field_Element) {
+fe_carry_add :: #force_inline proc(out1, arg1, arg2: ^Tight_Field_Element) {
 	fe_add(fe_relax_cast(out1), arg1, arg2)
 	fe_carry(out1, fe_relax_cast(out1))
 }
 
-fe_carry_sub :: #force_inline proc "contextless" (out1, arg1, arg2: ^Tight_Field_Element) {
+fe_carry_sub :: #force_inline proc(out1, arg1, arg2: ^Tight_Field_Element) {
 	fe_sub(fe_relax_cast(out1), arg1, arg2)
 	fe_carry(out1, fe_relax_cast(out1))
 }
 
-fe_carry_opp :: #force_inline proc "contextless" (out1, arg1: ^Tight_Field_Element) {
+fe_carry_opp :: #force_inline proc(out1, arg1: ^Tight_Field_Element) {
 	fe_opp(fe_relax_cast(out1), arg1)
 	fe_carry(out1, fe_relax_cast(out1))
 }
 
-fe_carry_abs :: #force_inline proc "contextless" (out1, arg1: ^Tight_Field_Element) {
+fe_carry_abs :: #force_inline proc(out1, arg1: ^Tight_Field_Element) {
 	fe_cond_negate(out1, arg1, fe_is_negative(arg1))
 }
 
-fe_carry_sqrt_ratio_m1 :: proc "contextless" (
+fe_carry_sqrt_ratio_m1 :: proc(
 	out1: ^Tight_Field_Element,
 	arg1: ^Loose_Field_Element, // u
 	arg2: ^Loose_Field_Element, // v
@@ -180,7 +180,7 @@ fe_carry_sqrt_ratio_m1 :: proc "contextless" (
 	return correct_sign_sqrt | flipped_sign_sqrt
 }
 
-fe_carry_inv :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^Loose_Field_Element) {
+fe_carry_inv :: proc(out1: ^Tight_Field_Element, arg1: ^Loose_Field_Element) {
 	tmp1: Tight_Field_Element
 
 	fe_carry_square(&tmp1, arg1)
@@ -191,7 +191,7 @@ fe_carry_inv :: proc "contextless" (out1: ^Tight_Field_Element, arg1: ^Loose_Fie
 	fe_clear(&tmp1)
 }
 
-fe_zero :: proc "contextless" (out1: ^Tight_Field_Element) {
+fe_zero :: proc(out1: ^Tight_Field_Element) {
 	out1[0] = 0
 	out1[1] = 0
 	out1[2] = 0
@@ -199,7 +199,7 @@ fe_zero :: proc "contextless" (out1: ^Tight_Field_Element) {
 	out1[4] = 0
 }
 
-fe_one :: proc "contextless" (out1: ^Tight_Field_Element) {
+fe_one :: proc(out1: ^Tight_Field_Element) {
 	out1[0] = 1
 	out1[1] = 0
 	out1[2] = 0
@@ -207,7 +207,7 @@ fe_one :: proc "contextless" (out1: ^Tight_Field_Element) {
 	out1[4] = 0
 }
 
-fe_set :: proc "contextless" (out1, arg1: ^Tight_Field_Element) {
+fe_set :: proc(out1, arg1: ^Tight_Field_Element) {
 	x1 := arg1[0]
 	x2 := arg1[1]
 	x3 := arg1[2]
@@ -221,7 +221,7 @@ fe_set :: proc "contextless" (out1, arg1: ^Tight_Field_Element) {
 }
 
 @(optimization_mode = "none")
-fe_cond_swap :: #force_no_inline proc "contextless" (out1, out2: ^Tight_Field_Element, arg1: int) {
+fe_cond_swap :: #force_no_inline proc(out1, out2: ^Tight_Field_Element, arg1: int) {
 	mask := (u64(arg1) * 0xffffffffffffffff)
 	x := (out1[0] ~ out2[0]) & mask
 	x1, y1 := out1[0] ~ x, out2[0] ~ x
@@ -241,7 +241,7 @@ fe_cond_swap :: #force_no_inline proc "contextless" (out1, out2: ^Tight_Field_El
 }
 
 @(optimization_mode = "none")
-fe_cond_select :: #force_no_inline proc "contextless" (
+fe_cond_select :: #force_no_inline proc(
 	out1, arg1, arg2: $T,
 	arg3: int,
 ) where T == ^Tight_Field_Element || T == ^Loose_Field_Element {
@@ -258,7 +258,7 @@ fe_cond_select :: #force_no_inline proc "contextless" (
 	out1[4] = x5
 }
 
-fe_cond_negate :: proc "contextless" (out1, arg1: ^Tight_Field_Element, ctrl: int) {
+fe_cond_negate :: proc(out1, arg1: ^Tight_Field_Element, ctrl: int) {
 	tmp1: Tight_Field_Element = ---
 	fe_carry_opp(&tmp1, arg1)
 	fe_cond_select(out1, arg1, &tmp1, ctrl)

@@ -38,7 +38,7 @@ _stable_sort_general :: proc(data: $T/[]$E, call: $P, $KIND: Sort_Kind) where (O
 
 @(private)
 _smoothsort :: proc(base: [^]byte, nel: uint, width: uint, cmp: Generic_Cmp, arg: rawptr) {
-	pntz :: proc "contextless" (p: [2]uint) -> int {
+	pntz :: proc(p: [2]uint) -> int {
 		r := intrinsics.count_trailing_zeros(p[0] - 1)
 		if r != 0 {
 			return int(r)
@@ -50,7 +50,7 @@ _smoothsort :: proc(base: [^]byte, nel: uint, width: uint, cmp: Generic_Cmp, arg
 		return 0
 	}
 
-	shl :: proc "contextless" (p: []uint, n: int) {
+	shl :: proc(p: []uint, n: int) {
 		n := n
 		if n >= 8*size_of(uint) {
 			n -= 8*size_of(uint)
@@ -61,7 +61,7 @@ _smoothsort :: proc(base: [^]byte, nel: uint, width: uint, cmp: Generic_Cmp, arg
 		p[0] |= p[0] >> uint(8*size_of(uint) - n)
 		p[0] <<= uint(n)
 	}
-	shr :: proc "contextless" (p: []uint, n: int) {
+	shr :: proc(p: []uint, n: int) {
 		n := n
 		if n >= 8*size_of(uint) {
 			n -= 8*size_of(uint)
@@ -73,7 +73,7 @@ _smoothsort :: proc(base: [^]byte, nel: uint, width: uint, cmp: Generic_Cmp, arg
 		p[1] >>= uint(n)
 	}
 
-	cycle :: proc "contextless" (width: uint, data: [][^]byte, n: int) {
+	cycle :: proc(width: uint, data: [][^]byte, n: int) {
 		if len(data) < 2 {
 			return
 		}

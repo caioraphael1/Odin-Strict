@@ -40,8 +40,8 @@ when ODIN_BUILD_MODE == .Dynamic {
 		}
 		@(link_name="_start_odin", linkage="strong", require)
 		_start_odin :: proc "c" (argc: i32, argv: [^]cstring) -> ! {
-			args__ = argv[:argc]
 			context = {}
+			args__ = argv[:argc]
 			// #force_no_inline _startup_runtime()
 			intrinsics.__entry_point()
 			// #force_no_inline _cleanup_runtime()
@@ -51,8 +51,8 @@ when ODIN_BUILD_MODE == .Dynamic {
 	} else {
 		@(link_name="main", linkage="strong", require)
 		main :: proc "c" (argc: i32, argv: [^]cstring) -> i32 {
-			args__ = argv[:argc]
 			context = {}
+			args__ = argv[:argc]
 			// #force_no_inline _startup_runtime()
 			intrinsics.__entry_point()
 			// #force_no_inline _cleanup_runtime()

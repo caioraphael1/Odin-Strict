@@ -237,7 +237,7 @@ gctr_hw :: proc(
 //
 // src/check_expr.cpp(8104): Assertion Failure: `c->curr_proc_decl->entity`
 @(private = "file", enable_target_feature = "sse4.1")
-hw_inc_ctr32 :: #force_inline proc "contextless" (src: ^x86.__m128i, ctr: u32) -> (x86.__m128i, u32) {
+hw_inc_ctr32 :: #force_inline proc(src: ^x86.__m128i, ctr: u32) -> (x86.__m128i, u32) {
 	ret := x86._mm_insert_epi32(src^, i32(intrinsics.byte_swap(ctr)), 3)
 	return ret, ctr + 1
 }

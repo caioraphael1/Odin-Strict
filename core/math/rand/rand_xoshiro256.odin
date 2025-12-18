@@ -14,7 +14,7 @@ Xoshiro256_Random_State :: struct {
 
 xoshiro256_random_generator_proc :: proc(data: rawptr, mode: runtime.Random_Generator_Mode, p: []byte) {
 	@(require_results)
-	read_u64 :: proc "contextless" (r: ^Xoshiro256_Random_State) -> u64 {
+	read_u64 :: proc(r: ^Xoshiro256_Random_State) -> u64 {
 		// xoshiro256** output function and state transition
 
 		result := bits.rotate_left64(r.s[1] * 5, 7) * 9
@@ -33,9 +33,9 @@ xoshiro256_random_generator_proc :: proc(data: rawptr, mode: runtime.Random_Gene
 	@(thread_local)
 	global_rand_seed: Xoshiro256_Random_State
 
-	init :: proc "contextless" (r: ^Xoshiro256_Random_State, seed: u64) {
+	init :: proc(r: ^Xoshiro256_Random_State, seed: u64) {
 		// splitmix64 to expand a 64-bit seed into 256 bits of state
-		sm64_next :: proc "contextless" (s: ^u64) -> u64 {
+		sm64_next :: proc(s: ^u64) -> u64 {
 			s^ += 0x9E3779B97F4A7C15
 			z := s^
 			z = (z ~ (z >> 30)) * 0xBF58476D1CE4E5B9
@@ -115,7 +115,7 @@ Returns:
 - A `Generator` instance.
 */
 @(require_results)
-xoshiro256_random_generator :: proc "contextless" (state: ^Xoshiro256_Random_State = nil) -> Generator {
+xoshiro256_random_generator :: proc(state: ^Xoshiro256_Random_State = nil) -> Generator {
 	return {
 		procedure = xoshiro256_random_generator_proc,
 		data = state,

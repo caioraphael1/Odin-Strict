@@ -14,7 +14,7 @@ Tick :: struct {
 Obtain the current tick.
 */
 @(require_results)
-tick_now :: proc "contextless" () -> Tick {
+tick_now :: proc() -> Tick {
 	return _tick_now()
 }
 
@@ -22,7 +22,7 @@ tick_now :: proc "contextless" () -> Tick {
 Add duration to a tick.
 */
 @(require_results)
-tick_add :: proc "contextless" (t: Tick, d: Duration) -> Tick {
+tick_add :: proc(t: Tick, d: Duration) -> Tick {
 	return Tick{t._nsec + i64(d)}
 }
 
@@ -30,7 +30,7 @@ tick_add :: proc "contextless" (t: Tick, d: Duration) -> Tick {
 Obtain the difference between ticks.
 */
 @(require_results)
-tick_diff :: proc "contextless" (start, end: Tick) -> Duration {
+tick_diff :: proc(start, end: Tick) -> Duration {
 	d := end._nsec - start._nsec
 	return Duration(d)
 }
@@ -47,7 +47,7 @@ This procedure is meant to be used in a loop, or in other scenarios, where one
 might want to obtain time between multiple ticks at specific points.
 */
 @(require_results)
-tick_lap_time :: proc "contextless" (prev: ^Tick) -> Duration {
+tick_lap_time :: proc(prev: ^Tick) -> Duration {
 	d: Duration
 	t := tick_now()
 	if prev._nsec != 0 {
@@ -61,7 +61,7 @@ tick_lap_time :: proc "contextless" (prev: ^Tick) -> Duration {
 Obtain the duration since last tick.
 */
 @(require_results)
-tick_since :: proc "contextless" (start: Tick) -> Duration {
+tick_since :: proc(start: Tick) -> Duration {
 	return tick_diff(start, tick_now())
 }
 
@@ -69,17 +69,17 @@ tick_since :: proc "contextless" (start: Tick) -> Duration {
 Capture the duration the code in the current scope takes to execute.
 */
 @(deferred_in_out=_tick_duration_end)
-SCOPED_TICK_DURATION :: proc "contextless" (d: ^Duration) -> Tick {
+SCOPED_TICK_DURATION :: proc(d: ^Duration) -> Tick {
 	return tick_now()
 }
 
-_tick_duration_end :: proc "contextless" (d: ^Duration, t: Tick) {
+_tick_duration_end :: proc(d: ^Duration, t: Tick) {
 	d^ = tick_since(t)
 }
 
 when ODIN_ARCH == .amd64 {
 	@(private)
-	x86_has_invariant_tsc :: proc "contextless" () -> bool {
+	x86_has_invariant_tsc :: proc() -> bool {
 		eax, _, _, _ := intrinsics.x86_cpuid(0x80_000_000, 0)
 
 		// Is this processor *really* ancient?
@@ -94,7 +94,7 @@ when ODIN_ARCH == .amd64 {
 }
 
 when ODIN_OS != .Darwin && ODIN_OS != .Linux && ODIN_OS != .FreeBSD {
-	_get_tsc_frequency :: proc "contextless" () -> (u64, bool) {
+	_get_tsc_frequency :: proc() -> (u64, bool) {
 		return 0, false
 	}
 }
@@ -107,7 +107,7 @@ Invariant TSC is a feature of modern processors that allows them to run their
 TSC at a fixed frequency, independent of ACPI state, and CPU frequency.
 */
 @(require_results)
-has_invariant_tsc :: proc "contextless" () -> bool {
+has_invariant_tsc :: proc() -> bool {
 	when ODIN_ARCH == .amd64 {
 		return x86_has_invariant_tsc()
 	} else when ODIN_ARCH == .arm64 {
@@ -129,7 +129,7 @@ dividing the readings from TSC by the duration of the sleep.
 The duration of sleep can be controlled by `fallback_sleep` parameter.
 */
 @(require_results)
-tsc_frequency :: proc "contextless" (fallback_sleep := 2 * Second) -> (u64, bool) {
+tsc_frequency :: proc(fallback_sleep := 2 * Second) -> (u64, bool) {
 	if !has_invariant_tsc() {
 		return 0, false
 	}

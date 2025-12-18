@@ -3186,7 +3186,7 @@ fmt_value :: proc(fi: ^Info, v: any, verb: rune) {
 // This proc helps keep some of the code around whether or not to print an
 // intermediate plus sign in complexes and quaternions more readable.
 @(private)
-_cq_should_print_intermediate_plus :: proc "contextless" (fi: ^Info, f: f64) -> bool {
+_cq_should_print_intermediate_plus :: proc(fi: ^Info, f: f64) -> bool {
 	if !fi.plus && f >= 0 {
 		#partial switch math.classify(f) {
 		case .Neg_Zero, .Inf:

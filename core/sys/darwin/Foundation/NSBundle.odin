@@ -64,13 +64,13 @@ Bundle_isLoaded :: proc "c" (self: ^Bundle) -> BOOL {
 }
 
 @(objc_type=Bundle, objc_name="preflightAndReturnError")
-Bundle_preflightAndReturnError :: proc "contextless" (self: ^Bundle) -> (ok: BOOL, error: ^Error) {
+Bundle_preflightAndReturnError :: proc(self: ^Bundle) -> (ok: BOOL, error: ^Error) {
 	ok = msgSend(BOOL, self, "preflightAndReturnError:", &error)
 	return
 }
 
 @(objc_type=Bundle, objc_name="loadAndReturnError")
-Bundle_loadAndReturnError :: proc "contextless" (self: ^Bundle) -> (ok: BOOL, error: ^Error) {
+Bundle_loadAndReturnError :: proc(self: ^Bundle) -> (ok: BOOL, error: ^Error) {
 	ok = msgSend(BOOL, self, "loadAndReturnError:", &error)
 	return
 }

@@ -78,15 +78,15 @@ foreign gdi32 {
 	GdiAlphaBlend :: proc(hdcDest: HDC, xoriginDest, yoriginDest, wDest, hDest: INT, hdcSrc: HDC, xoriginSrc, yoriginSrc, wSrc, hSrc: INT, ftn: BLENDFUNCTION) -> BOOL ---
 }
 
-RGB :: #force_inline proc "contextless" (#any_int r, g, b: int) -> COLORREF {
+RGB :: #force_inline proc(#any_int r, g, b: int) -> COLORREF {
 	return COLORREF(DWORD(BYTE(r)) | (DWORD(BYTE(g)) << 8) | (DWORD(BYTE(b)) << 16))
 }
 
-PALETTERGB :: #force_inline proc "contextless" (#any_int r, g, b: int) -> COLORREF {
+PALETTERGB :: #force_inline proc(#any_int r, g, b: int) -> COLORREF {
 	return 0x02000000 | RGB(r, g, b)
 }
 
-PALETTEINDEX :: #force_inline proc "contextless" (#any_int i: int) -> COLORREF {
+PALETTEINDEX :: #force_inline proc(#any_int i: int) -> COLORREF {
 	return COLORREF(DWORD(0x01000000) | DWORD(WORD(i)))
 }
 

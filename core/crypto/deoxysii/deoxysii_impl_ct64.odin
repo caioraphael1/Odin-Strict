@@ -22,7 +22,7 @@ State_SW :: struct {
 }
 
 @(private = "file")
-auth_tweak :: #force_inline proc "contextless" (
+auth_tweak :: #force_inline proc(
 	dst: ^[TWEAK_SIZE]byte,
 	prefix: byte,
 	block_nr: int,
@@ -32,7 +32,7 @@ auth_tweak :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-enc_tweak :: #force_inline proc "contextless" (
+enc_tweak :: #force_inline proc(
 	dst: ^[TWEAK_SIZE]byte,
 	tag: ^[TAG_SIZE]byte,
 	block_nr: int,
@@ -48,7 +48,7 @@ enc_tweak :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-enc_plaintext :: #force_inline proc "contextless" (
+enc_plaintext :: #force_inline proc(
 	dst: ^[8]u64,
 	iv:  []byte,
 ) {
@@ -64,7 +64,7 @@ enc_plaintext :: #force_inline proc "contextless" (
 }
 
 @(private = "file")
-bc_x4 :: proc "contextless" (
+bc_x4 :: proc(
 	ctx:     ^Context,
 	dst:     []byte,
 	tweaks:  ^[4][TWEAK_SIZE]byte,
@@ -108,7 +108,7 @@ bc_x4 :: proc "contextless" (
 }
 
 @(private = "file", require_results)
-bc_absorb :: proc "contextless" (
+bc_absorb :: proc(
 	st:           ^State_SW,
 	dst:          []byte,
 	src:          []byte,
@@ -156,7 +156,7 @@ bc_absorb :: proc "contextless" (
 }
 
 @(private = "file")
-bc_final :: proc "contextless" (
+bc_final :: proc(
 	st:  ^State_SW,
 	dst: []byte,
 	iv:  []byte,
@@ -173,7 +173,7 @@ bc_final :: proc "contextless" (
 }
 
 @(private = "file", require_results)
-bc_encrypt :: proc "contextless" (
+bc_encrypt :: proc(
 	st:           ^State_SW,
 	dst:          []byte,
 	src:          []byte,
@@ -221,7 +221,7 @@ bc_encrypt :: proc "contextless" (
 }
 
 @(private)
-e_ref :: proc "contextless" (ctx: ^Context, dst, tag, iv, aad, plaintext: []byte) #no_bounds_check {
+e_ref :: proc(ctx: ^Context, dst, tag, iv, aad, plaintext: []byte) #no_bounds_check {
 	st: State_SW = ---
 	st.ctx = ctx
 
@@ -305,7 +305,7 @@ e_ref :: proc "contextless" (ctx: ^Context, dst, tag, iv, aad, plaintext: []byte
 }
 
 @(private, require_results)
-d_ref :: proc "contextless" (ctx: ^Context, dst, iv, aad, ciphertext, tag: []byte) -> bool {
+d_ref :: proc(ctx: ^Context, dst, iv, aad, ciphertext, tag: []byte) -> bool {
 	st: State_SW = ---
 	st.ctx = ctx
 

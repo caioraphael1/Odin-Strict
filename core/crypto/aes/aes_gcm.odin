@@ -107,7 +107,7 @@ open_gcm :: proc(ctx: ^Context_GCM, dst, iv, aad, ciphertext, tag: []byte) -> bo
 
 // reset_gcm sanitizes the Context_GCM.  The Context_GCM must be
 // re-initialized to be used again.
-reset_gcm :: proc "contextless" (ctx: ^Context_GCM) {
+reset_gcm :: proc(ctx: ^Context_GCM) {
 	reset_impl(&ctx._impl)
 	ctx._is_initialized = false
 }
@@ -185,7 +185,7 @@ gctr_ct64 :: proc(
 	iv: ^[_aes.GHASH_BLOCK_SIZE]byte,
 	is_seal: bool,
 ) #no_bounds_check {
-	ct64_inc_ctr32 := #force_inline proc "contextless" (dst: []byte, ctr: u32) -> u32 {
+	ct64_inc_ctr32 := #force_inline proc(dst: []byte, ctr: u32) -> u32 {
 		endian.unchecked_put_u32be(dst[12:], ctr)
 		return ctr + 1
 	}

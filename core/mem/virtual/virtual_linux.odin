@@ -4,7 +4,7 @@ package mem_virtual
 
 import "core:sys/linux"
 
-_reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
+_reserve :: proc(size: uint) -> (data: []byte, err: Allocator_Error) {
 	addr, errno := linux.mmap(0, size, {}, {.PRIVATE, .ANONYMOUS})
 	if errno == .ENOMEM {
 		return nil, .Out_Of_Memory
@@ -14,7 +14,7 @@ _reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Err
 	return (cast([^]byte)addr)[:size], nil
 }
 
-_commit :: proc "contextless" (data: rawptr, size: uint) -> Allocator_Error {
+_commit :: proc(data: rawptr, size: uint) -> Allocator_Error {
 	errno := linux.mprotect(data, size, {.READ, .WRITE})
 	if errno == .EINVAL {
 		return .Invalid_Pointer
@@ -24,16 +24,16 @@ _commit :: proc "contextless" (data: rawptr, size: uint) -> Allocator_Error {
 	return nil
 }
 
-_decommit :: proc "contextless" (data: rawptr, size: uint) {
+_decommit :: proc(data: rawptr, size: uint) {
 	_ = linux.mprotect(data, size, {})
 	_ = linux.madvise(data, size, .FREE)
 }
 
-_release :: proc "contextless" (data: rawptr, size: uint) {
+_release :: proc(data: rawptr, size: uint) {
 	_ = linux.munmap(data, size)
 }
 
-_protect :: proc "contextless" (data: rawptr, size: uint, flags: Protect_Flags) -> bool {
+_protect :: proc(data: rawptr, size: uint, flags: Protect_Flags) -> bool {
 	pflags: linux.Mem_Protection
 	pflags = {}
 	if .Read    in flags { pflags += {.READ}  }
@@ -43,14 +43,14 @@ _protect :: proc "contextless" (data: rawptr, size: uint, flags: Protect_Flags) 
 	return errno == .NONE
 }
 
-_platform_memory_init :: proc "contextless" () {
+_platform_memory_init :: proc() {
 	DEFAULT_PAGE_SIZE = 4096
 	// is power of two
 	assert(DEFAULT_PAGE_SIZE != 0 && (DEFAULT_PAGE_SIZE & (DEFAULT_PAGE_SIZE-1)) == 0)
 }
 
 
-_map_file :: proc "contextless" (fd: uintptr, size: i64, flags: Map_File_Flags) -> (data: []byte, error: Map_File_Error) {
+_map_file :: proc(fd: uintptr, size: i64, flags: Map_File_Flags) -> (data: []byte, error: Map_File_Error) {
 	prot: linux.Mem_Protection
 	if .Read in flags {
 		prot += {.READ}

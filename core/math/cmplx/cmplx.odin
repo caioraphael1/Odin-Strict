@@ -118,20 +118,20 @@ is_nan :: proc{
 
 // sqrt_complex32 returns the square root of x.
 // The result r is chosen so that real(r) ≥ 0 and imag(r) has the same sign as imag(x).
-sqrt_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+sqrt_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(sqrt_complex128(complex128(x)))
 }
 
 // sqrt_complex64 returns the square root of x.
 // The result r is chosen so that real(r) ≥ 0 and imag(r) has the same sign as imag(x).
-sqrt_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+sqrt_complex64 :: proc(x: complex64) -> complex64 {
 	return complex64(sqrt_complex128(complex128(x)))
 }
 
 
 // sqrt_complex128 returns the square root of x.
 // The result r is chosen so that real(r) ≥ 0 and imag(r) has the same sign as imag(x).
-sqrt_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+sqrt_complex128 :: proc(x: complex128) -> complex128 {
 	// The original C code, the long comment, and the constants
 	// below are from http://netlib.sandia.gov/cephes/c9x-complex/clog.c.
 	// The go code is a simplified version of the original C.
@@ -229,21 +229,21 @@ sqrt_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 	return complex(t, r)
 }
 
-ln_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+ln_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(ln_complex64(complex64(x)))
 }
-ln_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+ln_complex64 :: proc(x: complex64) -> complex64 {
 	return complex(math.ln(abs(x)), phase(x))
 }
-ln_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+ln_complex128 :: proc(x: complex128) -> complex128 {
 	return complex(math.ln(abs(x)), phase(x))
 }
 
 
-exp_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+exp_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(exp_complex64(complex64(x)))
 }
-exp_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+exp_complex64 :: proc(x: complex64) -> complex64 {
 	switch re, im := real(x), imag(x); {
 	case math.is_inf(re, 0):
 		switch {
@@ -265,7 +265,7 @@ exp_complex64 :: proc "contextless" (x: complex64) -> complex64 {
 	s, c := math.sincos(imag(x))
 	return complex(r*c, r*s)
 }
-exp_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+exp_complex128 :: proc(x: complex128) -> complex128 {
 	switch re, im := real(x), imag(x); {
 	case math.is_inf(re, 0):
 		switch {
@@ -289,10 +289,10 @@ exp_complex128 :: proc "contextless" (x: complex128) -> complex128 {
 }
 
 
-pow_complex32 :: proc "contextless" (x, y: complex32) -> complex32 {
+pow_complex32 :: proc(x, y: complex32) -> complex32 {
 	return complex32(pow_complex64(complex64(x), complex64(y)))
 }
-pow_complex64 :: proc "contextless" (x, y: complex64) -> complex64 {
+pow_complex64 :: proc(x, y: complex64) -> complex64 {
 	if x == 0 { // Guaranteed also true for x == -0.
 		if is_nan(y) {
 			return nan_complex64()
@@ -325,7 +325,7 @@ pow_complex64 :: proc "contextless" (x, y: complex64) -> complex64 {
 	s, c := math.sincos(theta)
 	return complex(r*c, r*s)
 }
-pow_complex128 :: proc "contextless" (x, y: complex128) -> complex128 {
+pow_complex128 :: proc(x, y: complex128) -> complex128 {
 	if x == 0 { // Guaranteed also true for x == -0.
 		if is_nan(y) {
 			return nan_complex128()
@@ -361,102 +361,102 @@ pow_complex128 :: proc "contextless" (x, y: complex128) -> complex128 {
 
 
 
-log10_complex32 :: proc "contextless" (x: complex32) -> complex32 {
+log10_complex32 :: proc(x: complex32) -> complex32 {
 	return complex32(log10_complex64(complex64(x)))
 }
-log10_complex64 :: proc "contextless" (x: complex64) -> complex64 {
+log10_complex64 :: proc(x: complex64) -> complex64 {
 	return math.LN10*ln(x)
 }
-log10_complex128 :: proc "contextless" (x: complex128) -> complex128 {
+log10_complex128 :: proc(x: complex128) -> complex128 {
 	return math.LN10*ln(x)
 }
 
 
-phase_complex32 :: proc "contextless" (x:  complex32) -> f16 {
+phase_complex32 :: proc(x:  complex32) -> f16 {
 	return f16(phase_complex64(complex64(x)))
 }
-phase_complex64 :: proc "contextless" (x:  complex64) -> f32 {
+phase_complex64 :: proc(x:  complex64) -> f32 {
 	return math.atan2(imag(x), real(x))
 }
-phase_complex128 :: proc "contextless" (x:  complex128) -> f64 {
+phase_complex128 :: proc(x:  complex128) -> f64 {
 	return math.atan2(imag(x), real(x))
 }
 
 
-rect_complex32 :: proc "contextless" (r, θ: f16) -> complex32 {
+rect_complex32 :: proc(r, θ: f16) -> complex32 {
 	return complex32(rect_complex64(f32(r), f32(θ)))
 }
-rect_complex64 :: proc "contextless" (r, θ: f32) -> complex64 {
+rect_complex64 :: proc(r, θ: f32) -> complex64 {
 	s, c := math.sincos(θ)
 	return complex(r*c, r*s)
 }
-rect_complex128 :: proc "contextless" (r, θ: f64) -> complex128 {
+rect_complex128 :: proc(r, θ: f64) -> complex128 {
 	s, c := math.sincos(θ)
 	return complex(r*c, r*s)
 }
 
-polar_complex32 :: proc "contextless" (x: complex32) -> (r, θ: f16) {
+polar_complex32 :: proc(x: complex32) -> (r, θ: f16) {
 	return abs(x), phase(x)
 }
-polar_complex64 :: proc "contextless" (x: complex64) -> (r, θ: f32) {
+polar_complex64 :: proc(x: complex64) -> (r, θ: f32) {
 	return abs(x), phase(x)
 }
-polar_complex128 :: proc "contextless" (x: complex128) -> (r, θ: f64) {
+polar_complex128 :: proc(x: complex128) -> (r, θ: f64) {
 	return abs(x), phase(x)
 }
 
 
 
 
-nan_complex32 :: proc "contextless" () -> complex32 {
+nan_complex32 :: proc() -> complex32 {
 	return complex(math.nan_f16(), math.nan_f16())
 }
-nan_complex64 :: proc "contextless" () -> complex64 {
+nan_complex64 :: proc() -> complex64 {
 	return complex(math.nan_f32(), math.nan_f32())
 }
-nan_complex128 :: proc "contextless" () -> complex128 {
+nan_complex128 :: proc() -> complex128 {
 	return complex(math.nan_f64(), math.nan_f64())
 }
 
 
-inf_complex32 :: proc "contextless" () -> complex32 {
+inf_complex32 :: proc() -> complex32 {
 	inf := math.inf_f16(1)
 	return complex(inf, inf)
 }
-inf_complex64 :: proc "contextless" () -> complex64 {
+inf_complex64 :: proc() -> complex64 {
 	inf := math.inf_f32(1)
 	return complex(inf, inf)
 }
-inf_complex128 :: proc "contextless" () -> complex128 {
+inf_complex128 :: proc() -> complex128 {
 	inf := math.inf_f64(1)
 	return complex(inf, inf)
 }
 
 
-is_inf_complex32 :: proc "contextless" (x: complex32) -> bool {
+is_inf_complex32 :: proc(x: complex32) -> bool {
 	return math.is_inf(real(x), 0) || math.is_inf(imag(x), 0)
 }
-is_inf_complex64 :: proc "contextless" (x: complex64) -> bool {
+is_inf_complex64 :: proc(x: complex64) -> bool {
 	return math.is_inf(real(x), 0) || math.is_inf(imag(x), 0)
 }
-is_inf_complex128 :: proc "contextless" (x: complex128) -> bool {
+is_inf_complex128 :: proc(x: complex128) -> bool {
 	return math.is_inf(real(x), 0) || math.is_inf(imag(x), 0)
 }
 
 
-is_nan_complex32 :: proc "contextless" (x: complex32) -> bool {
+is_nan_complex32 :: proc(x: complex32) -> bool {
 	if math.is_inf(real(x), 0) || math.is_inf(imag(x), 0) {
 		return false
 	}
 	return math.is_nan(real(x)) || math.is_nan(imag(x))
 }
-is_nan_complex64 :: proc "contextless" (x: complex64) -> bool {
+is_nan_complex64 :: proc(x: complex64) -> bool {
 	if math.is_inf(real(x), 0) || math.is_inf(imag(x), 0) {
 		return false
 	}
 	return math.is_nan(real(x)) || math.is_nan(imag(x))
 }
-is_nan_complex128 :: proc "contextless" (x: complex128) -> bool {
+is_nan_complex128 :: proc(x: complex128) -> bool {
 	if math.is_inf(real(x), 0) || math.is_inf(imag(x), 0) {
 		return false
 	}

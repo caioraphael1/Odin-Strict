@@ -207,7 +207,7 @@ open :: proc(ctx: ^Context, dst, iv, aad, ciphertext, tag: []byte) -> bool {
 
 // reset sanitizes the Context.  The Context must be
 // re-initialized to be used again.
-reset :: proc "contextless" (ctx: ^Context) {
+reset :: proc(ctx: ^Context) {
 	mem.zero_explicit(&ctx._key, len(ctx._key))
 	ctx._key_len = 0
 	ctx._is_initialized = false

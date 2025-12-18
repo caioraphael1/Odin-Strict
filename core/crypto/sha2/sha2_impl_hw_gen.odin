@@ -6,10 +6,10 @@ ERR_HW_NOT_SUPPORTED :: "crypto/sha2: hardware implementation unsupported"
 
 // is_hardware_accelerated_256 returns true iff hardware accelerated
 // SHA-224/SHA-256 is supported.
-is_hardware_accelerated_256 :: proc "contextless" () -> bool {
+is_hardware_accelerated_256 :: proc() -> bool {
 	return false
 }
 
-sha256_transf_hw :: proc "contextless" (ctx: ^Context_256, data: []byte) {
+sha256_transf_hw :: proc(ctx: ^Context_256, data: []byte) {
 	panic(ERR_HW_NOT_SUPPORTED)
 }

@@ -36,7 +36,7 @@ _CTR_INC_8: u32x4 : {8, 8, 8, 8}
 
 when ODIN_ENDIAN == .Big {
 	@(private = "file")
-	_byteswap_u32x4 :: #force_inline proc "contextless" (v: u32x4) -> u32x4 {
+	_byteswap_u32x4 :: #force_inline proc(v: u32x4) -> u32x4 {
 		u8x16 :: #simd[16]u8
 		return(
 			transmute(u32x4)simd.shuffle(
@@ -86,7 +86,7 @@ chacha8rand_refill_simd128 :: proc(r: ^Default_Random_State) {
 
 	dst: [^]u32x4 = (^u32x4)(raw_data(r._buf[:]))
 
-	quarter_round := #force_inline proc "contextless" (a, b, c, d: u32x4) -> (u32x4, u32x4, u32x4, u32x4) {
+	quarter_round := #force_inline proc(a, b, c, d: u32x4) -> (u32x4, u32x4, u32x4, u32x4) {
 		a, b, c, d := a, b, c, d
 
 		a = intrinsics.simd_add(a, b)

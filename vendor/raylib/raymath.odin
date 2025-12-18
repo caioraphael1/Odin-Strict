@@ -822,7 +822,7 @@ QuaternionEquals :: proc "c" (p, q: Quaternion) -> bool {
 }
 
 @(private, require_results)
-fmaxf :: proc "contextless" (x, y: f32) -> f32 {
+fmaxf :: proc(x, y: f32) -> f32 {
 	if math.is_nan(x) {
 		return y
 	}

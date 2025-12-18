@@ -369,32 +369,32 @@ when ODIN_ARCH == .amd64 {
 	SetWindowLongPtrW :: SetWindowLongW
 }
 
-GET_SC_WPARAM :: #force_inline proc "contextless" (wParam: WPARAM) -> INT {
+GET_SC_WPARAM :: #force_inline proc(wParam: WPARAM) -> INT {
 	return INT(wParam) & 0xFFF0
 }
 
-GET_WHEEL_DELTA_WPARAM :: #force_inline proc "contextless" (wParam: WPARAM) -> c_short {
+GET_WHEEL_DELTA_WPARAM :: #force_inline proc(wParam: WPARAM) -> c_short {
 	return cast(c_short)HIWORD(cast(DWORD)wParam)
 }
 
-GET_KEYSTATE_WPARAM :: #force_inline proc "contextless" (wParam: WPARAM) -> WORD {
+GET_KEYSTATE_WPARAM :: #force_inline proc(wParam: WPARAM) -> WORD {
 	return LOWORD(cast(DWORD)wParam)
 }
 
-GET_NCHITTEST_WPARAM :: #force_inline proc "contextless" (wParam: WPARAM) -> c_short {
+GET_NCHITTEST_WPARAM :: #force_inline proc(wParam: WPARAM) -> c_short {
 	return cast(c_short)LOWORD(cast(DWORD)wParam)
 }
 
-GET_XBUTTON_WPARAM :: #force_inline proc "contextless" (wParam: WPARAM) -> WORD {
+GET_XBUTTON_WPARAM :: #force_inline proc(wParam: WPARAM) -> WORD {
 	return HIWORD(cast(DWORD)wParam)
 }
 
 // Retrieves the input code from wParam in WM_INPUT message.
-GET_RAWINPUT_CODE_WPARAM :: #force_inline proc "contextless" (wParam: WPARAM) -> RAWINPUT_CODE {
+GET_RAWINPUT_CODE_WPARAM :: #force_inline proc(wParam: WPARAM) -> RAWINPUT_CODE {
 	return RAWINPUT_CODE(wParam & 0xFF)
 }
 
-MAKEINTRESOURCEW :: #force_inline proc "contextless" (#any_int i: int) -> LPWSTR {
+MAKEINTRESOURCEW :: #force_inline proc(#any_int i: int) -> LPWSTR {
 	return cast(LPWSTR)uintptr(WORD(i))
 }
 

@@ -42,6 +42,6 @@ resolve :: proc(ctx: ^Context, frame: Frame, allocator: runtime.Allocator) -> (r
 
 
 @(require_results)
-in_resolve :: proc "contextless" (ctx: ^Context) -> bool {
+in_resolve :: proc(ctx: ^Context) -> bool {
 	return intrinsics.atomic_load(&ctx.in_resolve)
 }

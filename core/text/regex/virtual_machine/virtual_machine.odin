@@ -86,7 +86,7 @@ Machine :: struct {
 
 // @MetaCharacter
 // NOTE: This must be kept in sync with the compiler & tokenizer.
-is_word_class :: #force_inline proc "contextless" (r: rune) -> bool {
+is_word_class :: #force_inline proc(r: rune) -> bool {
 	switch r {
 	case '0'..='9', 'A'..='Z', '_', 'a'..='z':
 		return true
@@ -95,7 +95,7 @@ is_word_class :: #force_inline proc "contextless" (r: rune) -> bool {
 	}
 }
 
-set_busy_map :: #force_inline proc "contextless" (vm: ^Machine, pc: int) -> bool #no_bounds_check {
+set_busy_map :: #force_inline proc(vm: ^Machine, pc: int) -> bool #no_bounds_check {
 	slot := cast(u64)pc >> 6
 	bit: u64 = 1 << (cast(u64)pc & 0x3F)
 	if vm.busy_map[slot] & bit > 0 {
@@ -105,7 +105,7 @@ set_busy_map :: #force_inline proc "contextless" (vm: ^Machine, pc: int) -> bool
 	return true
 }
 
-check_busy_map :: #force_inline proc "contextless" (vm: ^Machine, pc: int) -> bool #no_bounds_check {
+check_busy_map :: #force_inline proc(vm: ^Machine, pc: int) -> bool #no_bounds_check {
 	slot := cast(u64)pc >> 6
 	bit: u64 = 1 << (cast(u64)pc & 0x3F)
 	return vm.busy_map[slot] & bit > 0

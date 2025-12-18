@@ -10,6 +10,6 @@ foreign dl {
 	pthread_getthreadid_np :: proc "c" () -> c.int ---
 }
 
-_current_thread_id :: proc "contextless" () -> int {
+_current_thread_id :: proc() -> int {
 	return int(pthread_getthreadid_np())
 }

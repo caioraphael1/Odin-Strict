@@ -624,7 +624,7 @@ test_once :: proc(t: ^testing.T) {
 		number: int,
 	}
 
-	write :: proc "contextless" (data: rawptr) {
+	write :: proc(data: rawptr) {
 		data := cast(^Data)data
 		data.number += 1
 	}

@@ -137,27 +137,27 @@ reset :: proc(ctx: ^$T) {
 */
 
 @(private)
-FF :: #force_inline proc "contextless" (a, b, c, d, m: u32, s: int, t: u32) -> u32 {
+FF :: #force_inline proc(a, b, c, d, m: u32, s: int, t: u32) -> u32 {
 	return b + bits.rotate_left32(a + ((b & c) | (~b & d)) + m + t, s)
 }
 
 @(private)
-GG :: #force_inline proc "contextless" (a, b, c, d, m: u32, s: int, t: u32) -> u32 {
+GG :: #force_inline proc(a, b, c, d, m: u32, s: int, t: u32) -> u32 {
 	return b + bits.rotate_left32(a + ((b & d) | (c & ~d)) + m + t, s)
 }
 
 @(private)
-HH :: #force_inline proc "contextless" (a, b, c, d, m: u32, s: int, t: u32) -> u32 {
+HH :: #force_inline proc(a, b, c, d, m: u32, s: int, t: u32) -> u32 {
 	return b + bits.rotate_left32(a + (b ~ c ~ d) + m + t, s)
 }
 
 @(private)
-II :: #force_inline proc "contextless" (a, b, c, d, m: u32, s: int, t: u32) -> u32 {
+II :: #force_inline proc(a, b, c, d, m: u32, s: int, t: u32) -> u32 {
 	return b + bits.rotate_left32(a + (c ~ (b | ~d)) + m + t, s)
 }
 
 @(private)
-transform :: proc "contextless" (ctx: ^Context, data: []byte) {
+transform :: proc(ctx: ^Context, data: []byte) {
 	m: [DIGEST_SIZE]u32
 
 	for i := 0; i < DIGEST_SIZE; i += 1 {

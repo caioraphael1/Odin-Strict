@@ -79,7 +79,7 @@ chacha8rand_refill_simd256 :: proc(r: ^Default_Random_State) {
 	u32x4 :: #simd[4]u32
 	dst: [^]u32x4 = (^u32x4)(raw_data(r._buf[:]))
 
-	quarter_round := #force_inline proc "contextless" (a, b, c, d: u32x8) -> (u32x8, u32x8, u32x8, u32x8) {
+	quarter_round := #force_inline proc(a, b, c, d: u32x8) -> (u32x8, u32x8, u32x8, u32x8) {
 		a, b, c, d := a, b, c, d
 
 		a = intrinsics.simd_add(a, b)

@@ -117,15 +117,15 @@ erf :: proc{
 	erf_f64,
 }
 
-@(require_results) erf_f16   :: proc "contextless" (x: f16)   -> f16   { return f16(erf_f64(f64(x))) }
-@(require_results) erf_f16le :: proc "contextless" (x: f16le) -> f16le { return f16le(erf_f64(f64(x))) }
-@(require_results) erf_f16be :: proc "contextless" (x: f16be) -> f16be { return f16be(erf_f64(f64(x))) }
-@(require_results) erf_f32   :: proc "contextless" (x: f32)   -> f32   { return f32(erf_f64(f64(x))) }
-@(require_results) erf_f32le :: proc "contextless" (x: f32le) -> f32le { return f32le(erf_f64(f64(x))) }
-@(require_results) erf_f32be :: proc "contextless" (x: f32be) -> f32be { return f32be(erf_f64(f64(x))) }
+@(require_results) erf_f16   :: proc(x: f16)   -> f16   { return f16(erf_f64(f64(x))) }
+@(require_results) erf_f16le :: proc(x: f16le) -> f16le { return f16le(erf_f64(f64(x))) }
+@(require_results) erf_f16be :: proc(x: f16be) -> f16be { return f16be(erf_f64(f64(x))) }
+@(require_results) erf_f32   :: proc(x: f32)   -> f32   { return f32(erf_f64(f64(x))) }
+@(require_results) erf_f32le :: proc(x: f32le) -> f32le { return f32le(erf_f64(f64(x))) }
+@(require_results) erf_f32be :: proc(x: f32be) -> f32be { return f32be(erf_f64(f64(x))) }
 
 @(require_results)
-erf_f64 :: proc "contextless" (x: f64) -> f64 {
+erf_f64 :: proc(x: f64) -> f64 {
 	erx :: 0h3FEB0AC160000000
 	// Coefficients for approximation to  erf in [0, 0.84375]
 	efx  :: 0h3FC06EBA8214DB69
@@ -269,15 +269,15 @@ erfc :: proc{
 	erfc_f64,
 }
 
-@(require_results) erfc_f16   :: proc "contextless" (x: f16)   -> f16   { return f16(erfc_f64(f64(x))) }
-@(require_results) erfc_f16le :: proc "contextless" (x: f16le) -> f16le { return f16le(erfc_f64(f64(x))) }
-@(require_results) erfc_f16be :: proc "contextless" (x: f16be) -> f16be { return f16be(erfc_f64(f64(x))) }
-@(require_results) erfc_f32   :: proc "contextless" (x: f32)   -> f32   { return f32(erfc_f64(f64(x))) }
-@(require_results) erfc_f32le :: proc "contextless" (x: f32le) -> f32le { return f32le(erfc_f64(f64(x))) }
-@(require_results) erfc_f32be :: proc "contextless" (x: f32be) -> f32be { return f32be(erfc_f64(f64(x))) }
+@(require_results) erfc_f16   :: proc(x: f16)   -> f16   { return f16(erfc_f64(f64(x))) }
+@(require_results) erfc_f16le :: proc(x: f16le) -> f16le { return f16le(erfc_f64(f64(x))) }
+@(require_results) erfc_f16be :: proc(x: f16be) -> f16be { return f16be(erfc_f64(f64(x))) }
+@(require_results) erfc_f32   :: proc(x: f32)   -> f32   { return f32(erfc_f64(f64(x))) }
+@(require_results) erfc_f32le :: proc(x: f32le) -> f32le { return f32le(erfc_f64(f64(x))) }
+@(require_results) erfc_f32be :: proc(x: f32be) -> f32be { return f32be(erfc_f64(f64(x))) }
 
 @(require_results)
-erfc_f64 :: proc "contextless" (x: f64) -> f64 {
+erfc_f64 :: proc(x: f64) -> f64 {
 	erx :: 0h3FEB0AC160000000
 	// Coefficients for approximation to  erf in [0, 0.84375]
 	efx  :: 0h3FC06EBA8214DB69

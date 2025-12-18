@@ -5,7 +5,7 @@ import "core:time"
 /*
 Obtain the current thread ID.
 */
-current_thread_id :: proc "contextless" () -> int {
+current_thread_id :: proc() -> int {
 	return _current_thread_id()
 }
 
@@ -54,7 +54,7 @@ until the the lock is released.
 **Note**: If the mutex is already locked by the current thread, a call to this
 procedure will block indefinately. Do not use this in recursive procedures.
 */
-mutex_lock :: proc "contextless" (m: ^Mutex) {
+mutex_lock :: proc(m: ^Mutex) {
 	_mutex_lock(m)
 }
 
@@ -69,7 +69,7 @@ this allows one other thread waiting on the mutex to enter any critical sections
 associated with the mutex. If there are no threads waiting on the mutex, the
 critical sections will remain open.
 */
-mutex_unlock :: proc "contextless" (m: ^Mutex) {
+mutex_unlock :: proc(m: ^Mutex) {
 	_mutex_unlock(m)
 }
 
@@ -84,7 +84,7 @@ If the lock is acquired, all threads that attempt to acquire a lock will be
 blocked from entering any critical sections associated with the same mutex,
 until the lock is released.
 */
-mutex_try_lock :: proc "contextless" (m: ^Mutex) -> bool {
+mutex_try_lock :: proc(m: ^Mutex) -> bool {
 	return _mutex_try_lock(m)
 }
 
@@ -109,7 +109,7 @@ section by putting the function inside the `if` statement.
 	}
 */
 @(deferred_in=mutex_unlock)
-mutex_guard :: proc "contextless" (m: ^Mutex) -> bool {
+mutex_guard :: proc(m: ^Mutex) -> bool {
 	mutex_lock(m)
 	return true
 }
@@ -162,7 +162,7 @@ After a lock has been acquired, any thread attempting to acquire any lock
 will be blocked from entering any critical sections associated with the same
 read-write mutex, until the exclusive lock is released.
 */
-rw_mutex_lock :: proc "contextless" (rw: ^RW_Mutex) {
+rw_mutex_lock :: proc(rw: ^RW_Mutex) {
 	_rw_mutex_lock(rw)
 }
 
@@ -175,7 +175,7 @@ read-write mutex.
 When the exclusive lock is released, all critical sections, associated with the
 same read-write mutex, become open to other threads.
 */
-rw_mutex_unlock :: proc "contextless" (rw: ^RW_Mutex) {
+rw_mutex_unlock :: proc(rw: ^RW_Mutex) {
 	_rw_mutex_unlock(rw)
 }
 
@@ -190,7 +190,7 @@ If the lock has been acquired, all threads attempting to acquire any lock
 will be blocked from entering any critical sections associated with the same
 read-write mutex, until the exclusive locked is released.
 */
-rw_mutex_try_lock :: proc "contextless" (rw: ^RW_Mutex) -> bool {
+rw_mutex_try_lock :: proc(rw: ^RW_Mutex) -> bool {
 	return _rw_mutex_try_lock(rw)
 }
 
@@ -206,7 +206,7 @@ exclusive lock will be blocked from entering any critical sections associated
 with the same read-write mutex, until all shared locks associated with the
 specified read-write mutex are released.
 */
-rw_mutex_shared_lock :: proc "contextless" (rw: ^RW_Mutex) {
+rw_mutex_shared_lock :: proc(rw: ^RW_Mutex) {
 	_rw_mutex_shared_lock(rw)
 }
 
@@ -217,7 +217,7 @@ This procedure releases shared lock on the specified read-write mutex. When all
 shared locks are released, all critical sections associated with the same
 read-write mutex become open to other threads.
 */
-rw_mutex_shared_unlock :: proc "contextless" (rw: ^RW_Mutex) {
+rw_mutex_shared_unlock :: proc(rw: ^RW_Mutex) {
 	_rw_mutex_shared_unlock(rw)
 }
 
@@ -232,7 +232,7 @@ If the shared lock has been acquired, it causes all threads attempting to
 acquire the exclusive lock to be blocked from entering any critical sections
 associated with the same read-write mutex, until all shared locks are released.
 */
-rw_mutex_try_shared_lock :: proc "contextless" (rw: ^RW_Mutex) -> bool {
+rw_mutex_try_shared_lock :: proc(rw: ^RW_Mutex) -> bool {
 	return _rw_mutex_try_shared_lock(rw)
 }
 
@@ -258,7 +258,7 @@ section by running this procedure inside an `if` statement.
 	}
 */
 @(deferred_in=rw_mutex_unlock)
-rw_mutex_guard :: proc "contextless" (m: ^RW_Mutex) -> bool {
+rw_mutex_guard :: proc(m: ^RW_Mutex) -> bool {
 	rw_mutex_lock(m)
 	return true
 }
@@ -285,7 +285,7 @@ section by running this procedure inside an `if` statement.
 	}
 */
 @(deferred_in=rw_mutex_shared_unlock)
-rw_mutex_shared_guard :: proc "contextless" (m: ^RW_Mutex) -> bool {
+rw_mutex_shared_guard :: proc(m: ^RW_Mutex) -> bool {
 	rw_mutex_shared_lock(m)
 	return true
 }
@@ -328,7 +328,7 @@ When the lock is acquired, all other threads attempting to acquire a lock will
 be blocked from entering any critical sections associated with the same mutex,
 until the lock is released.
 */
-recursive_mutex_lock :: proc "contextless" (m: ^Recursive_Mutex) {
+recursive_mutex_lock :: proc(m: ^Recursive_Mutex) {
 	_recursive_mutex_lock(m)
 }
 
@@ -339,7 +339,7 @@ This procedure releases a lock on the specified recursive mutex. It also causes
 the critical sections associated with the same mutex, to become open for other
 threads for entering.
 */
-recursive_mutex_unlock :: proc "contextless" (m: ^Recursive_Mutex) {
+recursive_mutex_unlock :: proc(m: ^Recursive_Mutex) {
 	_recursive_mutex_unlock(m)
 }
 
@@ -354,7 +354,7 @@ If the lock is acquired, all other threads attempting to obtain a lock will be
 blocked from entering any critical sections associated with the same mutex,
 until the lock is released.
 */
-recursive_mutex_try_lock :: proc "contextless" (m: ^Recursive_Mutex) -> bool {
+recursive_mutex_try_lock :: proc(m: ^Recursive_Mutex) -> bool {
 	return _recursive_mutex_try_lock(m)
 }
 
@@ -380,7 +380,7 @@ section by calling this procedure inside an `if` statement.
 	}
 */
 @(deferred_in=recursive_mutex_unlock)
-recursive_mutex_guard :: proc "contextless" (m: ^Recursive_Mutex) -> bool {
+recursive_mutex_guard :: proc(m: ^Recursive_Mutex) -> bool {
 	recursive_mutex_lock(m)
 	return true
 }
@@ -430,7 +430,7 @@ The mutex must be held by the calling thread, before calling the procedure.
 **Note**: This procedure can return on a spurious wake-up, even if the condition
 variable was not signalled by a thread.
 */
-cond_wait :: proc "contextless" (c: ^Cond, m: ^Mutex) {
+cond_wait :: proc(c: ^Cond, m: ^Mutex) {
 	_cond_wait(c, m)
 }
 
@@ -448,7 +448,7 @@ If the timeout was reached, this procedure returns `false`. Otherwise it returns
 
 Before this procedure is called the mutex must be held by the calling thread.
 */
-cond_wait_with_timeout :: proc "contextless" (c: ^Cond, m: ^Mutex, duration: time.Duration) -> bool {
+cond_wait_with_timeout :: proc(c: ^Cond, m: ^Mutex, duration: time.Duration) -> bool {
 	if duration <= 0 {
 		return false
 	}
@@ -461,7 +461,7 @@ Wake up one thread that waits on a condition variable.
 This procedure causes exactly one thread waiting on the condition variable to
 wake up.
 */
-cond_signal :: proc "contextless" (c: ^Cond) {
+cond_signal :: proc(c: ^Cond) {
 	_cond_signal(c)
 }
 
@@ -470,7 +470,7 @@ Wake up all threads that wait on a condition variable.
 
 This procedure causes all threads waiting on the condition variable to wake up.
 */
-cond_broadcast :: proc "contextless" (c: ^Cond) {
+cond_broadcast :: proc(c: ^Cond) {
 	_cond_broadcast(c)
 }
 
@@ -505,7 +505,7 @@ This procedure increments the internal counter of the semaphore. If any of the
 threads were waiting on the semaphore, up to `count` of threads will continue
 the execution and enter the critical section.
 */
-sema_post :: proc "contextless" (s: ^Sema, count := 1) {
+sema_post :: proc(s: ^Sema, count := 1) {
 	_sema_post(s, count)
 }
 
@@ -516,7 +516,7 @@ This procedure blocks the execution of the current thread, until the semaphore
 counter is non-zero, and atomically decrements it by one, once the wait has
 ended.
 */
-sema_wait :: proc "contextless" (s: ^Sema) {
+sema_wait :: proc(s: ^Sema) {
 	_sema_wait(s)
 }
 
@@ -528,7 +528,7 @@ counter is non-zero, and if so atomically decrements it by one, once the wait
 has ended. If the specified timeout is reached, the function returns `false`,
 otherwise it returns `true`.
 */
-sema_wait_with_timeout :: proc "contextless" (s: ^Sema, duration: time.Duration) -> bool {
+sema_wait_with_timeout :: proc(s: ^Sema, duration: time.Duration) -> bool {
 	return _sema_wait_with_timeout(s, duration)
 }
 
@@ -554,7 +554,7 @@ If the value of the futex is `expected`, this procedure blocks the execution of
 the current thread, until the futex is woken up, or until a spurious wakeup
 occurs.
 */
-futex_wait :: proc "contextless" (f: ^Futex, expected: u32) {
+futex_wait :: proc(f: ^Futex, expected: u32) {
 	if u32(atomic_load_explicit(f, .Acquire)) != expected {
 		return
 	}
@@ -572,7 +572,7 @@ until a spurious wakeup occurs.
 
 This procedure returns `false` if the timeout was reached, `true` otherwise.
 */
-futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, duration: time.Duration) -> bool {
+futex_wait_with_timeout :: proc(f: ^Futex, expected: u32, duration: time.Duration) -> bool {
 	if u32(atomic_load_explicit(f, .Acquire)) != expected {
 		return true
 	}
@@ -586,13 +586,13 @@ futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, duratio
 /*
 Wake up a single thread waiting on a futex.
 */
-futex_signal :: proc "contextless" (f: ^Futex) {
+futex_signal :: proc(f: ^Futex) {
 	_futex_signal(f)
 }
 
 /*
 Wake up multiple threads waiting on a futex.
 */
-futex_broadcast :: proc "contextless" (f: ^Futex) {
+futex_broadcast :: proc(f: ^Futex) {
 	_futex_broadcast(f)
 }

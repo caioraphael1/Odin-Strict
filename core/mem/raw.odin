@@ -100,7 +100,7 @@ Create a value of the any type.
 This procedure creates a value with type `any` that points to an object with
 typeid `id` located at an address specified by `data`.
 */
-make_any :: proc "contextless" (data: rawptr, id: typeid) -> any {
+make_any :: proc(data: rawptr, id: typeid) -> any {
 	return transmute(any)Raw_Any{data, id}
 }
 

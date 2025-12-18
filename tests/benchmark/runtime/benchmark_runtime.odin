@@ -26,7 +26,7 @@ sizes := [?]int {
 
 // These are the normal, unoptimized algorithms.
 
-plain_memory_equal :: proc "contextless" (x, y: rawptr, n: int) -> bool {
+plain_memory_equal :: proc(x, y: rawptr, n: int) -> bool {
 	switch {
 	case n == 0: return true
 	case x == y: return true
@@ -42,7 +42,7 @@ plain_memory_equal :: proc "contextless" (x, y: rawptr, n: int) -> bool {
 	return true
 }
 
-plain_memory_compare :: proc "contextless" (a, b: rawptr, n: int) -> int #no_bounds_check {
+plain_memory_compare :: proc(a, b: rawptr, n: int) -> int #no_bounds_check {
 	switch {
 	case a == b:   return 0
 	case a == nil: return -1
@@ -86,7 +86,7 @@ plain_memory_compare :: proc "contextless" (a, b: rawptr, n: int) -> int #no_bou
 	return 0
 }
 
-plain_memory_compare_zero :: proc "contextless" (a: rawptr, n: int) -> int #no_bounds_check {
+plain_memory_compare_zero :: proc(a: rawptr, n: int) -> int #no_bounds_check {
 	x := uintptr(a)
 	n := uintptr(n)
 
@@ -120,7 +120,7 @@ plain_memory_compare_zero :: proc "contextless" (a: rawptr, n: int) -> int #no_b
 	return 0
 }
 
-run_trial_size_cmp :: proc(p: proc "contextless" (rawptr, rawptr, int) -> $R, size: int, idx: int, runs: int, loc := #caller_location) -> (timing: time.Duration) {
+run_trial_size_cmp :: proc(p: proc(rawptr, rawptr, int) -> $R, size: int, idx: int, runs: int, loc := #caller_location) -> (timing: time.Duration) {
 	left  := make([]u8, size)
 	right := make([]u8, size)
 	defer {
@@ -152,7 +152,7 @@ run_trial_size_cmp :: proc(p: proc "contextless" (rawptr, rawptr, int) -> $R, si
 	return
 }
 
-run_trial_size_zero :: proc(p: proc "contextless" (rawptr, int) -> int, size: int, idx: int, runs: int, loc := #caller_location) -> (timing: time.Duration) {
+run_trial_size_zero :: proc(p: proc(rawptr, int) -> int, size: int, idx: int, runs: int, loc := #caller_location) -> (timing: time.Duration) {
 	data := make([]u8, size)
 	defer delete(data)
 

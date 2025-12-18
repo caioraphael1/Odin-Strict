@@ -6,7 +6,7 @@ ERR_HW_NOT_SUPPORTED :: "crypto/aes: hardware implementation unsupported"
 
 // is_hardware_accelerated returns true iff hardware accelerated AES
 // is supported.
-is_hardware_accelerated :: proc "contextless" () -> bool {
+is_hardware_accelerated :: proc() -> bool {
 	return false
 }
 

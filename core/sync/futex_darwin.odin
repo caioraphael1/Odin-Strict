@@ -27,11 +27,11 @@ EINTR     :: -4
 EFAULT    :: -14
 ETIMEDOUT :: -60
 
-_futex_wait :: proc "contextless" (f: ^Futex, expected: u32) -> bool {
+_futex_wait :: proc(f: ^Futex, expected: u32) -> bool {
 	return _futex_wait_with_timeout(f, expected, 0)
 }
 
-_futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, duration: time.Duration) -> bool {
+_futex_wait_with_timeout :: proc(f: ^Futex, expected: u32, duration: time.Duration) -> bool {
 	when darwin.WAIT_ON_ADDRESS_AVAILABLE {
 		s: i32
 		if duration > 0 {
@@ -79,7 +79,7 @@ _futex_wait_with_timeout :: proc "contextless" (f: ^Futex, expected: u32, durati
 	}
 }
 
-_futex_signal :: proc "contextless" (f: ^Futex) {
+_futex_signal :: proc(f: ^Futex) {
 	when darwin.WAIT_ON_ADDRESS_AVAILABLE {
 		loop: for {
 			s := darwin.os_sync_wake_by_address_any(f, size_of(Futex), {})
@@ -115,7 +115,7 @@ _futex_signal :: proc "contextless" (f: ^Futex) {
 	}
 }
 
-_futex_broadcast :: proc "contextless" (f: ^Futex) {
+_futex_broadcast :: proc(f: ^Futex) {
 	when darwin.WAIT_ON_ADDRESS_AVAILABLE {
 		loop: for {
 			s := darwin.os_sync_wake_by_address_all(f, size_of(Futex), {})

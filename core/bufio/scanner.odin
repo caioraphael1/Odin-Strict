@@ -278,7 +278,7 @@ scan_runes :: proc(data: []byte, at_eof: bool) -> (advance: int, token: []byte, 
 // scan_words is a splitting procedure that returns each Unicode-space-separated word of text, excluding the surrounded spaces.
 // It will never return return an empty string.
 scan_words :: proc(data: []byte, at_eof: bool) -> (advance: int, token: []byte, err: Scanner_Error, final_token: bool) {
-	is_space :: proc "contextless" (r:  rune) -> bool {
+	is_space :: proc(r:  rune) -> bool {
 		switch r {
 		// lower ones
 		case ' ', '\t', '\n', '\v', '\f', '\r':
@@ -327,7 +327,7 @@ scan_words :: proc(data: []byte, at_eof: bool) -> (advance: int, token: []byte, 
 // scan_lines is a splitting procedure that returns each line of text stripping of any trailing newline and an optional preceding carriage return (\r?\n).
 // A new line is allowed to be empty.
 scan_lines :: proc(data: []byte, at_eof: bool) -> (advance: int, token: []byte, err: Scanner_Error, final_token: bool) {
-	trim_carriage_return :: proc "contextless" (data: []byte) -> []byte {
+	trim_carriage_return :: proc(data: []byte) -> []byte {
 		if len(data) > 0 && data[len(data)-1] == '\r' {
 			return data[0:len(data)-1]
 		}

@@ -727,12 +727,12 @@ foreign xa2 {
  **************************************************************************/
 
 // Calculate the argument to SetVolume from a decibel value
-DecibelsToAmplitudeRatio :: #force_inline proc "contextless" (Decibels: f32) -> f32 {
+DecibelsToAmplitudeRatio :: #force_inline proc(Decibels: f32) -> f32 {
 	return math.pow_f32(10.0, Decibels / 20.0)
 }
 
 // Recover a volume in decibels from an amplitude factor
-AmplitudeRatioToDecibels :: #force_inline proc "contextless" (Volume: f32) -> f32 {
+AmplitudeRatioToDecibels :: #force_inline proc(Volume: f32) -> f32 {
 	if Volume == 0 {
 		return min(f32)
 	}
@@ -740,14 +740,14 @@ AmplitudeRatioToDecibels :: #force_inline proc "contextless" (Volume: f32) -> f3
 }
 
 // Calculate the argument to SetFrequencyRatio from a semitone value
-SemitonesToFrequencyRatio :: #force_inline proc "contextless" (Semitones: f32) -> f32 {
+SemitonesToFrequencyRatio :: #force_inline proc(Semitones: f32) -> f32 {
 	// FrequencyRatio = 2 ^ Octaves
 	//                = 2 ^ (Semitones / 12)
 	return math.pow_f32(2.0, Semitones / 12.0)
 }
 
 // Recover a pitch in semitones from a frequency ratio
-FrequencyRatioToSemitones :: #force_inline proc "contextless" (FrequencyRatio: f32) -> f32 {
+FrequencyRatioToSemitones :: #force_inline proc(FrequencyRatio: f32) -> f32 {
 	// Semitones = 12 * log2(FrequencyRatio)
 	//           = 12 * log2(10) * log10(FrequencyRatio)
 	return 12.0 * math.log2_f32(FrequencyRatio)
@@ -757,7 +757,7 @@ FrequencyRatioToSemitones :: #force_inline proc "contextless" (FrequencyRatio: f
 // Use CutoffFrequencyToOnePoleCoefficient() for one-pole filter types.
 // Note that the highest CutoffFrequency supported is SampleRate/6.
 // Higher values of CutoffFrequency will return MAX_FILTER_FREQUENCY.
-CutoffFrequencyToRadians :: #force_inline proc "contextless" (CutoffFrequency: f32, SampleRate: u32) -> f32 {
+CutoffFrequencyToRadians :: #force_inline proc(CutoffFrequency: f32, SampleRate: u32) -> f32 {
 	if u32(CutoffFrequency * 6.0) >= SampleRate {
 		return MAX_FILTER_FREQUENCY
 	}
@@ -765,14 +765,14 @@ CutoffFrequencyToRadians :: #force_inline proc "contextless" (CutoffFrequency: f
 }
 
 // Convert from radian frequencies back to absolute frequencies in Hertz
-RadiansToCutoffFrequency :: #force_inline proc "contextless" (Radians: f32, SampleRate: f32) -> f32 {
+RadiansToCutoffFrequency :: #force_inline proc(Radians: f32, SampleRate: f32) -> f32 {
 	return SampleRate * math.asin_f32(Radians / 2.0) / math.PI
 }
 
 // Convert from filter cutoff frequencies expressed in Hertz to the filter coefficients used with FILTER_PARAMETERS.Frequency,
 // LowPassOnePoleFilter and HighPassOnePoleFilter filter types only.
 // Use CutoffFrequencyToRadians() for state-variable filter types.
-CutoffFrequencyToOnePoleCoefficient :: #force_inline proc "contextless" (CutoffFrequency: f32, SampleRate: u32) -> f32 {
+CutoffFrequencyToOnePoleCoefficient :: #force_inline proc(CutoffFrequency: f32, SampleRate: u32) -> f32 {
 	if u32(CutoffFrequency) >= SampleRate {
 		return MAX_FILTER_FREQUENCY
 	}

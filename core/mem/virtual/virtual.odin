@@ -16,31 +16,31 @@ platform_memory_init :: proc() {
 Allocator_Error :: mem.Allocator_Error
 
 @(require_results, no_sanitize_address)
-reserve :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
+reserve :: proc(size: uint) -> (data: []byte, err: Allocator_Error) {
 	return _reserve(size)
 }
 
 @(no_sanitize_address)
-commit :: proc "contextless" (data: rawptr, size: uint) -> Allocator_Error {
+commit :: proc(data: rawptr, size: uint) -> Allocator_Error {
 	// sanitizer.address_unpoison(data, size)
 	return _commit(data, size)
 }
 
 @(require_results, no_sanitize_address)
-reserve_and_commit :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
+reserve_and_commit :: proc(size: uint) -> (data: []byte, err: Allocator_Error) {
 	data = reserve(size) or_return
 	commit(raw_data(data), size) or_return
 	return
 }
 
 @(no_sanitize_address)
-decommit :: proc "contextless" (data: rawptr, size: uint) {
+decommit :: proc(data: rawptr, size: uint) {
 	// sanitizer.address_poison(data, size)
 	_decommit(data, size)
 }
 
 @(no_sanitize_address)
-release :: proc "contextless" (data: rawptr, size: uint) {
+release :: proc(data: rawptr, size: uint) {
 	// sanitizer.address_unpoison(data, size)
 	_release(data, size)
 }
@@ -54,7 +54,7 @@ Protect_Flags :: distinct bit_set[Protect_Flag; u32]
 Protect_No_Access :: Protect_Flags{}
 
 @(no_sanitize_address)
-protect :: proc "contextless" (data: rawptr, size: uint, flags: Protect_Flags) -> bool {
+protect :: proc(data: rawptr, size: uint, flags: Protect_Flags) -> bool {
 	return _protect(data, size, flags)
 }
 
@@ -72,7 +72,7 @@ Memory_Block_Flags :: distinct bit_set[Memory_Block_Flag; u32]
 
 
 @(private="file", require_results, no_sanitize_address)
-align_formula :: #force_inline proc "contextless" (size, align: uint) -> uint {
+align_formula :: #force_inline proc(size, align: uint) -> uint {
 	result := size + align-1
 	return result - result%align
 }
@@ -124,7 +124,7 @@ memory_block_alloc :: proc(committed, reserved: uint, alignment: uint = 0, flags
 @(require_results, no_sanitize_address)
 alloc_from_memory_block :: proc(block: ^Memory_Block, min_size, alignment: uint, default_commit_size: uint = 0) -> (data: []byte, err: Allocator_Error) {
 	@(no_sanitize_address)
-	calc_alignment_offset :: proc "contextless" (block: ^Memory_Block, alignment: uintptr) -> uint {
+	calc_alignment_offset :: proc(block: ^Memory_Block, alignment: uintptr) -> uint {
 		alignment_offset := uint(0)
 		ptr := uintptr(block.base[block.used:])
 		mask := alignment-1
@@ -194,7 +194,7 @@ memory_block_dealloc :: proc(block_to_free: ^Memory_Block) {
 
 
 @(private, require_results)
-safe_add :: #force_inline proc "contextless" (x, y: uint) -> (uint, bool) {
+safe_add :: #force_inline proc(x, y: uint) -> (uint, bool) {
 	z, did_overflow := intrinsics.overflow_add(x, y)
 	return z, !did_overflow
 }

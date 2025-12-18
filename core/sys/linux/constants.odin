@@ -68,37 +68,37 @@ S_IFREG  :: Mode{.IFREG}
 /*
 	Checks the Mode bits to see if the file is a named pipe (FIFO).
 */
-S_ISFIFO :: #force_inline proc "contextless" (m: Mode) -> bool {return (S_IFIFO  == (m & S_IFMT))}
+S_ISFIFO :: #force_inline proc(m: Mode) -> bool {return (S_IFIFO  == (m & S_IFMT))}
 
 /*
 	Check the Mode bits to see if the file is a character device.
 */
-S_ISCHR  :: #force_inline proc "contextless" (m: Mode) -> bool {return (S_IFCHR  == (m & S_IFMT))}
+S_ISCHR  :: #force_inline proc(m: Mode) -> bool {return (S_IFCHR  == (m & S_IFMT))}
 
 /*	
 	Check the Mode bits to see if the file is a directory.
 */
-S_ISDIR  :: #force_inline proc "contextless" (m: Mode) -> bool {return (S_IFDIR  == (m & S_IFMT))}
+S_ISDIR  :: #force_inline proc(m: Mode) -> bool {return (S_IFDIR  == (m & S_IFMT))}
 
 /*
 	Check the Mode bits to see if the file is a register.
 */
-S_ISREG  :: #force_inline proc "contextless" (m: Mode) -> bool {return (S_IFREG  == (m & S_IFMT))}
+S_ISREG  :: #force_inline proc(m: Mode) -> bool {return (S_IFREG  == (m & S_IFMT))}
 
 /*
 	Check the Mode bits to see if the file is a socket.
 */
-S_ISSOCK :: #force_inline proc "contextless" (m: Mode) -> bool {return (S_IFSOCK == (m & S_IFMT))}
+S_ISSOCK :: #force_inline proc(m: Mode) -> bool {return (S_IFSOCK == (m & S_IFMT))}
 
 /*
 	Check the Mode bits to see if the file is a symlink.
 */
-S_ISLNK  :: #force_inline proc "contextless" (m: Mode) -> bool {return (S_IFLNK  == (m & S_IFMT))}
+S_ISLNK  :: #force_inline proc(m: Mode) -> bool {return (S_IFLNK  == (m & S_IFMT))}
 
 /*
 	Check the Mode bits to see if the file is a block device.
 */
-S_ISBLK  :: #force_inline proc "contextless" (m: Mode) -> bool {return (S_IFBLK  == (m & S_IFMT))}
+S_ISBLK  :: #force_inline proc(m: Mode) -> bool {return (S_IFBLK  == (m & S_IFMT))}
 
 /*
 	For access.2 syscall family: instruct to check if the file exists.

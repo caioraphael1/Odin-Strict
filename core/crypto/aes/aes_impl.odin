@@ -40,6 +40,6 @@ init_impl :: proc(ctx: ^Context_Impl, key: []byte, impl: Implementation) {
 }
 
 @(private)
-reset_impl :: proc "contextless" (ctx: ^Context_Impl) {
+reset_impl :: proc(ctx: ^Context_Impl) {
 	mem.zero_explicit(ctx, size_of(Context_Impl))
 }

@@ -84,7 +84,7 @@ BLAKE2B_IV := [8]u64 {
 	0x1f83d9abfb41bd6b, 0x5be0cd19137e2179,
 }
 
-init :: proc "contextless" (ctx: ^$T, cfg: ^Blake2_Config) {
+init :: proc(ctx: ^$T, cfg: ^Blake2_Config) {
 	when T == Blake2s_Context {
 		max_size :: BLAKE2S_SIZE
 	} else when T == Blake2b_Context {
@@ -166,7 +166,7 @@ init :: proc "contextless" (ctx: ^$T, cfg: ^Blake2_Config) {
 	ctx.is_initialized = true
 }
 
-update :: proc "contextless" (ctx: ^$T, p: []byte) {
+update :: proc(ctx: ^$T, p: []byte) {
 	ensure(ctx.is_initialized)
 
 	p := p
@@ -194,7 +194,7 @@ update :: proc "contextless" (ctx: ^$T, p: []byte) {
 	ctx.nx += copy(ctx.x[ctx.nx:], p)
 }
 
-final :: proc "contextless" (ctx: ^$T, hash: []byte, finalize_clone: bool = false) {
+final :: proc(ctx: ^$T, hash: []byte, finalize_clone: bool = false) {
 	ensure(ctx.is_initialized)
 
 	ctx := ctx
@@ -213,11 +213,11 @@ final :: proc "contextless" (ctx: ^$T, hash: []byte, finalize_clone: bool = fals
 	}
 }
 
-clone :: proc "contextless" (ctx, other: ^$T) {
+clone :: proc(ctx, other: ^$T) {
 	ctx^ = other^
 }
 
-reset :: proc "contextless" (ctx: ^$T) {
+reset :: proc(ctx: ^$T) {
 	if !ctx.is_initialized {
 		return
 	}
@@ -226,7 +226,7 @@ reset :: proc "contextless" (ctx: ^$T) {
 }
 
 @(private)
-blake2s_final :: proc "contextless" (ctx: ^Blake2s_Context, hash: []byte) {
+blake2s_final :: proc(ctx: ^Blake2s_Context, hash: []byte) {
 	if ctx.is_keyed {
 		for i := 0; i < len(ctx.padded_key); i += 1 {
 			ctx.padded_key[i] = 0
@@ -254,7 +254,7 @@ blake2s_final :: proc "contextless" (ctx: ^Blake2s_Context, hash: []byte) {
 }
 
 @(private)
-blake2b_final :: proc "contextless" (ctx: ^Blake2b_Context, hash: []byte) {
+blake2b_final :: proc(ctx: ^Blake2b_Context, hash: []byte) {
 	if ctx.is_keyed {
 		for i := 0; i < len(ctx.padded_key); i += 1 {
 			ctx.padded_key[i] = 0
@@ -282,7 +282,7 @@ blake2b_final :: proc "contextless" (ctx: ^Blake2b_Context, hash: []byte) {
 }
 
 @(private)
-blocks :: proc "contextless" (ctx: ^$T, p: []byte) {
+blocks :: proc(ctx: ^$T, p: []byte) {
 	when T == Blake2s_Context {
 		blake2s_blocks(ctx, p)
 	} else when T == Blake2b_Context {
@@ -291,7 +291,7 @@ blocks :: proc "contextless" (ctx: ^$T, p: []byte) {
 }
 
 @(private)
-blake2s_blocks :: #force_inline proc "contextless" (ctx: ^Blake2s_Context, p: []byte) {
+blake2s_blocks :: #force_inline proc(ctx: ^Blake2s_Context, p: []byte) {
 	h0, h1, h2, h3, h4, h5, h6, h7 :=
 		ctx.h[0], ctx.h[1], ctx.h[2], ctx.h[3], ctx.h[4], ctx.h[5], ctx.h[6], ctx.h[7]
 	p := p
@@ -1471,7 +1471,7 @@ blake2s_blocks :: #force_inline proc "contextless" (ctx: ^Blake2s_Context, p: []
 }
 
 @(private)
-blake2b_blocks :: #force_inline proc "contextless" (ctx: ^Blake2b_Context, p: []byte) {
+blake2b_blocks :: #force_inline proc(ctx: ^Blake2b_Context, p: []byte) {
 	h0, h1, h2, h3, h4, h5, h6, h7 :=
 		ctx.h[0], ctx.h[1], ctx.h[2], ctx.h[3], ctx.h[4], ctx.h[5], ctx.h[6], ctx.h[7]
 	p := p

@@ -21,7 +21,7 @@ Slice :: struct($Type: typeid, $Backing: typeid)
 
 
 @(require_results)
-pointer_get :: proc "contextless" (p: ^$P/Pointer($T, $B)) -> T {
+pointer_get :: proc(p: ^$P/Pointer($T, $B)) -> T {
 	if p.offset == 0 {
 		return nil
 	}
@@ -29,7 +29,7 @@ pointer_get :: proc "contextless" (p: ^$P/Pointer($T, $B)) -> T {
 	return (T)(ptr)
 }
 
-pointer_set :: proc "contextless" (p: ^$P/Pointer($T, $B), ptr: T) {
+pointer_set :: proc(p: ^$P/Pointer($T, $B), ptr: T) {
 	if ptr == nil {
 		p.offset = 0
 	} else {
@@ -38,7 +38,7 @@ pointer_set :: proc "contextless" (p: ^$P/Pointer($T, $B), ptr: T) {
 }
 
 @(require_results)
-slice_get :: proc "contextless" (p: ^$S/Slice($T/[]$E, $B)) -> (slice: T) {
+slice_get :: proc(p: ^$S/Slice($T/[]$E, $B)) -> (slice: T) {
 	if p.offset == 0 {
 		when size_of(E) == 0 {
 			slice = T(([^]E)(nil)[:p.len])
@@ -50,7 +50,7 @@ slice_get :: proc "contextless" (p: ^$S/Slice($T/[]$E, $B)) -> (slice: T) {
 	return
 }
 
-slice_set :: proc "contextless" (p: ^$S/Slice($T, $B), slice: T) {
+slice_set :: proc(p: ^$S/Slice($T, $B), slice: T) {
 	if slice == nil {
 		p.offset, p.len = 0, 0
 	} else {
@@ -80,7 +80,7 @@ Set_Safe_Error :: enum {
 
 
 @(require_results)
-pointer_set_safe :: proc "contextless" (p: ^$P/Pointer($T, $B), ptr: T) -> Set_Safe_Error {
+pointer_set_safe :: proc(p: ^$P/Pointer($T, $B), ptr: T) -> Set_Safe_Error {
 	if ptr == nil {
 		p.offset = 0
 	} else {
@@ -113,7 +113,7 @@ pointer_set_safe :: proc "contextless" (p: ^$P/Pointer($T, $B), ptr: T) -> Set_S
 }
 
 @(require_results)
-slice_set_safe :: proc "contextless" (p: ^$S/Slice($T, $B), slice: T) -> Set_Safe_Error {
+slice_set_safe :: proc(p: ^$S/Slice($T, $B), slice: T) -> Set_Safe_Error {
 	if slice == nil {
 		p.offset, p.len = 0, 0
 	} else {

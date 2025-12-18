@@ -24,7 +24,7 @@ package aes_ct64
 
 import "base:intrinsics"
 
-inv_sub_bytes :: proc "contextless" (q: ^[8]u64) {
+inv_sub_bytes :: proc(q: ^[8]u64) {
 	// AES S-box is:
 	//   S(x) = A(I(x)) ^ 0x63
 	// where I() is inversion in GF(256), and A() is a linear
@@ -79,7 +79,7 @@ inv_sub_bytes :: proc "contextless" (q: ^[8]u64) {
 	q[0] = q2 ~ q5 ~ q7
 }
 
-inv_shift_rows :: proc "contextless" (q: ^[8]u64) {
+inv_shift_rows :: proc(q: ^[8]u64) {
 	for x, i in q {
 		q[i] =
 			(x & 0x000000000000FFFF) |
@@ -92,7 +92,7 @@ inv_shift_rows :: proc "contextless" (q: ^[8]u64) {
 	}
 }
 
-inv_mix_columns :: proc "contextless" (q: ^[8]u64) {
+inv_mix_columns :: proc(q: ^[8]u64) {
 	q0 := q[0]
 	q1 := q[1]
 	q2 := q[2]
@@ -121,7 +121,7 @@ inv_mix_columns :: proc "contextless" (q: ^[8]u64) {
 }
 
 @(private)
-_decrypt :: proc "contextless" (q: ^[8]u64, skey: []u64, num_rounds: int) {
+_decrypt :: proc(q: ^[8]u64, skey: []u64, num_rounds: int) {
 	add_round_key(q, skey[num_rounds << 3:])
 	for u := num_rounds - 1; u > 0; u -= 1 {
 		inv_shift_rows(q)

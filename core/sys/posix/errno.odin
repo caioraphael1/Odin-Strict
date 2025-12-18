@@ -11,11 +11,11 @@ EILSEQ :: libc.EILSEQ
 ERANGE :: libc.ERANGE
 
 @(no_instrumentation)
-get_errno :: #force_inline proc "contextless" () -> Errno {
+get_errno :: #force_inline proc() -> Errno {
 	return (^Errno)(libc.errno())^
 }
 
-set_errno :: #force_inline proc "contextless" (err: Errno) {
+set_errno :: #force_inline proc(err: Errno) {
 	libc.errno()^ = i32(err)
 }
 

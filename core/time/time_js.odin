@@ -6,14 +6,14 @@ foreign import "odin_env"
 
 _IS_SUPPORTED :: true
 
-_now :: proc "contextless" () -> Time {
+_now :: proc() -> Time {
 	foreign odin_env {
 		time_now :: proc "contextless" () -> i64 ---
 	}
 	return Time{time_now()*1e6}
 }
 
-_sleep :: proc "contextless" (d: Duration) {
+_sleep :: proc(d: Duration) {
 	foreign odin_env {
 		time_sleep :: proc "contextless" (ms: u32) ---
 	}
@@ -22,12 +22,12 @@ _sleep :: proc "contextless" (d: Duration) {
 	}
 }
 
-_tick_now :: proc "contextless" () -> Tick {
+_tick_now :: proc() -> Tick {
 	foreign odin_env {
 		tick_now :: proc "contextless" () -> f64 ---
 	}
 	return Tick{i64(tick_now()*1e6)}
 }
 
-_yield :: proc "contextless" () {
+_yield :: proc() {
 }

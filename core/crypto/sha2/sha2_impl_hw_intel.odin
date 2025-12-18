@@ -51,7 +51,7 @@ K_15 :: simd.u64x2{0xa4506ceb90befffa, 0xc67178f2bef9a3f7}
 
 // is_hardware_accelerated_256 returns true iff hardware accelerated
 // SHA-224/SHA-256 is supported.
-is_hardware_accelerated_256 :: proc "contextless" () -> bool {
+is_hardware_accelerated_256 :: proc() -> bool {
 	features, ok := info.cpu.features.?
 	if !ok {
 		return false
@@ -67,7 +67,7 @@ is_hardware_accelerated_256 :: proc "contextless" () -> bool {
 }
 
 @(private, enable_target_feature="sse2,ssse3,sse4.1,sha")
-sha256_transf_hw :: proc "contextless" (ctx: ^Context_256, data: []byte) #no_bounds_check {
+sha256_transf_hw :: proc(ctx: ^Context_256, data: []byte) #no_bounds_check {
 	// Load the state
 	tmp := intrinsics.unaligned_load((^x86.__m128i)(&ctx.h[0]))
 	state_1 := intrinsics.unaligned_load((^x86.__m128i)(&ctx.h[4]))

@@ -15,7 +15,7 @@ Obtain an ordinal from a date.
 This procedure converts the specified date into an ordinal. If the specified
 date is not a valid date, an error is returned.
 */
-date_to_ordinal :: proc "contextless" (date: Date) -> (ordinal: Ordinal, err: Error) {
+date_to_ordinal :: proc(date: Date) -> (ordinal: Ordinal, err: Error) {
 	validate(date) or_return
 	return unsafe_date_to_ordinal(date), .None
 }
@@ -27,7 +27,7 @@ This procedure converts the specified date, provided by its individual
 components, into an ordinal. If the specified date is not a valid date, an error
 is returned.
 */
-components_to_ordinal :: proc "contextless" (#any_int year, #any_int month, #any_int day: i64) -> (ordinal: Ordinal, err: Error) {
+components_to_ordinal :: proc(#any_int year, #any_int month, #any_int day: i64) -> (ordinal: Ordinal, err: Error) {
 	validate(year, month, day) or_return
 	return unsafe_date_to_ordinal({year, i8(month), i8(day)}), .None
 }
@@ -38,7 +38,7 @@ Obtain date using an Ordinal.
 This provedure converts the specified ordinal into a date. If the ordinal is not
 a valid ordinal, an error is returned.
 */
-ordinal_to_date :: proc "contextless" (ordinal: Ordinal) -> (date: Date, err: Error) {
+ordinal_to_date :: proc(ordinal: Ordinal) -> (date: Date, err: Error) {
 	validate(ordinal) or_return
 	return unsafe_ordinal_to_date(ordinal), .None
 }
@@ -50,7 +50,7 @@ This procedure converts date components, specified by a year, a month and a day,
 into a date object. If the provided date components don't represent a valid
 date, an error is returned.
 */
-components_to_date :: proc "contextless" (#any_int year, #any_int month, #any_int day: i64) -> (date: Date, err: Error) {
+components_to_date :: proc(#any_int year, #any_int month, #any_int day: i64) -> (date: Date, err: Error) {
 	validate(year, month, day) or_return
 	return Date{i64(year), i8(month), i8(day)}, .None
 }
@@ -62,7 +62,7 @@ This procedure converts time components, specified by an hour, a minute, a secon
 and nanoseconds, into a time object. If the provided time components don't
 represent a valid time, an error is returned.
 */
-components_to_time :: proc "contextless" (#any_int hour, #any_int minute, #any_int second: i64, #any_int nanos := i64(0)) -> (time: Time, err: Error) {
+components_to_time :: proc(#any_int hour, #any_int minute, #any_int second: i64, #any_int nanos := i64(0)) -> (time: Time, err: Error) {
 	validate(hour, minute, second, nanos) or_return
 	return Time{i8(hour), i8(minute), i8(second), i32(nanos)}, .None
 }
@@ -74,7 +74,7 @@ This procedure converts date components and time components into a datetime obje
 If the provided date components or time components don't represent a valid
 datetime, an error is returned.
 */
-components_to_datetime :: proc "contextless" (#any_int year, #any_int month, #any_int day, #any_int hour, #any_int minute, #any_int second: i64, #any_int nanos := i64(0)) -> (datetime: DateTime, err: Error) {
+components_to_datetime :: proc(#any_int year, #any_int month, #any_int day, #any_int hour, #any_int minute, #any_int second: i64, #any_int nanos := i64(0)) -> (datetime: DateTime, err: Error) {
 	date := components_to_date(year, month, day)            or_return
 	time := components_to_time(hour, minute, second, nanos) or_return
 	return {date, time, nil}, .None
@@ -87,7 +87,7 @@ This procedure converts the value of an ordinal into a datetime. Since the
 ordinal only has the amount of days, the resulting time in the datetime
 object will always have the time equal to `00:00:00.000`.
 */
-ordinal_to_datetime :: proc "contextless" (ordinal: Ordinal) -> (datetime: DateTime, err: Error) {
+ordinal_to_datetime :: proc(ordinal: Ordinal) -> (datetime: DateTime, err: Error) {
 	d := ordinal_to_date(ordinal) or_return
 	return {Date(d), {}, nil}, .None
 }
@@ -98,7 +98,7 @@ Calculate the weekday from an ordinal.
 This procedure takes the value of an ordinal and returns the day of week for
 that ordinal.
 */
-day_of_week :: proc "contextless" (ordinal: Ordinal) -> (day: Weekday) {
+day_of_week :: proc(ordinal: Ordinal) -> (day: Weekday) {
 	return Weekday(ordinal %% 7)
 }
 
@@ -109,7 +109,7 @@ This procedure calculates the difference between two dates `a - b`, and returns
 a delta between the two dates in `days`. If either `a` or `b` is not a valid
 date, an error is returned.
 */
-subtract_dates :: proc "contextless" (a, b: Date) -> (delta: Delta, err: Error) {
+subtract_dates :: proc(a, b: Date) -> (delta: Delta, err: Error) {
 	ord_a := date_to_ordinal(a) or_return
 	ord_b := date_to_ordinal(b) or_return
 
@@ -127,7 +127,7 @@ and the difference in nanoseconds.
 
 If either `a` or `b` is not a valid datetime, an error is returned.
 */
-subtract_datetimes :: proc "contextless" (a, b: DateTime) -> (delta: Delta, err: Error) {
+subtract_datetimes :: proc(a, b: DateTime) -> (delta: Delta, err: Error) {
 	ord_a := date_to_ordinal(a) or_return
 	ord_b := date_to_ordinal(b) or_return
 
@@ -144,7 +144,7 @@ subtract_datetimes :: proc "contextless" (a, b: DateTime) -> (delta: Delta, err:
 /*
 Calculate a difference between two deltas.
 */
-subtract_deltas :: proc "contextless" (a, b: Delta) -> (delta: Delta, err: Error) {
+subtract_deltas :: proc(a, b: Delta) -> (delta: Delta, err: Error) {
 	delta = Delta{a.days - b.days, a.seconds - b.seconds, a.nanos - b.nanos}
 	delta = normalize_delta(delta) or_return
 	return
@@ -162,7 +162,7 @@ This procedure adds the specified amount of days to a date and returns a new
 date. The new date would have happened the specified amount of days after the
 specified date.
 */
-add_days_to_date :: proc "contextless" (a: Date, days: i64) -> (date: Date, err: Error) {
+add_days_to_date :: proc(a: Date, days: i64) -> (date: Date, err: Error) {
 	ord := date_to_ordinal(a) or_return
 	ord += days
 	return ordinal_to_date(ord)
@@ -177,7 +177,7 @@ would have happened the time specified by `delta` after the specified date.
 **Note**: The delta is assumed to be normalized. That is, if it contains seconds
 or milliseconds, regardless of the amount only the days will be added.
 */
-add_delta_to_date :: proc "contextless" (a: Date, delta: Delta) -> (date: Date, err: Error) {
+add_delta_to_date :: proc(a: Date, delta: Delta) -> (date: Date, err: Error) {
 	ord := date_to_ordinal(a) or_return
 	// Because the input is a Date, we add only the days from the Delta.
 	ord += delta.days
@@ -191,7 +191,7 @@ This procedure adds a delta to a datetime, and returns a new datetime. The new
 datetime would have happened the time specified by `delta` after the specified
 datetime. 
 */
-add_delta_to_datetime :: proc "contextless" (a: DateTime, delta: Delta) -> (datetime: DateTime, err: Error) {
+add_delta_to_datetime :: proc(a: DateTime, delta: Delta) -> (datetime: DateTime, err: Error) {
 	days   := date_to_ordinal(a) or_return
 
 	a_seconds := i64(a.hour) * 3600 + i64(a.minute) * 60 + i64(a.second)
@@ -220,7 +220,7 @@ Obtain the day number in a year
 This procedure returns the number of the day in a year, starting from 1. If
 the date is not a valid date, an error is returned.
 */
-day_number :: proc "contextless" (date: Date) -> (day_number: i64, err: Error) {
+day_number :: proc(date: Date) -> (day_number: i64, err: Error) {
 	validate(date) or_return
 
 	ord := unsafe_date_to_ordinal(date)
@@ -235,7 +235,7 @@ This procedure returns the number of days between the specified date and
 December 31 of the same year. If the date is not a valid date, an error is
 returned.
 */
-days_remaining :: proc "contextless" (date: Date) -> (days_remaining: i64, err: Error) {
+days_remaining :: proc(date: Date) -> (days_remaining: i64, err: Error) {
 	// Alternative formulation `day_number` subtracted from 365 or 366 depending on leap year
 	validate(date) or_return
 	delta := sub(date, Date{date.year, 12, 31}) or_return
@@ -248,7 +248,7 @@ Obtain the last day of a given month on a given year.
 This procedure returns the amount of days in a specified month on a specified
 date. If the specified year or month is not valid, an error is returned.
 */
-last_day_of_month :: proc "contextless" (#any_int year: i64, #any_int month: i8) -> (day: i8, err: Error) {
+last_day_of_month :: proc(#any_int year: i64, #any_int month: i8) -> (day: i8, err: Error) {
 	// Not using formula 2.27 from the book. This is far simpler and gives the same answer.
 
 	validate(Date{year, month, 1}) or_return
@@ -267,7 +267,7 @@ Obtain the new year date of a given year.
 This procedure returns the January 1st date of the specified year. If the year
 is not valid, an error is returned.
 */
-new_year :: proc "contextless" (#any_int year: i64) -> (new_year: Date, err: Error) {
+new_year :: proc(#any_int year: i64) -> (new_year: Date, err: Error) {
 	validate(year, 1, 1) or_return
 	return {year, 1, 1}, .None
 }
@@ -278,7 +278,7 @@ Obtain the end year of a given date.
 This procedure returns the December 31st date of the specified year. If the year
 is not valid, an error is returned.
 */
-year_end :: proc "contextless" (#any_int year: i64) -> (year_end: Date, err: Error) {
+year_end :: proc(#any_int year: i64) -> (year_end: Date, err: Error) {
 	validate(year, 12, 31) or_return
 	return {year, 12, 31}, .None
 }
@@ -318,7 +318,7 @@ is between 0 and the number of seconds in the day and nanoseconds is between
 
 If the value for `days` overflows during this operation, an error is returned.
 */
-normalize_delta :: proc "contextless" (delta: Delta) -> (normalized: Delta, err: Error) {
+normalize_delta :: proc(delta: Delta) -> (normalized: Delta, err: Error) {
 	// Distribute nanos into seconds and remainder
 	seconds, nanos := divmod(delta.nanos, 1e9)
 
@@ -347,7 +347,7 @@ Obtain an ordinal from a date.
 This procedure converts a date into an ordinal. If the date is not a valid date,
 the result is unspecified.
 */
-unsafe_date_to_ordinal :: proc "contextless" (date: Date) -> (ordinal: Ordinal) {
+unsafe_date_to_ordinal :: proc(date: Date) -> (ordinal: Ordinal) {
 	year_minus_one := date.year - 1
 
 	ordinal = 0
@@ -381,7 +381,7 @@ Obtain a year and a day of the year from an ordinal.
 This procedure returns the year and the day of the year of a given ordinal.
 Of the ordinal is outside of its valid range, the result is unspecified.
 */
-unsafe_ordinal_to_year :: proc "contextless" (ordinal: Ordinal) -> (year: i64, day_ordinal: i64) {
+unsafe_ordinal_to_year :: proc(ordinal: Ordinal) -> (year: i64, day_ordinal: i64) {
 	// Correct for leap year cycle starting at day 1.
 	d0   := ordinal - 1
 
@@ -417,7 +417,7 @@ Obtain a date from an ordinal.
 This procedure converts an ordinal into a date. If the ordinal is outside of
 its valid range, the result is unspecified.
 */
-unsafe_ordinal_to_date :: proc "contextless" (ordinal: Ordinal) -> (date: Date) {
+unsafe_ordinal_to_date :: proc(ordinal: Ordinal) -> (date: Date) {
 	year, _ := unsafe_ordinal_to_year(ordinal)
 
 	prior_days := ordinal - unsafe_date_to_ordinal(Date{year, 1, 1})

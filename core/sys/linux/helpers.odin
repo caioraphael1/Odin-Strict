@@ -11,12 +11,12 @@ import "base:intrinsics"
 // uintptr, so we'll have that.
 
 @(private)
-syscall0 :: #force_inline proc "contextless" (nr: uintptr) -> int {
+syscall0 :: #force_inline proc(nr: uintptr) -> int {
 	return int(intrinsics.syscall(nr))
 }
 
 @(private)
-syscall1 :: #force_inline proc "contextless" (nr: uintptr, p1: $T) -> int
+syscall1 :: #force_inline proc(nr: uintptr, p1: $T) -> int
 where
 	size_of(p1) <= size_of(uintptr)
 {
@@ -24,7 +24,7 @@ where
 }
 
 @(private)
-syscall2 :: #force_inline proc "contextless" (nr: uintptr,p1: $T1, p2: $T2) -> int
+syscall2 :: #force_inline proc(nr: uintptr,p1: $T1, p2: $T2) -> int
 where
 	size_of(p1) <= size_of(uintptr),
 	size_of(p2) <= size_of(uintptr) 
@@ -33,7 +33,7 @@ where
 }
 
 @(private)
-syscall3 :: #force_inline proc "contextless" (nr: uintptr, p1: $T1, p2: $T2, p3: $T3) -> int
+syscall3 :: #force_inline proc(nr: uintptr, p1: $T1, p2: $T2, p3: $T3) -> int
 where
 	size_of(p1) <= size_of(uintptr),
 	size_of(p2) <= size_of(uintptr),
@@ -47,7 +47,7 @@ where
 }
 
 @(private)
-syscall4 :: #force_inline proc "contextless" (nr: uintptr, p1: $T1, p2: $T2, p3: $T3, p4: $T4) -> int
+syscall4 :: #force_inline proc(nr: uintptr, p1: $T1, p2: $T2, p3: $T3, p4: $T4) -> int
 where
 	size_of(p1) <= size_of(uintptr),
 	size_of(p2) <= size_of(uintptr),
@@ -63,7 +63,7 @@ where
 }
 
 @(private)
-syscall5 :: #force_inline proc "contextless" (nr: uintptr, p1: $T1, p2: $T2, p3: $T3, p4: $T4, p5: $T5) -> int
+syscall5 :: #force_inline proc(nr: uintptr, p1: $T1, p2: $T2, p3: $T3, p4: $T4, p5: $T5) -> int
 where
 	size_of(p1) <= size_of(uintptr),
 	size_of(p2) <= size_of(uintptr),
@@ -81,7 +81,7 @@ where
 }
 
 @(private)
-syscall6 :: #force_inline proc "contextless" (nr: uintptr, p1: $T1, p2: $T2, p3: $T3, p4: $T4, p5: $T5, p6: $T6) -> int
+syscall6 :: #force_inline proc(nr: uintptr, p1: $T1, p2: $T2, p3: $T3, p4: $T4, p5: $T5, p6: $T6) -> int
 where
 	size_of(p1) <= size_of(uintptr),
 	size_of(p2) <= size_of(uintptr),
@@ -108,7 +108,7 @@ syscall :: proc {syscall0, syscall1, syscall2, syscall3, syscall4, syscall5, sys
 // One transmute + one cast should allow us to get to any type we might want
 // to return from a syscall wrapper.
 @(private)
-errno_unwrap3 :: #force_inline proc "contextless" (ret: $P, $T: typeid, $U: typeid) -> (T, Errno)
+errno_unwrap3 :: #force_inline proc(ret: $P, $T: typeid, $U: typeid) -> (T, Errno)
 where
 	intrinsics.type_is_ordered_numeric(P)
 {
@@ -121,7 +121,7 @@ where
 }
 
 @(private)
-errno_unwrap2 :: #force_inline proc "contextless" (ret: $P, $T: typeid) -> (T, Errno) {
+errno_unwrap2 :: #force_inline proc(ret: $P, $T: typeid) -> (T, Errno) {
 	if ret < 0 {
 		default_value: T
 		return default_value, Errno(-ret)
@@ -138,7 +138,7 @@ errno_unwrap :: proc {errno_unwrap2, errno_unwrap3}
 when size_of(int) == 4 {
 	// xxx64 system calls take some parameters as pairs of ulongs rather than a single pointer
 	@(private)
-	compat64_arg_pair :: #force_inline proc "contextless" (a: i64) -> (lo: uint, hi: uint) {
+	compat64_arg_pair :: #force_inline proc(a: i64) -> (lo: uint, hi: uint) {
 		no_sign := u64(a)
 		hi = uint(no_sign >> 32)
 		lo = uint(no_sign & 0xffff_ffff)
@@ -147,7 +147,7 @@ when size_of(int) == 4 {
 } else {
 	// ... and on 64-bit architectures it's just a long
 	@(private)
-	compat64_arg_pair :: #force_inline proc "contextless" (a: i64) -> (uint) {
+	compat64_arg_pair :: #force_inline proc(a: i64) -> (uint) {
 		return uint(a)
 	}
 }
