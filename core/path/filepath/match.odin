@@ -2,7 +2,7 @@
 #+build !js
 package filepath
 
-import "core:os"
+import os "core:os/os2"
 import "core:slice"
 import "core:strings"
 import "core:unicode/utf8"

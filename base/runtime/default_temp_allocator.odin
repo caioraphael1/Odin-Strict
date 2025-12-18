@@ -10,10 +10,10 @@ This allocator needs to be manually initialized by the user.
 when ODIN_ARCH == .i386 && ODIN_OS == .Windows {
     // Thread-local storage is problematic on Windows i386
     temp_allocator: Allocator
-    @(private="file") temp_allocator_arena: Arena
+    temp_allocator_arena: Arena
 } else {
     @(thread_local) temp_allocator: Allocator
-    @(thread_local, private="file") temp_allocator_arena: Arena
+    @(thread_local) temp_allocator_arena: Arena
 }
 
 temp_allocator_init :: proc(size: uint, backing_temp_allocator: Allocator) {

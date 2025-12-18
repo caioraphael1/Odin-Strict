@@ -2,7 +2,7 @@ package filepath
 
 import "core:strings"
 import "base:runtime"
-import "core:os"
+import os "core:os/os2"
 import win32 "core:sys/windows"
 import "core:mem"
 
@@ -49,7 +49,7 @@ is_abs :: proc(path: string) -> bool {
 	}
 	return is_slash(path[0])
 }
-
+/* 
 @(private)
 temp_full_path :: proc(name: string) -> (path: string, err: os.Error) {
 	name := name
@@ -71,7 +71,9 @@ temp_full_path :: proc(name: string) -> (path: string, err: os.Error) {
 
 	return win32.utf16_to_utf8(buf[:n], runtime.temp_allocator)
 }
+*/
 
+/* 
 abs :: proc(path: string, allocator: mem.Allocator) -> (string, bool) {
 	runtime.TEMP_ALLOCATOR_TEMP_GUARD(allocator)
 	full_path, err := temp_full_path(path)
@@ -81,7 +83,7 @@ abs :: proc(path: string, allocator: mem.Allocator) -> (string, bool) {
 	p := clean(full_path, allocator)
 	return p, true
 }
-
+ */
 join :: proc(elems: []string, allocator: mem.Allocator) -> (string, runtime.Allocator_Error) #optional_allocator_error {
 	for e, i in elems {
 		if e != "" {

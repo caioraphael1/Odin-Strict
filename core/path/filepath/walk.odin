@@ -4,7 +4,7 @@ package filepath
 
 
 import "base:runtime"
-import "core:os"
+import os "core:os/os2"
 import "core:slice"
 
 // Walk_Proc is the type of the procedure called for each file or directory visited by 'walk'

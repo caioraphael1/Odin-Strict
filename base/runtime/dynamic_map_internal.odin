@@ -601,7 +601,7 @@ map_reserve_dynamic :: #force_no_inline proc "odin" (#no_alias m: ^Raw_Map, #no_
 		return size_of(uintptr)*8 - 1 - z
 	}
 
-    assert(m.allocator.procedure != nil, loc=loc)
+    assert(m.allocator.procedure != nil, "Allocator not defined", loc=loc)
 
 	new_capacity := new_capacity
 	old_capacity := uintptr(map_cap(m^))
