@@ -24,6 +24,7 @@ import "core:strconv"
 import "core:strings"
 import "core:fmt"
 import "core:mem"
+import "base:runtime"
 
 /*
 	Expects an IPv4 address with no leading or trailing whitespace:
@@ -478,9 +479,9 @@ join_port :: proc(address_or_host: string, port: int, allocator: mem.Allocator) 
 	} else {
 		switch _ in addr {
 		case IP4_Address:
-			fmt.sbprintf(&b, "%v:%v", address_to_string(addr), port)
+			fmt.sbprintf(&b, "%v:%v", address_to_string(addr, runtime.temp_allocator), port)
 		case IP6_Address:
-			fmt.sbprintf(&b, "[%v]:%v", address_to_string(addr), port)
+			fmt.sbprintf(&b, "[%v]:%v", address_to_string(addr, runtime.temp_allocator), port)
 		}
 	}
 	return strings.to_string(b)
@@ -502,11 +503,11 @@ map_to_ip6 :: proc(addr: Address) -> Address {
 }
 
 /*
-	Returns a temporarily-allocated string representation of the address.
+	Returns a allocated string representation of the address.
 
 	See RFC 5952 section 4 for IPv6 representation recommendations.
 */
-address_to_string :: proc(addr: Address, allocator := runtime.temp_allocator) -> string {
+address_to_string :: proc(addr: Address, allocator: runtime.Allocator) -> string {
 	b := strings.builder_make(allocator)
 	switch v in addr {
 	case IP4_Address:

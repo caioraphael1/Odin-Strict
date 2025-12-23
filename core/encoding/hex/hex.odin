@@ -3,8 +3,9 @@ package encoding_hex
 
 import "core:io"
 import "core:strings"
+import "base:runtime"
 
-encode :: proc(src: []byte, allocator := context.allocator, loc := #caller_location) -> []byte #no_bounds_check {
+encode :: proc(src: []byte, allocator: runtime.Allocator, loc := #caller_location) -> []byte #no_bounds_check {
 	dst := make([]byte, len(src) * 2, allocator, loc)
 	for i, j := 0, 0; i < len(src); i += 1 {
 		v := src[i]
@@ -23,7 +24,7 @@ encode_into_writer :: proc(dst: io.Writer, src: []byte) -> io.Error {
 	return nil
 }
 
-decode :: proc(src: []byte, allocator := context.allocator, loc := #caller_location) -> (dst: []byte, ok: bool) #no_bounds_check {
+decode :: proc(src: []byte, allocator: runtime.Allocator, loc := #caller_location) -> (dst: []byte, ok: bool) #no_bounds_check {
 	if len(src) % 2 == 1 {
 		return
 	}

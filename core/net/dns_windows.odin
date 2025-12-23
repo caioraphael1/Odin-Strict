@@ -22,6 +22,7 @@ package net
 
 import "core:strings"
 import "core:mem"
+import "base:runtime"
 
 import win "core:sys/windows"
 

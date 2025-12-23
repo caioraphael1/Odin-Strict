@@ -26,7 +26,7 @@ package net
 import "core:mem"
 import "core:strings"
 import "core:time"
-import "core:os"
+import os "core:os/os2"
 import "core:math/rand"
 @(require) import "core:sync"
 
@@ -209,7 +209,7 @@ get_dns_records_from_nameservers :: proc(hostname: string, type: DNS_Record_Type
 	}
 
 	hdr := DNS_Header{
-		id = u16be(rand.uint32()),
+		id = u16be(rand.uint32(runtime.global_random_generator)),
 		is_response = false,
 		opcode = 0,
 		is_authoritative = false,
@@ -361,8 +361,8 @@ unpack_dns_header :: proc(id: u16be, bits: u16be) -> (hdr: DNS_Header) {
 	return hdr
 }
 
-load_resolv_conf :: proc(resolv_conf_path: string, allocator: mem.Allocator) -> (name_servers: []Endpoint, ok: bool) {
-	res := os.read_entire_file_from_filename(resolv_conf_path, allocator) or_return
+load_resolv_conf :: proc(resolv_conf_path: string, allocator: mem.Allocator) -> (name_servers: []Endpoint, err: os.Error) {
+	res := os.read_entire_file(resolv_conf_path, allocator) or_return
 	defer delete(res, allocator)
 	resolv_str := string(res)
 
@@ -396,11 +396,11 @@ load_resolv_conf :: proc(resolv_conf_path: string, allocator: mem.Allocator) -> 
 		append(&_name_servers, endpoint)
 	}
 
-	return _name_servers[:], true
+	return _name_servers[:], nil
 }
 
-load_hosts :: proc(hosts_file_path: string, allocator: mem.Allocator) -> (hosts: []DNS_Host_Entry, ok: bool) {
-	res := os.read_entire_file_from_filename(hosts_file_path, allocator) or_return
+load_hosts :: proc(hosts_file_path: string, allocator: mem.Allocator) -> (hosts: []DNS_Host_Entry, err: os.Error) {
+	res := os.read_entire_file(hosts_file_path, allocator) or_return
 	defer delete(res, allocator)
 
 	_hosts := make([dynamic]DNS_Host_Entry, 0, allocator)
@@ -428,7 +428,7 @@ load_hosts :: proc(hosts_file_path: string, allocator: mem.Allocator) -> (hosts:
 		}
 	}
 
-	return _hosts[:], true
+	return _hosts[:], nil
 }
 
 // www.google.com -> 3www6google3com0
