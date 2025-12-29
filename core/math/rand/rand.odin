@@ -35,7 +35,6 @@ Inputs:
 Returns:
 - A `Generator` instance.
 */
-default_random_generator :: runtime.default_random_generator
 
 @(require_results)
 create_u64 :: proc(seed: u64) -> (state: Default_Random_State) {

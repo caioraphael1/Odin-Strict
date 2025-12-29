@@ -89,6 +89,7 @@ get_token :: proc(t: ^Tokenizer) -> (token: Token, err: Error) {
 			next_rune(t)
 		}
 	}
+    
 	skip_hex_digits :: proc(t: ^Tokenizer) {
 		for t.offset < len(t.data) {
 			next_rune(t)

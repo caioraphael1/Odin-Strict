@@ -24,8 +24,10 @@ Random_Generator :: struct {
 	data:      rawptr,
 }
 
-global_random_generator: Random_Generator
-
+global_random_generator := Random_Generator{
+    procedure = default_random_generator_proc,
+    data      = nil,
+}
 
 @(require_results)
 random_generator_read_bytes :: proc(rg: Random_Generator, p: []byte) -> bool {
